@@ -1,7 +1,6 @@
 package AI::Categorizer::Learner::Boolean;
 
 use strict;
-use AI::DecisionTree;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
 

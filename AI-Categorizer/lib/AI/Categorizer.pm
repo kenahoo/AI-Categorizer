@@ -53,10 +53,15 @@ sub new {
       $args{stopwords}{$_} = 1;
     }
     close FH;
-    delete $args{stopword_file};
   }
 
   return $package->SUPER::new(%defaults, %args);
+}
+
+sub dump_parameters {
+  my $p = shift()->SUPER::dump_parameters;
+  delete $p->{stopwords} if $p->{stopword_file};
+  return $p;
 }
 
 sub knowledge_set { shift->{knowledge_set} }

@@ -50,7 +50,7 @@ sub create_model {
 sub get_scores {
   my ($self, $newdoc) = @_;
   my $m = $self->{model};  # For convenience
-  my $all_features = $m->{features};
+  my $all_features = $m->{features}->as_hash;
   
   # Note that we're using the log(prob) here.  That's why we add instead of multiply.
 
@@ -62,24 +62,29 @@ sub get_scores {
     
     my $doc_hash = $newdoc->features->as_hash;
     while (my ($feature, $value) = each %$doc_hash) {
-      next unless $all_features->includes($feature);
+      next unless exists $all_features->{$feature};
       $scores{$cat} += ($cat_features->{$feature} || $fake_prob)*$value;   # P($feature|$cat)**$value
     }
   }
-  
+
+  $self->_rescale(\%scores);
+  return \%scores;
+}
+
+sub _rescale {
+  my ($self, $scores) = @_;
+
   # Scale everything back to a reasonable area in logspace (near zero), un-loggify, and normalize
   my $total = 0;
-  my $max = max(values %scores);
-  foreach (keys %scores) {
-    $scores{$_} = exp($scores{$_} - $max);
-    $total += $scores{$_}**2;
+  my $max = max(values %$scores);
+  foreach (keys %$scores) {
+    $scores->{$_} = exp($scores->{$_} - $max);
+    $total += $scores->{$_}**2;
   }
   $total = sqrt($total);
-  foreach (keys %scores) {
-    $scores{$_} /= $total;
+  foreach (keys %$scores) {
+    $scores->{$_} /= $total;
   }
-  
-  return \%scores;
 }
 
 sub threshold {

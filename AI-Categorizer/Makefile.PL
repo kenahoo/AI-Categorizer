@@ -23,6 +23,7 @@ WriteMakefile
 		   Class::Container => 0.05,
 		   Storable => 0,
 		   Params::Validate => 0.18,
+		   Statistics::Contingency => 0,
 		  },
 
    # Recommended: Lingua::Stem

@@ -3,27 +3,9 @@ package AI::Categorizer::Experiment;
 use strict;
 use Class::Container;
 use AI::Categorizer::Storable;
-use base qw(Class::Container AI::Categorizer::Storable);
+use Statistics::Contingency;
 
-#              Correct=Y   Correct=N
-#            +-----------+-----------+
-# Assigned=Y |     a     |     b     |
-#            +-----------+-----------+
-# Assigned=N |     c     |     d     |
-#            +-----------+-----------+
-
-# accuracy = (a+d)/(a+b+c+d)
-# precision = a/(a+b)
-# recall = a/(a+c)
-# F1 = 
-
-# Edge cases:
-#  precision(a,0,c,d) = 1
-#  precision(0,+,c,d) = 0
-#     recall(a,b,0,d) = 1
-#     recall(0,b,+,d) = 0
-#         F1(a,0,0,d) = 1
-#         F1(0,+++,d) = 0
+use base qw(Class::Container AI::Categorizer::Storable Statistics::Contingency);
 
 use Params::Validate qw(:types);
 __PACKAGE__->valid_params
@@ -34,7 +16,7 @@ __PACKAGE__->valid_params
 
 sub new {
   my $package = shift;
-  my $self = $package->SUPER::new(@_);
+  my $self = $package->Class::Container::new(@_);
   
   $self->{$_} = 0 foreach qw(a b c d);
   my $c = delete $self->{categories};
@@ -43,129 +25,6 @@ sub new {
 			};
   return $self;
 }
-
-sub add_result {
-  my ($self, $assigned, $correct, $name) = @_;
-  my $cats_table = $self->{categories};
-
-  # Hashify
-  foreach ($assigned, $correct) {
-    $_ = {$_ => 1}, next               unless ref $_;
-    next                               if UNIVERSAL::isa($_, 'HASH');  # Leave alone
-    $_ = { map {($_ => 1)} @$_ }, next if UNIVERSAL::isa($_, 'ARRAY');
-    die "Unknown type '$_' for category list";
-  }
-
-  # Add to the micro/macro tables
-  foreach my $cat (keys %$cats_table) {
-    $cats_table->{$cat}{a}++, $self->{a}++ if  $assigned->{$cat} and  $correct->{$cat};
-    $cats_table->{$cat}{b}++, $self->{b}++ if  $assigned->{$cat} and !$correct->{$cat};
-    $cats_table->{$cat}{c}++, $self->{c}++ if !$assigned->{$cat} and  $correct->{$cat};
-    $cats_table->{$cat}{d}++, $self->{d}++ if !$assigned->{$cat} and !$correct->{$cat};
-  }
-
-  if ($self->{verbose}) {
-    print "$name: assigned=(@{[ keys %$assigned ]}) correct=(@{[ keys %$correct ]})\n";
-  }
-
-  $self->{hypotheses}++;
-}
-
-sub _invert {
-  my ($self, $x, $y) = @_;
-  return 1 unless $y;
-  return 0 unless $x;
-  return 1 / (1 + $y/$x);
-}
-
-sub _accuracy {
-  my $h = $_[1];
-  return +($h->{a} + $h->{d}) / ($h->{a} + $h->{b} + $h->{c} + $h->{d});
-}
-
-sub _error {
-  my $h = $_[1];
-  return +($h->{b} + $h->{c}) / ($h->{a} + $h->{b} + $h->{c} + $h->{d});
-}
-
-sub _precision {
-  my ($self, $h) = @_;
-  return $self->_invert($h->{a}, $h->{b});
-}
-  
-sub _recall {
-  my ($self, $h) = @_;
-  return $self->_invert($h->{a}, $h->{c});
-}
-  
-sub _F1 {
-  my ($self, $h) = @_;
-  return $self->_invert(2 * $h->{a}, $h->{b} + $h->{c});
-}
-
-# Fills in precision, recall, etc. for each category, and computes their averages
-sub _macro_stats {
-  my $self = shift;
-  return $self->{macro} if $self->{macro};
-  
-  my @metrics = qw(precision recall F1 accuracy error);
-
-  my $cats = $self->{categories};
-  die "No category information has been recorded"
-    unless keys %$cats;
-
-  my %results;
-  while (my ($cat, $scores) = each %$cats) {
-    foreach my $metric (@metrics) {
-      my $method = "_$metric";
-      $results{$metric} += ($scores->{$metric} = $self->$method($scores));
-    }
-  }
-  foreach (@metrics) {
-    $results{$_} /= keys %$cats;
-  }
-  $self->{macro} = \%results;
-}
-
-sub micro_accuracy  { $_[0]->_accuracy( $_[0]) }
-sub micro_error     { $_[0]->_error(    $_[0]) }
-sub micro_precision { $_[0]->_precision($_[0]) }
-sub micro_recall    { $_[0]->_recall(   $_[0]) }
-sub micro_F1        { $_[0]->_F1(       $_[0]) }
-
-sub macro_accuracy  { shift()->_macro_stats->{accuracy} }
-sub macro_error     { shift()->_macro_stats->{error} }
-sub macro_precision { shift()->_macro_stats->{precision} }
-sub macro_recall    { shift()->_macro_stats->{recall} }
-sub macro_F1        { shift()->_macro_stats->{F1} }
-
-sub category_stats {
-  my $self = shift;
-  $self->_macro_stats;
-
-  return $self->{categories};
-}
-
-sub stats_table {
-  my $self = shift;
-  
-  my $out = "+---------------------------------------------------------+\n";
-  $out   .= "|   miR    miP   miF1    miE     maR    maP   maF1    maE |\n";
-  $out   .= "| %.3f  %.3f  %.3f  %.3f   %.3f  %.3f  %.3f  %.3f |\n";
-  $out   .= "+---------------------------------------------------------+\n";
-
-  return sprintf($out,
-		 $self->macro_recall,
-		 $self->macro_precision,
-		 $self->macro_F1,
-		 $self->macro_error,
-		 $self->micro_recall,
-		 $self->micro_precision,
-		 $self->micro_F1,
-		 $self->micro_error,
-		);
-}
-
 
 1;
 

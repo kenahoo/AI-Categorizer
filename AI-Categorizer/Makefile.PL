@@ -52,6 +52,7 @@ WriteMakefile
 		   Params::Validate => 0.18,
 		   Statistics::Contingency => 0.06,
 		   Lingua::Stem => 0.50,
+		   File::Spec => 0,
 		  },
    'PL_FILES' => {},
    %options,

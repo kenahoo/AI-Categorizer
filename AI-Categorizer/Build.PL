@@ -20,6 +20,7 @@ my $build = new Module::Build
 		  Time::Progress        => 1.1,
 		  Algorithm::SVM        => 0.06,
 		  AI::DecisionTree      => 0.06,
+		  Algorithm::NaiveBayes => 0,
 		 },
    build_requires => {
 		      Module::Build     => 0.15,

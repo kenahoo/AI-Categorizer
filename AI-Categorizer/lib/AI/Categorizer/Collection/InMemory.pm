@@ -11,14 +11,22 @@ __PACKAGE__->valid_params
    data => { type => HASHREF },
   );
 
+sub new {
+  my $self = shift()->SUPER::new(@_);
+  
+  while (my ($name, $params) = each %{$self->{data}}) {
+    foreach (@{$params->{categories}}) {
+      next if ref $_;
+      $_ = AI::Categorizer::Category->by_name(name => $_);
+    }
+  }
+
+  return $self;
+}
+
 sub next {
   my $self = shift;
   my ($name, $params) = each %{$self->{data}} or return;
-  foreach (@{$params->{categories}}) {
-    next if ref $_;
-    $_ = AI::Categorizer::Category->by_name(name => $_);
-  }
-
   return AI::Categorizer::Document->new(name => $name, %$params);
 }
 

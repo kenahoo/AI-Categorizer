@@ -7,6 +7,22 @@ my ($file, $dir);
 ($file = $module) =~ s{::}{/}g;
 $file = "lib/$file.pm";
 
+{
+  my $path = prompt
+    (
+     "\nIf you have the Weka system installed, please specify the path\n".
+     "to the 'weka.jar' file, or '-' to search CLASSPATH, or '!' to skip:",
+     '!'
+    );
+  
+  if ($path ne '!') {
+    local *FH;
+    open FH, "> t/classpath" or die "Can't create t/classpath: $!";
+    print FH $path;
+    close FH;
+  }
+}
+
 WriteMakefile
   (
    'NAME'       => $module,

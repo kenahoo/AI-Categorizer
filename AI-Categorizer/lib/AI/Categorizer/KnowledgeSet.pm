@@ -10,6 +10,7 @@ use AI::Categorizer::ObjectSet;
 use AI::Categorizer::Document;
 use AI::Categorizer::Category;
 use AI::Categorizer::FeatureVector;
+use AI::Categorizer::Util;
 
 __PACKAGE__->valid_params
   (
@@ -43,6 +44,8 @@ __PACKAGE__->contained_objects
 		 class => 'AI::Categorizer::Document' },
    category => { delayed => 1,
 		 class => 'AI::Categorizer::Category' },
+   collection => { delayed => 1,
+		   class => 'AI::Categorizer::Collection' },
    features => { delayed => 1,
 		 class => 'AI::Categorizer::FeatureVector' },
   );
@@ -85,12 +88,77 @@ sub documents {
   return wantarray ? $d->members : $d->size;
 }
 
+sub verbose {
+  my $self = shift;
+  $self->{verbose} = shift if @_;
+  return $self->{verbose};
+}
+
 sub trim_doc_features {
   my ($self) = @_;
   
   foreach my $doc ($self->documents) {
     $doc->features( $doc->features->intersection($self->features) );
   }
+}
+
+sub scan {
+  # Should determine:
+  #  - number of documents
+  #  - number of categories
+  #  - avg. number of categories per document (whole corpus)
+  #  - avg. number of tokens per document (whole corpus)
+  #  - avg. number of types per document (whole corpus)
+  #  - number of documents, tokens, & types for each category
+  #  - "category skew index" (% variance?) by num. documents, tokens, and types
+
+  my ($self, %args) = @_;
+  my $collection = $self->create_delayed_object('collection', %args);
+  #my $collection = $self->create_delayed_object('collection', path => $args{path});
+
+  my %stats;
+
+  local $| = 1;
+  while (my $doc = $collection->next) {
+    print "." if $self->verbose;
+    $stats{category_count_with_duplicates} += $doc->categories;
+
+    my ($sum, $length) = ($doc->features->sum, $doc->features->length);
+    $stats{document_count}++;
+    $stats{token_count} += $sum;
+    $stats{type_count}  += $length;
+    
+    foreach my $cat ($doc->categories) {
+#warn $doc->name, ": ", $cat->name, "\n";
+      $stats{categories}{$cat->name}{document_count}++;
+      $stats{categories}{$cat->name}{token_count} += $sum;
+      $stats{categories}{$cat->name}{type_count}  += $length;
+    }
+  }
+  print "\n" if $self->verbose;
+
+  my @cats = keys %{ $stats{categories} };
+
+  $stats{category_count}          = @cats;
+  $stats{categories_per_document} = $stats{category_count_with_duplicates} / $stats{document_count};
+  $stats{tokens_per_document}     = $stats{token_count} / $stats{document_count};
+  $stats{types_per_document}      = $stats{type_count}  / $stats{document_count};
+
+  foreach my $thing ('type', 'token', 'document') {
+    $stats{"${thing}s_per_category"} = AI::Categorizer::Util::average
+      ( map { $stats{categories}{$_}{"${thing}_count"} } @cats );
+
+    next unless @cats;
+
+    # Compute the variance
+    my $ssum;
+    foreach my $cat (@cats) {
+      $ssum += ($stats{categories}{$cat}{"${thing}_count"} - $stats{"${thing}s_per_category"}) ** 2;
+    }
+    $stats{"${thing}_skew_by_category"} = sqrt($ssum/@cats) / $stats{"${thing}s_per_category"};
+  }
+
+  return \%stats;
 }
 
 sub scan_features {

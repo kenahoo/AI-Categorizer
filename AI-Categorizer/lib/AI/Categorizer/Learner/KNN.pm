@@ -12,8 +12,12 @@ __PACKAGE__->valid_params
    k_value => {type => SCALAR, default =>5},
   );
 
-# Don't need to do anything (but some initialization might be nice)
-sub create_model {}
+sub create_model {
+  my $self = shift;
+  foreach my $doc ($self->knowledge_set->documents) {
+    $doc->features->normalize;
+  }
+}
 
 sub threshold {
   my $self = shift;
@@ -41,26 +45,18 @@ sub get_scores {
   my $currentDocName = $newdoc->name;
   #print "classifying $currentDocName\n";
 
-  my $features = $newdoc->features->normalize->as_hash;
-  my %scores;
-  my @dscores;
-  my @kdocs;
-  my $k =$self->{k_value};
+  my $features = $newdoc->features->normalize;
+  my (%scores, @dscores, @kdocs);
+  my $k = $self->{k_value};
 
   $dscores[$k-1] = 0;
   $kdocs[$k-1] = undef;
   
   foreach my $doc(@docs){ # each doc in corpus 
-    warn "comparing to: ", $doc->name, "\n" if $self->verbose;
-    my $score=0;
-    my $doc_features = $doc->features->normalize->as_hash;
-    foreach my $feature (keys %$features){ #for each feature in new doc
-      next unless exists $doc_features->{$feature};
-      $score += $features->{$feature} * $doc_features->{$feature}; #add to dot product
-    }
+    warn "comparing to: ", $doc->name, "\n" if $self->verbose > 1;
+    my $score = $doc->features->dot( $features );
     warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, ") is $score" if $self->verbose > 1;
     
-    #print "adding score: $score\n";
     my $index = subIn($score, \@dscores);
     if($index>-1){
       splice @kdocs, $index, 0, $doc;
@@ -69,37 +65,21 @@ sub get_scores {
   }
   
   my $no_of_cats =0;
-  for(my $e =0;$e<scalar @kdocs; $e++){ #for 0 - k
+  for (my $e=0; $e<@kdocs; $e++) { #for 0 - k
     next unless defined $kdocs[$e];
-
-    my $docname =$kdocs[$e]->name;
-    # print "$docname score: $dscores[$e]\n";
     
-    if($dscores[$e]>=0){
+    if($dscores[$e]){
       foreach my $cat($kdocs[$e]->categories){
 	$no_of_cats++;
-	my $category = $cat->name;
-	
-	if(!exists $scores{$category}){
-	  #print "initiating cat: $category\n";
-	  $scores{$category}=0;
-	}
-	#print "incrementing category  $category\n";
-	$scores{$category}++; #increment cat score
+	$scores{$cat->name}++; #increment cat score
       }
     }
   } 
-  #print "-----------------------------------------------------------------\n";
-  foreach my $key(keys %scores){
-    #print "category: $key score: $scores{$key}";
-    $scores{$key} = $scores{$key}/$no_of_cats;
-    my $tmp = $scores{$key};
-    # print "$tmp\n";
+  
+  foreach my $key (keys %scores) {
+    $scores{$key} /= $no_of_cats;
   }
   
-  #print "scores: @{[ %scores ]}\n";
-  my $t = $self->{threshold};
-  #print "threshold = $t\n" ;
   return (\%scores, $self->{threshold});
 }
 

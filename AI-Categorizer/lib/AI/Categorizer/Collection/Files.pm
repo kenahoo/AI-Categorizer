@@ -56,6 +56,7 @@ sub next {
     return $self->next;
   }
 
+  warn "No category information about '$file'" unless defined $self->{category_hash}{$file};
   my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{category_hash}{$file} || [] };
 
   return $self->call_method('document', 'read', 

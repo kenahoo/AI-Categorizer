@@ -1,6 +1,6 @@
 Revision history for Perl extension AI::Categorizer.
 
-0.06
+0.06 Tue Apr 22 10:27:26 CDT 2003
 
  - Added a relatively simple example script at the request of several
    people, at eg/demo.pl

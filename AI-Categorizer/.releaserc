@@ -1,3 +1,6 @@
 cpan_user KWILLIAMS
-sf_user <none>
+sf_user kwilliams
+sf_group_id 62831
+sf_package_id 59597
 release_subclass Module::Release::KWILLIAMS
+passive_ftp y

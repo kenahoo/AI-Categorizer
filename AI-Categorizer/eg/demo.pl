@@ -66,3 +66,16 @@ print "Categorizing test set\n";
 my $experiment = $l->categorize_collection( collection => $test );
 
 print $experiment->stats_table;
+
+
+# If you want to get at the specific assigned categories for a
+# specific document, you can do it like this:
+
+my $doc = AI::Categorizer::Document->new
+  ( content => "Hello, I am a pretty generic document with not much to say." );
+
+my $h = $l->categorize( $doc );
+
+print ("For test document:\n",
+       "  Best category = ", $h->best_category, "\n",
+       "  All categories = ", join(', ', $h->categories), "\n");

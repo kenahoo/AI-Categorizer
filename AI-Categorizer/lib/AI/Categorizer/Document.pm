@@ -29,6 +29,18 @@ __PACKAGE__->valid_params
 		 type => HASHREF|SCALAR,
 		 default => undef,
 		},
+   parse => {
+	     type => SCALAR,
+	     optional => 1,
+	    },
+   parse_handle => {
+		    type => HANDLE,
+		    optional => 1,
+		   },
+   features => {
+		isa => 'AI::Categorizer::FeatureVector',
+		optional => 1,
+	       },
    content_weights => {
 		       type => HASHREF,
 		       default => {},
@@ -55,25 +67,40 @@ __PACKAGE__->contained_objects
 
 ### Constructors
 
+my $NAME = 'a';
+
 sub new {
-  my $self = shift()->SUPER::new(@_);
+  my $pkg = shift;
+  my $self = $pkg->SUPER::new(name => $NAME++,  # Use a default name
+			      @_);
 
   # Get efficient internal data structures
   $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
   $self->{stopwords} = { map {($_ => 1)} @{ $self->{stopwords} } }
     if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
 
-  if (defined $self->{content}) {
+  # A few different ways for the caller to initialize the content
+  if (exists $self->{parse}) {
+    $self->parse(content => delete $self->{parse});
+    
+  } elsif (exists $self->{parse_handle}) {
+    $self->parse_handle(handle => delete $self->{parse_handle});
+    
+  } elsif (defined $self->{content}) {
     # Allow a simple string as the content
     $self->{content} = { body => $self->{content} } unless ref $self->{content};
-    
-    $self->create_feature_vector;
-    
-    # Now we're done with all the content stuff
-    delete @{$self}{'content', 'content_weights', 'stopwords', 'use_features'};
   }
-
+  
+  $self->finish if $self->{content};
   return $self;
+}
+
+sub finish {
+  my $self = shift;
+  $self->create_feature_vector;
+  
+  # Now we're done with all the content stuff
+  delete @{$self}{'content', 'content_weights', 'stopwords', 'use_features'};
 }
 
 
@@ -83,7 +110,7 @@ sub parse;
 sub parse_handle {
   my ($self, %args) = @_;
   my $fh = $args{handle} or die "No 'handle' argument given to parse_handle()";
-  return { body => join '', <$fh> };
+  return $self->parse( content => join '', <$fh> );
 }
 
 ### Accessors
@@ -201,14 +228,14 @@ sub vectorize {
 sub read {
   my ($class, %args) = @_;
   my $path = delete $args{path} or die "Must specify 'path' argument to read()";
-  $args{name} ||= $path;
-
-  local *FH;
-  open FH, "< $path" or die "$path: $!";
-  my $hash = $class->parse_handle(handle => *FH);
-  close FH;
   
-  return $class->new(%args, content => $hash);
+  my $self = $class->new(%args);
+  
+  open my($fh), "< $path" or die "$path: $!";
+  $self->parse_handle(handle => $fh);
+  close $fh;
+  
+  $self->finish;
 }
 
 sub dump_features {
@@ -346,6 +373,10 @@ CPAN.
 
 An alternative constructor method which reads a file on disk and
 returns a document with that file's contents.
+
+=item parse( content =E<gt> $content )
+
+
 
 =item name()
 

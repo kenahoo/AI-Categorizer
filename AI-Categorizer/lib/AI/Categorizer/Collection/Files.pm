@@ -55,7 +55,6 @@ sub next {
     return $self->next;
   }
 
-  my $k = $self->container;
   my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{categories}{$file} || [] };
 
   return $self->call_method('document', 'read', 

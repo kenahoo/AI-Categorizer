@@ -8,7 +8,6 @@ README
 doc/classes-overview.png
 doc/classes.png
 eg/categorizer
-eg/drmath-1.00.yaml
 eg/easy_guesser.pl
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Category.pm

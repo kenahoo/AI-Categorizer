@@ -77,9 +77,7 @@ sub sum {
 
   # Return total of values in this vector
   my $total = 0;
-  while ( (undef, my $v) = each %{ $self->{features} } ) {
-    $total += $v;
-  }
+  $total += $_ foreach values %{ $self->{features} };
   return $total;
 }
 

@@ -32,6 +32,10 @@ __PACKAGE__->valid_params
 		     type => SCALAR,
 		     default => 0.2,
 		    },
+   feature_selection => {
+			 type => SCALAR,
+			 default => 'document_frequency',
+			},
    verbose => {
 	       type => SCALAR,
 	       default => 0,
@@ -215,23 +219,46 @@ sub read {
   print "\n" if $self->verbose;
 }
 
+sub document_frequency {
+  my ($self, $term) = @_;
+  
+  unless (exists $self->{doc_freq_vector}) {
+    die "No corpus has been scanned for features" unless @{$self->{documents}};
+
+    my $doc_freq = $self->create_delayed_object('features', features => {});
+    foreach my $doc (@{$self->{documents}}) {
+      $doc_freq->add( $doc->features->as_boolean_hash );
+    }
+    $self->{doc_freq_vector} = $doc_freq->as_hash;
+  }
+  
+  return exists $self->{doc_freq_vector}{$term} ? $self->{doc_freq_vector}{$term} : 0;
+}
+
 sub scan_features {
   my ($self, %args) = @_;
 
-  my $features   = $self->create_delayed_object('features', features => {});
-  my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
-  my $pb = $self->prog_bar($collection);
+  my $ranked_features;
 
-  while (my $doc = $collection->next) {
-    $pb->();
-    $features->add( $doc->features );
+  if ($self->{feature_selection} eq 'document_frequency') {
+    my $doc_freq   = $self->create_delayed_object('features', features => {});
+    my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
+    my $pb = $self->prog_bar($collection);
+    
+    while (my $doc = $collection->next) {
+      $pb->();
+      $doc_freq->add( $doc->features );
+    }
+    print "\n" if $self->verbose;
+    
+    $ranked_features = $self->_reduce_features($doc_freq);
+    $self->{doc_freq_vector} = $ranked_features->as_hash;
+  } else {
+    die "Unknown feature_selection type '$self->{feature_selection}'";
   }
-  print "\n" if $self->verbose;
-
-  $features = $self->_reduce_features($features);
   
-  $self->delayed_object_params('document', use_features => $features);
-  $self->delayed_object_params('collection', use_features => $features);
+  $self->delayed_object_params('document', use_features => $ranked_features);
+  $self->delayed_object_params('collection', use_features => $ranked_features);
 }
 
 sub _reduce_features {

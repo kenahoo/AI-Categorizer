@@ -80,20 +80,6 @@ sub new {
 # Parse a document format - a virtual method
 sub parse;
 
-
-sub new_from_string {
-  my ($class, %args) = @_;
-  $args{categories} ||= [];
-  my @cats = map $args{knowledge}->category_by_name($_), @{$args{categories}};
-  
-  return $class->new( name => $args{name},
-		      content => $args{string},
-		      categories => \@cats );
-}
-
-sub new_from_xml;
-sub new_from_textfile;
-
 ### Accessors
 
 sub name { $_[0]->{name} }

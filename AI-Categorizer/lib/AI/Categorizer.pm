@@ -9,7 +9,6 @@ use strict;
 
 1;
 __END__
-# Below is stub documentation for your module. You better edit it!
 
 =head1 NAME
 
@@ -22,23 +21,17 @@ AI::Categorizer - Perl extension for blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for AI::Categorizer, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
-
-=head2 EXPORT
-
-None by default.
-
+More to come...
 
 =head1 AUTHOR
 
-A. U. Thor, E<lt>a.u.thor@a.galaxy.far.far.awayE<gt>
+Ken Williams <kenw@ee.usyd.edu.au>
 
-=head1 SEE ALSO
+=head1 COPYRIGHT
 
-L<perl>.
+This distribution is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.  These terms apply to
+every file in the distribution - if you have questions, please contact
+the author.
 
 =cut

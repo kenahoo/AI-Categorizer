@@ -1,3 +1,4 @@
+Build.PL
 Changes
 INSTALL
 MANIFEST
@@ -7,6 +8,7 @@ doc/classes-overview.png
 doc/classes.png
 eg/categorizer
 eg/drmath-1.00.yaml
+eg/easy_guesser.pl
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Category.pm
 lib/AI/Categorizer/Collection.pm
@@ -26,8 +28,10 @@ lib/AI/Categorizer/KnowledgeSet.pm
 lib/AI/Categorizer/Learner.pm
 lib/AI/Categorizer/Learner/Boolean.pm
 lib/AI/Categorizer/Learner/DecisionTree.pm
+lib/AI/Categorizer/Learner/Guesser.pm
 lib/AI/Categorizer/Learner/KNN.pm
 lib/AI/Categorizer/Learner/NaiveBayes.pm
+lib/AI/Categorizer/Learner/Rocchio.pm
 lib/AI/Categorizer/Learner/SVM.pm
 lib/AI/Categorizer/Learner/Weka.pm
 lib/AI/Categorizer/ObjectSet.pm
@@ -39,7 +43,15 @@ t/03-weka.t
 t/04-decision_tree.t
 t/05-svm.t
 t/06-knn.t
+t/07-guesser.t
+t/09-rocchio.t
 t/10-tools.t
 t/11-feature_vector.t
 t/12-hypothesis.t
+t/13-document.t
+t/14-collection.t
 t/common.pl
+t/traindocs/doc1
+t/traindocs/doc2
+t/traindocs/doc3
+t/traindocs/doc4

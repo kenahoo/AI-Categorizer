@@ -17,6 +17,14 @@ MANIFEST\.SKIP
 ^t/state
 
 ^AI-Categorizer
+
+# Stuff that's not ready to ship
 BayesBoolean
 NNetTC
 DBI2
+BSVM
+bsvm
+FastDot
+preprocess
+ScoredFeatures
+XML

@@ -48,8 +48,4 @@ sub parse {
   return { name => $id, title => $title, body => $args{content} }, \@categories;
 }
 
-  
-  
-}
-
 1;

@@ -27,6 +27,7 @@ sub new {
 
   # Documents are contained in a file, or list of files
   $self->{path} = [$self->{path}] unless ref $self->{path};
+  $self->{used} = [];
 
   $self->_next_path;
   return $self;
@@ -36,7 +37,8 @@ sub _next_path {
   my $self = shift;
   close $self->{fh} if $self->{cur_file};
 
-  $self->{cur_file} = shift @{$self->{path}};
+  push @{$self->{used}}, shift @{$self->{path}};
+  $self->{cur_file} = $self->{used}[-1];
   open $self->{fh}, "< $self->{cur_file}" or die "$self->{cur_file}: $!";
 }
 
@@ -64,6 +66,35 @@ sub next {
 					     );
   my $name = delete $doc->{name};
   return $self->create_delayed_object('document', name => $name, content => $doc, categories => $categories);
+}
+
+sub count_documents {
+  my ($self) = @_;
+  return $self->{document_count} if defined $self->{document_count};
+  
+  $self->_rewind;
+
+  my $count = 0;
+  local $/ = $self->{delimiter};
+  my $fh = $self->{fh};
+  while (1) {
+    $count++ while <$fh>;
+    last unless @{$self->{path}};
+    $self->_next_path;
+  }
+  
+  $self->_rewind;
+
+  return $self->{document_count} = $count;
+}
+
+sub _rewind {
+  my ($self) = @_;
+
+  close $self->{fh} if $self->{cur_file};
+  unshift @{$self->{path}}, @{$self->{used}};
+  $self->{used} = [];
+  $self->_next_path;
 }
 
 1;

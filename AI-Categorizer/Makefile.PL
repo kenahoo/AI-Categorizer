@@ -50,7 +50,7 @@ WriteMakefile
 		   Class::Container => 0.08,
 		   Storable => 0,
 		   Params::Validate => 0.18,
-		   Statistics::Contingency => 0.05,
+		   Statistics::Contingency => 0.06,
 		   Lingua::Stem => 0.50,
 		  },
    'PL_FILES' => {},

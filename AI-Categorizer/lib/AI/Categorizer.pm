@@ -8,9 +8,12 @@ use Params::Validate qw(:types);
 
 __PACKAGE__->valid_params
   (
-   save_progress => { type => SCALAR, default => 'progress' },
+   save_progress => { type => SCALAR, default => 'save' },
    knowledge_set => { isa => 'AI::Categorizer::KnowledgeSet' },
    learner       => { isa => 'AI::Categorizer::Learner' },
+   verbose       => { type => BOOLEAN, default => 0 },
+   training_set  => { type => SCALAR, optional => 1 },
+   test_set      => { type => SCALAR, optional => 1 },
   );
 
 __PACKAGE__->contained_objects
@@ -22,6 +25,9 @@ __PACKAGE__->contained_objects
    collection    => { class => 'AI::Categorizer::Collection::Files',
 		      delayed => 1 },
   );
+
+sub knowledge_set { shift->{knowledge_set} }
+sub learner       { shift->{learner} }
 
 # Combines several methods in one sub
 sub run_experiment {
@@ -35,44 +41,57 @@ sub run_experiment {
 
 sub scan_features {
   my $self = shift;
-  $self->{knowledge_set}->scan_features;
+  $self->knowledge_set->scan_features( path => $self->{training_set} );
+  $self->_save_progress( '01', 'knowledge_set' );
 }
 
 sub read_training_set {
   my $self = shift;
-  $self->{knowledge_set}->read;
+  $self->_load_progress( '01', 'knowledge_set' );
+  $self->knowledge_set->read( path => $self->{training_set} );
+  $self->_save_progress( '02', 'knowledge_set' );
 }
 
 sub train {
   my $self = shift;
-  $self->{learner}->train( knowledge_set => $self->{knowledge_set} );
+  $self->_load_progress( '02', 'knowledge_set' );
+  $self->learner->train( knowledge_set => $self->{knowledge_set} );
+  $self->_save_progress( '03', 'learner' );
 }
 
 sub evaluate_test_set {
   my $self = shift;
-  my $c = $self->create_delayed_object('collection');
+  $self->_load_progress( '03', 'learner' );
+  my $c = $self->create_delayed_object('collection', path => $self->{test_set} );
   $self->{experiment} = $self->create_delayed_object('experiment');
   while (my $d = $c->next) {
-    my $h = $self->{learner}->categorize($d);
+    my $h = $self->learner->categorize($d);
     $self->{experiment}->add_hypothesis($h, [$d->categories]);
   }
+  $self->_save_progress( '04', 'experiment' );
 }
 
 sub stats_table {
   my $self = shift;
+  $self->_load_progress( '04', 'experiment' );
   return $self->{experiment}->stats_table;
 }
 
 # XXX these aren't getting used yet...
 sub _save_progress {
-  my ($self, $stage, $object) = @_;
+  my ($self, $stage, $node) = @_;
   return unless $self->{save_progress};
-  $object->save_state("$self->{save_progress}-$stage");
+  my $file = "$self->{save_progress}-$stage-$node";
+  warn "Saving to $file\n" if $self->{verbose};
+  $self->{$node}->save_state($file);
 }
 
 sub _load_progress {
-  my ($self, $stage, $object) = @_;
-  return unless $self
+  my ($self, $stage, $node) = @_;
+  return unless $self->{save_progress};
+  my $file = "$self->{save_progress}-$stage-$node";
+  warn "Loading $file\n" if $self->{verbose};
+  $self->{$node} = $self->contained_class($node)->restore_state($file);
 }
 
 1;

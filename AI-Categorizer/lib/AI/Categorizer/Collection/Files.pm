@@ -5,6 +5,7 @@ use AI::Categorizer::Collection;
 use base qw(AI::Categorizer::Collection);
 
 use Params::Validate qw(:types);
+use File::Spec;
 
 __PACKAGE__->valid_params
   (
@@ -37,33 +38,43 @@ sub _next_path {
 
 sub next {
   my $self = shift;
-
-  my $file = readdir $self->{dir_fh};
-  if (!defined $file) { # Directory has been exhausted
-    return undef unless @{$self->{path}};
-    $self->_next_path;
-    return $self->next;
-  } elsif ($file eq '.' or $file eq '..') {
-    return $self->next;  # Skip
-  } elsif (-d "$self->{cur_dir}/$file") {
-    push @{$self->{path}}, "$self->{cur_dir}/$file" if $self->{recurse};  # Add for later processing
-    return $self->next;
-  }
-
+  my $file = $self->_read_file;
+  return unless defined $file;
+  
   warn "No category information about '$file'" unless defined $self->{category_hash}{$file};
   my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{category_hash}{$file} || [] };
 
   return $self->call_method('document', 'read', 
-			    path => "$self->{cur_dir}/$file",
+			    path => File::Spec->catfile($self->{cur_dir}, $file),
 			    name => $file,
 			    categories => \@cats,
 			   );
+}
+
+sub _read_file {
+  my ($self) = @_;
+  
+  my $file = readdir $self->{dir_fh};
+
+  if (!defined $file) { # Directory has been exhausted
+    return undef unless @{$self->{path}};
+    $self->_next_path;
+    return $self->_read_file;
+  } elsif ($file eq '.' or $file eq '..') {
+    return $self->_read_file;
+  } elsif (-d (my $path = File::Spec->catdir($self->{cur_dir}, $file))) {
+    push @{$self->{path}}, $path  # Add for later processing
+      if $self->{recurse} and !grep {$_ eq $path} @{$self->{path}}, @{$self->{used}};
+    return $self->_read_file;
+  }
+  return $file;
 }
 
 sub rewind {
   my $self = shift;
   push @{$self->{path}}, @{$self->{used}};
   @{$self->{used}} = ();
+  $self->_next_path;
 }
 
 # This should share an iterator with next()
@@ -74,14 +85,7 @@ sub count_documents {
     $self->rewind;
     
     my $count = 0;
-    while (@{$self->{path}}) {
-	$self->_next_path;
-	while (my $file = readdir $self->{dir_fh}) {
-	    next unless defined $file;
-	    next if $file eq '.' or $file eq '..';
-	    $count++;
-	}
-    }
+    $count++ while defined $self->_read_file;
 
     $self->rewind;
     return $self->{document_count} = $count;

@@ -11,6 +11,12 @@ __PACKAGE__->valid_params
    category_file => { type => SCALAR, optional => 1 },
   );
 
+__PACKAGE__->contained_objects
+  (
+   document => { class => 'AI::Categorizer::Document::Text',
+		 delayed => 1 },
+  );
+
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new(@_);
@@ -28,7 +34,7 @@ sub new {
   return $self;
 }
 
-# This should usually be replaced with a faster version that doesn't
+# This should usually be replaced in subclasses with a faster version that doesn't
 # need to create actual documents each time through
 sub count_documents {
   my $self = shift;
@@ -44,5 +50,101 @@ sub count_documents {
 
 # Abstract methods
 sub next;
+sub rewind;
 
 1;
+__END__
+
+=head1 NAME
+
+AI::Categorizer::Collection - Access stored documents
+
+=head1 SYNOPSIS
+
+  my $c = new AI::Categorizer::Collection::Files
+    (path => '/tmp/docs/training',
+     category_file => '/tmp/docs/cats.txt');
+  print "Total number of docs: ", $c->count_documents, "\n";
+  while (my $document = $c->next) {
+    ...
+  }
+  $c->rewind; # For further operations
+  
+=head1 DESCRIPTION
+
+This abstract class implements an iterator for accessing documents in
+their natively stored format.  You cannot directly create an instance
+of the Collection class, because it is abstract - see the
+documentation for the C<Files>, C<SingleFile>, or C<InMemory>
+subclasses for a concrete interface.
+
+=head1 METHODS
+
+=over 4
+
+=item new()
+
+Creates a new Collection object and returns it.  Accepts the following
+parameters:
+
+=over 4
+
+=item category_hash
+
+Indicates a reference to a hash which maps document names to category
+names.  The keys of the hash are the document names, each value should
+be a reference to an array containing the names of the categories to
+which each document belongs.
+
+=item category_file
+
+Indicates a file which should be read in order to create the
+C<category_hash>.  Each line of the file should list a document's
+name, followed by a list of category names, all separated by
+whitespace.
+
+=item verbose
+
+If true, some status/debugging information will be printed to
+C<STDOUT> during operation.
+
+=item document_class
+
+The class indicating what type of Document object should be created.
+This generally specifies the format that the documents are stored in.
+The default is C<AI::Categorizer::Document::Text>.
+
+=back
+
+=item next()
+
+Returns the next Document object in the Collection.
+
+=item rewind()
+
+Resets the iterator for further calls to C<next()>.
+
+=item count_documents()
+
+Returns the total number of documents in the Collection.  Note that
+this usually resets the iterator.  This is because it may not be
+possible to resume iterating where we left off.
+
+=back
+
+=head1 AUTHOR
+
+Ken Williams, ken@mathforum.org
+
+=head1 COPYRIGHT
+
+Copyright 2000-2002 Ken Williams.  All rights reserved.
+
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+AI::Categorizer(3), Storable(3)
+
+=cut

@@ -4,6 +4,7 @@ use strict;
 use AI::Categorizer::Categorizer;
 use base qw(AI::Categorizer::Categorizer);
 use Params::Validate qw(:types);
+use AI::Categorizer::Util qw(max average);
 
 __PACKAGE__->valid_params
   (
@@ -66,11 +67,11 @@ sub get_scores {
     }
   }
   
-  # Scale everything back to a reasonable area in logspace (near zero), and normalize
-  my ($min, $total) = (0, 0);
-  foreach (values %scores) { $min = $_ if $_ < $min }
+  # Scale everything back to a reasonable area in logspace (near zero), un-loggify, and normalize
+  my $total = 0;
+  my $max = max(values %scores);
   foreach (keys %scores) {
-    $scores{$_} = exp($scores{$_} - $min);
+    $scores{$_} = exp($scores{$_} - $max);
     $total += $scores{$_}**2;
   }
   $total = sqrt($total);
@@ -93,6 +94,7 @@ sub categorize {
   my $scores = $self->get_scores($doc);
   
   if ($self->{verbose}) {
+    warn "scores: @{[ %$scores ]}" if $self->{verbose} > 1;
     foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
       print "$key: $scores->{$key}\n";
     }

@@ -4,8 +4,12 @@ use strict;
 use Class::Container;
 use AI::Categorizer::Storable;
 use base qw(Class::Container AI::Categorizer::Storable);
+
 use Params::Validate qw(:types);
-use Set::Object;
+use AI::Categorizer::ObjectSet;
+use AI::Categorizer::Document;
+use AI::Categorizer::Category;
+use AI::Categorizer::FeatureVector;
 
 __PACKAGE__->valid_params
   (
@@ -36,9 +40,10 @@ __PACKAGE__->contained_objects
 sub new {
   my $self = shift()->SUPER::new(@_);
 
-  # Convert to Set::Object sets
-  $self->{categories} = new Set::Object( @{$self->{categories}} );
-  $self->{documents}  = new Set::Object( @{$self->{documents}}  );
+  # Convert to AI::Categorizer::ObjectSet sets
+  $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
+  $self->{documents}  = new AI::Categorizer::ObjectSet( @{$self->{documents}}  );
+  $self->{category_names} = { map {($_->name => $_)} $self->{categories}->members };
   return $self;
 }
 
@@ -47,9 +52,10 @@ sub features {
 
   if (@_) {
     $self->{features} = shift;
+    $self->trim_doc_features if $self->{features};
   }
   return $self->{features} if $self->{features};
-  
+
   # Create a feature vector encompassing the whole set of documents
   my $v;
   foreach my $document ($self->documents) {
@@ -67,6 +73,40 @@ sub categories {
 sub documents {
   my $d = $_[0]->{documents};
   return wantarray ? $d->members : $d->size;
+}
+
+sub trim_doc_features {
+  my ($self) = @_;
+  
+  foreach my $doc ($self->documents) {
+    $doc->features( $doc->features->intersection($self->features) );
+  }
+}
+
+sub select_features {
+  # This just uses a simple document-frequency criterion, controlled
+  # by 'features_kept'.  Other algorithms may follow later, controlled
+  # by other parameters.
+
+# XXX this is doing word-frequency right now, not document-frequency
+
+  my ($self, %args) = @_;
+  my $kept = exists($args{features_kept}) ? $args{features_kept} : $self->{features_kept};
+  return unless $kept;
+  
+  my $f = $self->features;
+
+  my $num_features = $f->length;
+  print "Trimming features - # features = $num_features\n" if $self->{verbose};
+  
+  # This is algorithmic overkill, but the sort seems fast enough.  Will revisit later.
+  my $features = $f->as_hash;
+  my @new_features = (sort {$features->{$b} <=> $features->{$a}} keys %$features)
+                      [0 .. $kept * $num_features];
+  my $new_features = $f->intersection( \@new_features );
+  $self->features( $new_features );
+
+  print "Finished trimming features - # features = " . $self->features->length . "\n" if $self->{verbose};
 }
 
 sub partition {
@@ -104,13 +144,25 @@ sub add_document {
   $self->{categories}->insert($doc->categories);
 }
 
-# Not very efficient yet - need a lookup table
 sub category_by_name {
-  my ($self, $name) = @_;
-  foreach my $cat ($self->categories) {
-    return $cat if $cat->name eq $name;
-  }
-  return $self->create_delayed_object('category', name => $name);
+  my ($self, $cat) = @_;
+  return $cat if ref $cat;
+  return $self->{category_names}{$cat} if exists $self->{category_names}{$cat};
+  return $self->{category_names}{$cat} = $self->create_delayed_object('category', name => $cat);
 }
+
+#  sub save_state {
+#    my $self = shift;
+  
+#    # With large corpora it's infeasible to save the whole knowledge
+#    # base.  We'll just save feature vectors & relationships.
+
+#    local $self->{documents_save} = {};
+#    foreach my $doc ($self->documents) {
+#      $self->
+#    }
+
+#    return $self->SUPER::save_state(@_);
+#  }
 
 1;

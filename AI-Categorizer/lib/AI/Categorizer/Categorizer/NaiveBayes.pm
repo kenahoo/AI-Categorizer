@@ -15,6 +15,7 @@ sub create_model {
   my $m = $self->{model} = {};
 
   my $totaldocs = $self->knowledge->documents;
+  $m->{features} = $self->knowledge->features;
   $m->{vocab_size} = $self->knowledge->features->length;
   $m->{total_tokens} = $self->knowledge->features->sum;
 
@@ -32,8 +33,10 @@ sub create_model {
       $m->{probs}{$cat->name}{$feature} = log($count + 1) - $denominator;
     }
   }
+  $self->{model} = $m;
 }
 
+# Counts:
 # Total number of words (types)  in all docs: (V)        $self->knowledge->features->length or $m->{vocab_size}
 # Total number of words (tokens) in all docs:            $self->knowledge->features->sum or $m->{total_tokens}
 # Total number of words (types)  in category $c:         $c->features->length
@@ -46,7 +49,7 @@ sub create_model {
 sub get_scores {
   my ($self, $newdoc) = @_;
   my $m = $self->{model};  # For convenience
-  my $all_features = $self->{knowledge}->features;
+  my $all_features = $m->{features};
   
   # Note that we're using the log(prob) here.  That's why we add instead of multiply.
 
@@ -91,8 +94,14 @@ sub categorize {
 
   return $self->create_delayed_object('hypothesis',
 				      scores => $scores,
-				      threshold => $self->{threshold},
+				      threshold => $self->{bayes_threshold},
 				     );
+}
+
+sub save_state {
+  my $self = shift;
+  local $self->{knowledge};  # Don't need the knowledge to categorize
+  $self->SUPER::save_state(@_);
 }
 
 1;

@@ -1,10 +1,12 @@
 package AI::Categorizer::Category;
 
 use strict;
-use Set::Object;
+use AI::Categorizer::ObjectSet;
 use Class::Container;
 use base qw(Class::Container);
+
 use Params::Validate qw(:types);
+use AI::Categorizer::FeatureVector;
 
 __PACKAGE__->valid_params
   (
@@ -23,7 +25,7 @@ __PACKAGE__->valid_params
 
 sub new {
   my $self = shift()->SUPER::new(@_);
-  $self->{documents} = new Set::Object( @{$self->{documents}} );
+  $self->{documents} = new AI::Categorizer::ObjectSet( @{$self->{documents}} );
   return $self;
 }
 

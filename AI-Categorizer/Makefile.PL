@@ -24,6 +24,9 @@ WriteMakefile
 		   Storable => 0,
 		   Params::Validate => 0.18,
 		  },
+
+   # Recommended: Lingua::Stem
+
    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
     (ABSTRACT_FROM => $file, # retrieve abstract from module
      AUTHOR     => 'Ken Williams <ken@mathforum.org>') : 

@@ -20,24 +20,24 @@ sub read {
   my $text = do {local $/; <FH>};
   close FH;
 
-  my ($content, $categories) = $class->parse($text);
+  my ($content, $categories) = $class->parse(content => $text);
   return $class->SUPER::new(%args, content => $content, categories => $categories);
 }
 
 sub parse {
-  my ($self, $text) = @_;
+  my ($self, %args) = @_;
   
-  $text =~ s{
-	     ^(?:\.I)?\s+(\d+)\n  # ID number - becomes document name
-	     \.C\n
-	     ([^\n]+)\n     # Categories
-	     \.T\n
-	     (.+)\n+        # Title
-	     \.W\n
-	    }
-            {}sx
+  $args{content} =~ s{
+		   ^(?:\.I)?\s+(\d+)\n  # ID number - becomes document name
+		   \.C\n
+		   ([^\n]+)\n     # Categories
+		   \.T\n
+		   (.+)\n+        # Title
+		   \.W\n
+		  }
+                  {}sx
      
-     or die "Malformed record: $text";
+     or die "Malformed record: $args{content}";
   
   my ($id, $categories, $title) = ($1, $2, $3);
   s/\.I$//;
@@ -45,7 +45,7 @@ sub parse {
   my @categories = $categories =~ m/(.*?)\s+1[\s;]*/g;
   #print "found $id => (@categories)\n";
 
-  return { name => $id, title => $title, body => $text }, \@categories;
+  return { name => $id, title => $title, body => $args{content} }, \@categories;
 }
 
   

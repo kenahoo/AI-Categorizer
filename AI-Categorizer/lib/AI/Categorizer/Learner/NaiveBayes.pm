@@ -282,7 +282,7 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-AI::Categorize(3)
+AI::Categorizer(3)
 
 "A re-examination of text categorization methods" by Yiming Yang
 L<http://www.cs.cmu.edu/~yiming/publications.html>

@@ -286,18 +286,11 @@ in C<AI::Categorizer>.
 
 Currently this is a simple command-line wrapper that calls C<java>
 subprocesses.  In the future this may be converted to an
-C<Inline::Java> wrapper for better performance (shorter running
+C<Inline::Java> wrapper for better performance (faster running
 times).  However, if you're looking for really great performance,
 you're probably looking in the wrong place - this Weka wrapper is
 intended more as a way to try lots of different machine learning
 methods.
-
-One important caveat: at the moment, this learner can only handle one
-category per document, in both training and runtime assignment.  This
-is because it's difficult to get Weka to do otherwise.  Also, some
-classifiers (like SMO, the Support Vector Machine implementation) can
-only handle a single I<binary> classification, so you might want to
-check out Weka's MultipleClassClassifier to help with this situation.
 
 =head1 METHODS
 
@@ -318,22 +311,17 @@ Specifies where the C<java> executable can be found on this system.
 The default is simply C<java>, meaning that it will search your
 C<PATH> to find java.
 
-=item weka_path
-
-Specifies the path to the C<weka.jar> file containing the Weka
-bytecode.  If Weka has been installed somewhere in your java
-C<CLASSPATH>, you needn't specify a C<weka_path>.
-
 =item java_args
 
 Specifies a list of any additional arguments to give to the java
 process.  Commonly it's necessary to allocate more memory than the
 default, using an argument like C<-Xmx130MB>.
 
-=item weka_args
+=item weka_path
 
-Specifies a list of any additional arguments to pass to the Weka
-classifier class when building the categorizer.
+Specifies the path to the C<weka.jar> file containing the Weka
+bytecode.  If Weka has been installed somewhere in your java
+C<CLASSPATH>, you needn't specify a C<weka_path>.
 
 =item weka_classifier
 
@@ -341,10 +329,16 @@ Specifies the Weka class to use for a categorizer.  The default is
 C<weka.classifiers.NaiveBayes>.  Consult your Weka documentation for a
 list of other classifiers available.
 
+=item weka_args
+
+Specifies a list of any additional arguments to pass to the Weka
+classifier class when building the categorizer.
+
 =item tmpdir
 
 A directory in which temporary files will be written when training the
-categorizer and categorizing new documents.  The default is C</tmp>.
+categorizer and categorizing new documents.  The default is given by
+C<< File::Spec->tmpdir >>.
 
 =back
 
@@ -371,7 +365,7 @@ C<AI::Categorizer::Storable>.
 
 =head1 AUTHOR
 
-Ken Williams, ken@forum.swarthmore.edu
+Ken Williams, ken@mathforum.org
 
 =head1 COPYRIGHT
 
@@ -382,6 +376,6 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-AI::Categorize(3)
+AI::Categorizer(3)
 
 =cut

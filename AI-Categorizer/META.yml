@@ -26,76 +26,53 @@ provides:
     version: 0.07
   AI::Categorizer::Category:
     file: lib/AI/Categorizer/Category.pm
-    version: ~
   AI::Categorizer::Collection:
     file: lib/AI/Categorizer/Collection.pm
-    version: ~
   AI::Categorizer::Collection::DBI:
     file: lib/AI/Categorizer/Collection/DBI.pm
-    version: ~
   AI::Categorizer::Collection::Files:
     file: lib/AI/Categorizer/Collection/Files.pm
-    version: ~
   AI::Categorizer::Collection::InMemory:
     file: lib/AI/Categorizer/Collection/InMemory.pm
-    version: ~
   AI::Categorizer::Collection::SingleFile:
     file: lib/AI/Categorizer/Collection/SingleFile.pm
-    version: ~
   AI::Categorizer::Document:
     file: lib/AI/Categorizer/Document.pm
-    version: ~
   AI::Categorizer::Document::SMART:
     file: lib/AI/Categorizer/Document/SMART.pm
-    version: ~
   AI::Categorizer::Document::Text:
     file: lib/AI/Categorizer/Document/Text.pm
-    version: ~
   AI::Categorizer::Document::XML:
     file: lib/AI/Categorizer/Document/XML.pm
-    version: ~
   AI::Categorizer::Document::XML::Handler:
     file: lib/AI/Categorizer/Document/XML.pm
-    version: ~
   AI::Categorizer::Experiment:
     file: lib/AI/Categorizer/Experiment.pm
-    version: ~
   AI::Categorizer::FeatureSelector:
     file: lib/AI/Categorizer/FeatureSelector.pm
-    version: ~
   AI::Categorizer::FeatureSelector::DocFrequency:
     file: lib/AI/Categorizer/FeatureSelector/DocFrequency.pm
-    version: ~
   AI::Categorizer::FeatureVector:
     file: lib/AI/Categorizer/FeatureVector.pm
-    version: ~
   AI::Categorizer::Hypothesis:
     file: lib/AI/Categorizer/Hypothesis.pm
-    version: ~
   AI::Categorizer::KnowledgeSet:
     file: lib/AI/Categorizer/KnowledgeSet.pm
-    version: ~
   AI::Categorizer::Learner:
     file: lib/AI/Categorizer/Learner.pm
-    version: ~
   AI::Categorizer::Learner::Boolean:
     file: lib/AI/Categorizer/Learner/Boolean.pm
-    version: ~
   AI::Categorizer::Learner::DecisionTree:
     file: lib/AI/Categorizer/Learner/DecisionTree.pm
     version: 0.01
   AI::Categorizer::Learner::Guesser:
     file: lib/AI/Categorizer/Learner/Guesser.pm
-    version: ~
   AI::Categorizer::Learner::KNN:
     file: lib/AI/Categorizer/Learner/KNN.pm
-    version: ~
   AI::Categorizer::Learner::KNN::Queue:
     file: lib/AI/Categorizer/Learner/KNN.pm
-    version: ~
   AI::Categorizer::Learner::NaiveBayes:
     file: lib/AI/Categorizer/Learner/NaiveBayes.pm
-    version: ~
   AI::Categorizer::Learner::Rocchio:
     file: lib/AI/Categorizer/Learner/Rocchio.pm
     version: 0.01
@@ -104,14 +81,10 @@ provides:
     version: 0.01
   AI::Categorizer::Learner::Weka:
     file: lib/AI/Categorizer/Learner/Weka.pm
-    version: ~
   AI::Categorizer::ObjectSet:
     file: lib/AI/Categorizer/ObjectSet.pm
-    version: ~
   AI::Categorizer::Storable:
     file: lib/AI/Categorizer/Storable.pm
-    version: ~
   AI::Categorizer::Util:
     file: lib/AI/Categorizer/Util.pm
-    version: ~
-generated_by: Module::Build version 0.18_02
+generated_by: Module::Build version 0.20_01

@@ -2,7 +2,8 @@ package AI::Categorizer::KnowledgeSet;
 
 use strict;
 use Class::Container;
-use base qw(Class::Container);
+use AI::Categorizer::Storable;
+use base qw(Class::Container AI::Categorizer::Storable);
 use Params::Validate qw(:types);
 use Set::Object;
 
@@ -65,6 +66,23 @@ sub categories {
 sub documents {
   my $d = $_[0]->{documents};
   return wantarray ? $d->members : $d->size;
+}
+
+sub partition {
+  my ($self, @sizes) = @_;
+  my $num_docs = my @docs = $self->documents;
+  my @groups;
+
+  while (@sizes > 1) {
+    my $size = int ($num_docs * shift @sizes);
+    push @groups, [];
+    for (0..$size) {
+      push @{ $groups[-1] }, splice @docs, rand(@docs), 1;
+    }
+  }
+  push @groups, \@docs;
+
+  return map { ref($self)->new( documents => $_ ) } @groups;
 }
 
 sub make_document {

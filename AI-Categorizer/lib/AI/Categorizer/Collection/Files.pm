@@ -9,7 +9,7 @@ use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
    path => { type => SCALAR|ARRAYREF },
-   verbose => { type => BOOLEAN, default => 0 },
+   recurse => { type => BOOLEAN, default => 0 },
   );
 
 sub new {
@@ -88,3 +88,75 @@ sub count_documents {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+AI::Categorizer::Collection::Files - One document per file
+
+=head1 SYNOPSIS
+
+  my $c = new AI::Categorizer::Collection::Files
+    (path => '/tmp/docs/training',
+     category_file => '/tmp/docs/cats.txt');
+  print "Total number of docs: ", $c->count_documents, "\n";
+  while (my $document = $c->next) {
+    ...
+  }
+  $c->rewind; # For further operations
+  
+=head1 DESCRIPTION
+
+This implements a Collection class in which each document exists as a
+single file on a filesystem.  The documents can exist in a single
+directory, or in several directories.
+
+=head1 METHODS
+
+This is a subclass of the abstract AI::Categorizer::Collection class,
+so any methods mentioned in its documentation are available here.
+
+=over 4
+
+=item new()
+
+Creates a new Collection object and returns it.  In addition to the
+parameters accepted by the superclass, the following parameters are
+accepted:
+
+=over 4
+
+=item path
+
+Indicates a location on disk where the documents can be found.  The
+path may be specified as a string giving the name of a directory, or
+as a reference to an array of such strings if the documents are
+located in more than one directory.
+
+=item recurse
+
+Indicates whether subdirectories of the directory (or directories) in
+the C<path> parameter should be descended into.  If set to a true
+value, they will be descended into.  If false, they will be ignored.
+The default is false.
+
+=back
+
+=back
+
+=head1 AUTHOR
+
+Ken Williams, ken@mathforum.org
+
+=head1 COPYRIGHT
+
+Copyright 2002-2003 Ken Williams.  All rights reserved.
+
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+AI::Categorizer::Collection(3)
+
+=cut

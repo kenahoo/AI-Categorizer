@@ -1,6 +1,13 @@
 Changes
-Categorizer.pm
-Makefile.PL
 MANIFEST
+Makefile.PL
 README
+lib/AI/Categorizer.pm
+lib/AI/Categorizer/Categorizer.pm
+lib/AI/Categorizer/Categorizer/NaiveBayes.pm
+lib/AI/Categorizer/Category.pm
+lib/AI/Categorizer/Document.pm
+lib/AI/Categorizer/FeatureVector.pm
+lib/AI/Categorizer/KnowledgeSet.pm
+lib/AI/Categorizer/Storable.pm
 test.pl

@@ -27,10 +27,10 @@ sub clone {
 }
 
 sub intersection {
-  my ($self, $other) = shift;
-  my $common;
+  my ($self, $other) = @_;
   $other = $other->as_hash if UNIVERSAL::isa($other, __PACKAGE__);
 
+  my $common;
   if (UNIVERSAL::isa($other, 'ARRAY')) {
     $common = {map {exists $self->{features}{$_} ? ($_ => $self->{features}{$_}) : ()} @$other};
   } elsif (UNIVERSAL::isa($other, 'HASH')) {
@@ -57,6 +57,10 @@ sub sum {
     $total += $v;
   }
   return $total;
+}
+
+sub includes {
+  return exists $_[0]->{features}{$_[1]};
 }
 
 1;

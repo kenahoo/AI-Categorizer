@@ -44,6 +44,7 @@ sub new {
 
 sub features {
   my $self = shift;
+
   if (@_) {
     $self->{features} = shift;
   }

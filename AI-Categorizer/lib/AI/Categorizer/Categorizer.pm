@@ -12,6 +12,7 @@ __PACKAGE__->valid_params
   (
    knowledge  => { isa => 'AI::Categorizer::KnowledgeSet', optional => 1 },
    features_kept => { type => SCALAR, default => 0.2 },
+   verbose => {type => SCALAR, default => 0},
   );
 
 __PACKAGE__->contained_objects
@@ -25,6 +26,14 @@ __PACKAGE__->contained_objects
 # Subclasses must override these virtual methods:
 sub categorize;
 sub create_model;
+
+sub knowledge {
+  my $self = shift;
+  if (@_) {
+    $self->{knowledge} = shift;
+  }
+  return $self->{knowledge};
+}
 
 sub train {
   my ($self, %args) = @_;
@@ -57,7 +66,7 @@ sub select_features {
   my $new_features = $k->features->intersection( \@new_features );
   $k->features( $new_features );
 
-  print "Finished trimming features - words = " . $k->features->length . "\n" if $self->{verbose};
+  print "Finished trimming features - # features = " . $k->features->length . "\n" if $self->{verbose};
 }
 
 

@@ -1,7 +1,7 @@
 package AI::Categorizer::Category;
 
 use strict;
-use Set::Class;
+use Set::Object;
 use Class::Container;
 use base qw(Class::Container);
 use Params::Validate qw(:types);
@@ -19,13 +19,15 @@ __PACKAGE__->valid_params
 		 },
   );
 
-__PACKAGE__->make_accessors(':all');
+#__PACKAGE__->make_accessors(':all');
 
 sub new {
   my $self = shift()->SUPER::new(@_);
   $self->{documents} = new Set::Object( @{$self->{documents}} );
   return $self;
 }
+
+sub name { $_[0]->{name} }
 
 sub documents {
   my $d = $_[0]->{documents};

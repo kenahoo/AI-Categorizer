@@ -33,7 +33,7 @@ sub new {
 
   # Get efficient internal data structures
   $self->{categories} = new Set::Object( @{$self->{categories}} );
-  $self->{stopwords} = map {($_ => 1)} @{ $self->{stopwords} } 
+  $self->{stopwords} = { map {($_ => 1)} @{ $self->{stopwords} } }
     if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
   return $self;
 }
@@ -81,7 +81,7 @@ sub is_in_category {
 sub tokenize {
   my $self = shift;
   while ($self->{body} =~ /([-\w]+)/g) {
-    push @{$self->{tokens}}, $1;
+    push @{$self->{tokens}}, lc $1;
   }
 }
 

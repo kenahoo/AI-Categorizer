@@ -5,23 +5,28 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
+use strict;
 use Test;
 BEGIN { plan tests => 1 };
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
-ok(1); # If we made it this far, we're ok.
+use AI::Categorizer::Categorizer::NaiveBayes;
+
+ok(1);
 
 #########################
 
 # Insert your test code below, the Test module is use()ed here so read
 # its man page ( perldoc Test ) for help writing this test script.
 
-my $k = new AI::Categorizer::KnowledgeSet( name => 'test data',
-					   stopwords => [qw(are be in of and)],
-					 );
+my $k = new AI::Categorizer::KnowledgeSet
+  (
+   name => 'test data',
+   stopwords => [qw(are be in of and)],
+  );
 ok($k);
 
-#use Carp; $SIG{__DIE__} = \&Carp::confess;
+use Carp; $SIG{__DIE__} = \&Carp::confess;
 
 $k->make_document( name => 'doc1',
 		   categories => ['farming'], 
@@ -36,12 +41,29 @@ $k->make_document( name => 'doc4',
 		   categories => ['vampire'],
 		   body => 'Vampires cannot see their images in mirrors.' );
 
-__END__
 
-my $r = $c->categorize('I would like to begin farming sheep.');
-print "Categories: ", join(', ', $r->categories), "\n";
-&report_result(($r->categories)[0] eq 'farming');
+my $nb = new AI::Categorizer::Categorizer::NaiveBayes
+  (
+   features_kept => 0,
+   verbose => 0,
+  );
+ok($nb);
 
-$r = $c->categorize("I see that many vampires may have eaten my beautiful daughter's blood.");
+$nb->train(knowledge => $k);
+
+my $doc = new AI::Categorizer::Document
+  ( name => 'test1',
+    body => 'I would like to begin farming sheep.' );
+my $r = $nb->categorize($doc);
+
 print "Categories: ", join(', ', $r->categories), "\n";
-&report_result(($r->categories)[0] eq 'vampire');
+ok(($r->categories)[0], 'farming');
+
+$doc = new AI::Categorizer::Document
+  ( name => 'test2',
+    body => "I see that many vampires may have eaten my beautiful daughter's blood." );
+$r = $nb->categorize($doc);
+
+print "Categories: ", join(', ', $r->categories), "\n";
+ok(($r->categories)[0], 'vampire');
+

@@ -9,7 +9,7 @@ use strict;
 use Test;
 BEGIN {
   require 't/common.pl';
-  skip_test("Weka is not installed") unless -e "t/classpath";
+  skip_test("Weka is not installed") unless -e "classpath";
   plan tests => 1 + num_standard_tests();
 }
 
@@ -19,7 +19,7 @@ ok(1);
 
 my @args;
 local *FH;
-open FH, "t/classpath" or die "Can't open t/classpath: $!";
+open FH, "classpath" or die "Can't open classpath: $!";
 my $line = <FH>;
 push @args, weka_path => $line
   unless $line eq '-';

@@ -17,10 +17,10 @@ $file = "lib/$file.pm";
     );
   
   if ($path eq '!') {
-    unlink "t/classpath" if -e "t/classpath";
+    unlink "classpath" if -e "classpath";
   } else {
     local *FH;
-    open FH, "> t/classpath" or die "Can't create t/classpath: $!";
+    open FH, "> classpath" or die "Can't create classpath: $!";
     print FH $path;
     close FH;
   }

@@ -122,7 +122,7 @@ sub prog_bar {
   };
 }
 
-sub scan {
+sub scan_stats {
   # Should determine:
   #  - number of documents
   #  - number of categories

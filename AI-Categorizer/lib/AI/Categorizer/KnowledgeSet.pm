@@ -56,7 +56,6 @@ sub new {
   # Convert to AI::Categorizer::ObjectSet sets
   $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
   $self->{documents}  = new AI::Categorizer::ObjectSet( @{$self->{documents}}  );
-  $self->{category_names} = { map {($_->name => $_)} $self->{categories}->members };
 
   if ($self->{load}) {
     my $args = ref($self->{load}) ? $self->{load} : { path => $self->{load} };
@@ -277,7 +276,7 @@ sub partition {
 sub make_document {
   my ($self, %args) = @_;
   my $cats = delete $args{categories};
-  my @cats = map { $self->category_by_name($_) } @$cats;
+  my @cats = map { $self->call_method('category', 'by_name', name => $_) } @$cats;
   my $d = $self->create_delayed_object('document', %args, categories => \@cats);
   $self->add_document($d);
 }
@@ -290,13 +289,6 @@ sub add_document {
   }
   $self->{documents}->insert($doc);
   $self->{categories}->insert($doc->categories);
-}
-
-sub category_by_name {
-  my ($self, $cat) = @_;
-  return $cat if ref $cat;
-  return $self->{category_names}{$cat} if exists $self->{category_names}{$cat};
-  return $self->{category_names}{$cat} = $self->create_delayed_object('category', name => $cat);
 }
 
 1;

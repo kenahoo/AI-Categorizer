@@ -74,13 +74,15 @@ sub run_experiment {
 
 sub scan_features {
   my $self = shift;
+  return unless $self->knowledge_set->scan_first;
   $self->knowledge_set->scan_features( path => $self->{training_set} );
   $self->knowledge_set->save_features( "$self->{progress_file}-01-features" );
 }
 
 sub read_training_set {
   my $self = shift;
-  $self->knowledge_set->restore_features( "$self->{progress_file}-01-features" );
+  $self->knowledge_set->restore_features( "$self->{progress_file}-01-features" )
+    if -e "$self->{progress_file}-01-features";
   $self->knowledge_set->read( path => $self->{training_set} );
   $self->_save_progress( '02', 'knowledge_set' );
   return $self->knowledge_set;

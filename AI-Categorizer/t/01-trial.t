@@ -5,7 +5,10 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 19 };
+BEGIN { 
+  require 't/common.pl';
+  plan tests => 19;
+};
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
 use AI::Categorizer::Learner::NaiveBayes;
@@ -19,17 +22,7 @@ ok(1);
 
 use Carp; $SIG{__DIE__} = \&Carp::confess;
 
-my %docs = (
-	    doc1 => {categories => ['farming'], 
-		     content => 'Sheep are very valuable in farming.' },
-	    doc2 => {categories => ['farming'],
-		     content => 'Farming requires many kinds of animals.' },
-	    doc3 => {categories => ['vampire'],
-		     content => 'Vampires drink blood and vampires may be staked.' },
-	    doc4 => {categories => ['vampire'],
-		     content => 'Vampires cannot see their images in mirrors.'},
-	   );
-
+my %docs = training_docs();
 {
   my $k = new AI::Categorizer::KnowledgeSet
     (
@@ -50,21 +43,7 @@ my %docs = (
   
   $nb->train(knowledge_set => $k);
   
-  my $doc = new AI::Categorizer::Document
-    ( name => 'test1',
-      content => 'I would like to begin farming sheep.' );
-  my $r = $nb->categorize($doc);
-  
-  print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'farming');
-  
-  $doc = new AI::Categorizer::Document
-    ( name => 'test2',
-      content => "I see that many vampires may have eaten my beautiful daughter's blood." );
-  $r = $nb->categorize($doc);
-  
-  print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'vampire');
+  run_test_docs($nb);
 }
 
 {

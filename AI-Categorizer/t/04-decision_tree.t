@@ -24,7 +24,7 @@ ok(1);
 
 use Carp; $SIG{__DIE__} = \&Carp::confess;
 
-my %docs = test_docs();
+my %docs = training_docs();
 {
   my $k = new AI::Categorizer::KnowledgeSet
     (
@@ -42,19 +42,5 @@ my %docs = test_docs();
   
   $l->train(knowledge_set => $k);
   
-  my $doc = new AI::Categorizer::Document
-    ( name => 'test1',
-      content => 'I would like to begin farming sheep.' );
-  my $r = $l->categorize($doc);
-  
-  print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'farming');
-  
-  $doc = new AI::Categorizer::Document
-    ( name => 'test2',
-      content => "I see that many vampires may have eaten my beautiful daughter's blood." );
-  $r = $l->categorize($doc);
-  
-  print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'vampire');
+  run_test_docs($l);
 }

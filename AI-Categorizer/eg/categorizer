@@ -63,8 +63,9 @@ sub run_section {
   $c->$section();
   my $end = new Benchmark;
   my $summary = timestr(timediff($end, $start));
-  print "$summary\n";
-  print $out_fh "Stage $stage: $summary\n" if $out_fh;
+  my ($rss, $vsz) = memory_usage();
+  print "$summary (memory: rss=$rss, vsz=$vsz)\n";
+  print $out_fh "Stage $stage: $summary (memory: rss=$rss, vsz=$vsz)\n" if $out_fh;
 }
 
 sub parse_command_line {
@@ -123,4 +124,16 @@ sub usage {
  AI::Categorizer objects' new() methods.
 
 EOF
+}
+
+sub memory_usage {
+  my ($rss, $vsz);
+  if ($^O eq 'darwin') {
+    ($rss, $vsz) = `ps -eo rss,vsz -p $$` =~ /(\d+)\s+(\d+)/;
+  } elsif ($^O eq 'solaris') {
+    ($rss, $vsz) = `ps -o rss,vsz -p $$` =~ /(\d+)\s+(\d+)/;
+  } else {
+    die "Unknown system";
+  }
+  return ($rss, $vsz);
 }

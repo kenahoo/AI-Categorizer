@@ -9,7 +9,6 @@ use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
    path => { type => SCALAR|ARRAYREF },
-   categories => { type => HASHREF, default => {} },
    verbose => { type => BOOLEAN, default => 0 },
   );
 
@@ -57,7 +56,7 @@ sub next {
     return $self->next;
   }
 
-  my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{categories}{$file} || [] };
+  my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{category_hash}{$file} || [] };
 
   return $self->call_method('document', 'read', 
 			    path => "$self->{cur_dir}/$file",

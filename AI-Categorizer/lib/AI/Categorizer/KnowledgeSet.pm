@@ -108,10 +108,13 @@ sub trim_doc_features {
 
 
 sub prog_bar {
-  my ($self, $count) = @_;
-  
+  my ($self, $collection) = @_;
+
+  return sub {} unless $self->verbose;
   return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
-  
+
+  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
+
   my $pb = 'Time::Progress'->new;
   $pb->attr(max => $count);
   my $i = 0;
@@ -134,16 +137,13 @@ sub scan_stats {
 
   my ($self, %args) = @_;
   my $collection = $self->create_delayed_object('collection', %args);
-
-  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
-  my $pb;
-  $pb = $self->prog_bar($count) if $self->verbose;
+  my $pb = $self->prog_bar($collection);
 
   my %stats;
 
 
   while (my $doc = $collection->next) {
-    $pb->() if $self->verbose;
+    $pb->();
     $stats{category_count_with_duplicates} += $doc->categories;
 
     my ($sum, $length) = ($doc->features->sum, $doc->features->length);
@@ -206,13 +206,10 @@ sub load {
 sub read {
   my ($self, %args) = @_;
   my $collection = $self->create_delayed_object('collection', %args);
-
-  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
-  my $pb;
-  $pb = $self->prog_bar($count) if $self->verbose;
+  my $pb = $self->prog_bar($collection);
 
   while (my $doc = $collection->next) {
-    $pb->() if $self->verbose;
+    $pb->();
     $self->add_document($doc);
   }
   print "\n" if $self->verbose;
@@ -223,13 +220,10 @@ sub scan_features {
 
   my $features   = $self->create_delayed_object('features', features => {});
   my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
-
-  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
-  my $pb;
-  $pb = $self->prog_bar($count) if $self->verbose;
+  my $pb = $self->prog_bar($collection);
 
   while (my $doc = $collection->next) {
-    $pb->() if $self->verbose;
+    $pb->();
     $features->add( $doc->features );
   }
   print "\n" if $self->verbose;

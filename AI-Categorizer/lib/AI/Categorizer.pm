@@ -3,7 +3,7 @@ $VERSION = '0.01';
 
 use strict;
 use AI::Categorizer::KnowledgeSet;
-use AI::Categorizer::Categorizer;
+use AI::Categorizer::Learner;
 
 
 # Preloaded methods go here.

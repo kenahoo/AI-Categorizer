@@ -10,7 +10,7 @@ use Test;
 BEGIN { plan tests => 5 };
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
-use AI::Categorizer::Categorizer::NaiveBayes;
+use AI::Categorizer::Learner::NaiveBayes;
 
 ok(1);
 
@@ -42,7 +42,7 @@ $k->make_document( name => 'doc4',
 		   content => 'Vampires cannot see their images in mirrors.' );
 
 
-my $nb = new AI::Categorizer::Categorizer::NaiveBayes
+my $nb = new AI::Categorizer::Learner::NaiveBayes
   (
    verbose => 0,
   );

@@ -84,8 +84,8 @@ sub categorize {
   my $scores = $self->get_scores($doc);
   
   if ($self->{verbose}) {
-    foreach my $key (sort {$scores{$b} <=> $scores{$a}} keys %scores) {
-      print "$key: $scores{$key}\n";
+    foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
+      print "$key: $scores->{$key}\n";
     }
   }
 

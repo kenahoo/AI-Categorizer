@@ -16,6 +16,11 @@ sub as_hash {
   return $self->{features};
 }
 
+sub as_boolean_hash {
+  my $self = shift;
+  return { map {($_ => 1)} keys %{$self->{features}} };
+}
+
 sub length {
   my $self = shift;
   return scalar keys %{$self->{features}};

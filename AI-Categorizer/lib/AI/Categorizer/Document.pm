@@ -69,7 +69,7 @@ sub new {
   $self->create_feature_vector;
 
   # Now we're done with all the content stuff
-  delete @{$self}{'content', 'content_weights', 'stopwords', 'term_weighting', 'use_features'};
+  delete @{$self}{'content', 'content_weights', 'stopwords', 'use_features'};
   
   return $self;
 }
@@ -226,7 +226,6 @@ AI::Categorizer::Document - Embodies a document
                                                             body => 1, ... },
                                        stopwords => \%skip_these_words,
                                        stemming => $string,
-                                       term_weighting => $string,
                                        front_bias => $float,
                                        use_features => $feature_vector,
                                       );
@@ -285,15 +284,6 @@ Positive numbers indicate that words toward the beginning of the
 document should have higher weight than words toward the end of the
 document.  Negative numbers indicate the opposite.  A bias of 0
 indicates that no biasing should be done.
-
-=item term_weighting
-
-Specifies how word counts should be converted to feature vector
-values.  If C<term_weighting> is set to C<natural>, the word counts
-themselves will be used as the values.  C<boolean> indicates that each
-positive word count will be converted to 1 (or whatever the
-C<content_weight> for this section is).  C<log> indicates that the
-values will be set to C<1+log(count)>.
 
 =item categories
 

@@ -29,7 +29,7 @@ sub normalize {
     $total += $_**2;
   }
   $total = sqrt($total);
-  foreach ( %{ $self->{features} } ) {
+  foreach ( values %{ $self->{features} } ) {
     $_ /= $total;
   }
   return $self;

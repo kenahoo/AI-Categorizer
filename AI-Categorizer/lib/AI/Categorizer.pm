@@ -22,7 +22,6 @@ __PACKAGE__->valid_params
    verbose       => { type => BOOLEAN, default => 0 },
    training_set  => { type => SCALAR, optional => 1 },
    test_set      => { type => SCALAR, optional => 1 },
-   stopword_file => { type => SCALAR, optional => 1 },
    data_root     => { type => SCALAR, optional => 1 },
   );
 
@@ -46,24 +45,15 @@ sub new {
     $defaults{category_file} = File::Spec->catfile($args{data_root}, 'cats.txt');
     delete $args{data_root};
   }
-  if (exists $args{stopword_file}) {
-    local *FH;
-    open FH, "< $args{stopword_file}" or die "$args{stopword_file}: $!";
-    while (<FH>) {
-      chomp;
-      $args{stopwords}{$_} = 1;
-    }
-    close FH;
-  }
 
   return $package->SUPER::new(%defaults, %args);
 }
 
-sub dump_parameters {
-  my $p = shift()->SUPER::dump_parameters;
-  delete $p->{stopwords} if $p->{stopword_file};
-  return $p;
-}
+#sub dump_parameters {
+#  my $p = shift()->SUPER::dump_parameters;
+#  delete $p->{stopwords} if $p->{stopword_file};
+#  return $p;
+#}
 
 sub knowledge_set { shift->{knowledge_set} }
 sub learner       { shift->{learner} }
@@ -191,6 +181,10 @@ for later use.  There are several ways to carry out this process.  The
 top-level C<AI::Categorizer> module provides an umbrella class for
 high-level operations, or you may use the interfaces of the individual
 classes in the framework.
+
+A simple sample script that reads a training corpus, trains a
+categorizer, and tests the categorizer on a test corpus, is
+distributed as eg/demo.pl .
 
 Disclaimer: the results of any of the machine learning algorithms are
 far from infallible (close to fallible?).  Categorization of documents
@@ -425,14 +419,6 @@ C<category_file> parameters separately.  Sets C<training_set> to
 C<$data_root/training>, C<test_set> to C<$data_root/test>, and
 C<category_file> (used by some of the Collection classes) to
 C<$data_root/cats.txt>.
-
-=item stopword_file
-
-Specifies a file containing a list of "stopwords", which are words
-that should automatically be disregarded when scanning/reading
-documents.  The file should contain one word per line.  The file will
-be parsed and then fed as the C<stopwords> parameter to the
-KnowledgeSet C<new()> method.
 
 =back
 

@@ -7,6 +7,7 @@ use base qw(Class::Container);
 __PACKAGE__->valid_params
   (
    verbose => {type => SCALAR, default => 0},
+   stopword_file => { type => SCALAR, optional => 1 },
    category_hash => { type => HASHREF, default => {} },
    category_file => { type => SCALAR, optional => 1 },
   );
@@ -18,8 +19,14 @@ __PACKAGE__->contained_objects
   );
 
 sub new {
-  my $class = shift;
-  my $self = $class->SUPER::new(@_);
+  my ($class, %args) = @_;
+  
+  # Optimize so every document doesn't have to convert the stopword list to a hash
+  if ($args{stopwords} and UNIVERSAL::isa($args{stopwords}, 'ARRAY')) {
+    $args{stopwords} = { map {+$_ => 1} @{ $args{stopwords} } };
+  }
+  
+  my $self = $class->SUPER::new(%args);
 
   if ($self->{category_file}) {
     local *FH;
@@ -29,6 +36,18 @@ sub new {
       $self->{category_hash}{$doc} = \@cats;
     }
     close FH;
+  }
+  if (exists $self->{stopword_file}) {
+    my %stopwords;
+    local *FH;
+    open FH, "< $self->{stopword_file}" or die "$self->{stopword_file}: $!";
+    while (<FH>) {
+      chomp;
+      $stopwords{$_} = 1;
+    }
+    close FH;
+
+    $self->delayed_object_params('document', stopwords => \%stopwords);
   }
 
   return $self;
@@ -102,6 +121,14 @@ Indicates a file which should be read in order to create the
 C<category_hash>.  Each line of the file should list a document's
 name, followed by a list of category names, all separated by
 whitespace.
+
+=item stopword_file
+
+Specifies a file containing a list of "stopwords", which are words
+that should automatically be disregarded when scanning/reading
+documents.  The file should contain one word per line.  The file will
+be parsed and then fed as the C<stopwords> parameter to the
+Document C<new()> method.
 
 =item verbose
 

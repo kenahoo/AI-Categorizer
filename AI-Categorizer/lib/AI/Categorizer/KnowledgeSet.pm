@@ -82,11 +82,6 @@ sub new {
     delete $args{tfidf_weighting};
   }
 
-  # Optimize so every document doesn't have to convert the stopword list to a hash
-  if ($args{stopwords} and UNIVERSAL::isa($args{stopwords}, 'ARRAY')) {
-    $args{stopwords} = { map {+$_ => 1} @{ $args{stopwords} } };
-  }
-
   my $self = $pkg->SUPER::new(%args);
 
   # Convert to AI::Categorizer::ObjectSet sets

@@ -94,16 +94,18 @@ sub categorize {
   my $scores = $self->get_scores($doc);
   
   if ($self->{verbose}) {
-    warn "scores: @{[ %$scores ]}" if $self->{verbose} > 1;
-    foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
-      print "$key: $scores->{$key}\n";
+    warn "scores: @{[ %$scores ]}" if $self->{verbose} > 2;
+    if ($self->verbose > 1) {
+      foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
+	print "$key: $scores->{$key}\n";
+      }
     }
   }
 
   return $self->create_delayed_object('hypothesis',
 				      scores => $scores,
 				      threshold => $self->{threshold},
-				      all_categories => [keys %{$self->{model}{cat_prob}}],
+				      document_name => $doc->name,
 				     );
 }
 

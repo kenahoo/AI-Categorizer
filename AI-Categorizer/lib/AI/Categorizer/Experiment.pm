@@ -59,7 +59,7 @@ sub add_hypothesis {
     die "Unknown type '$correct' for correct categories";
   }
 
-  # Add to the macro/micro tables
+  # Add to the micro/macro tables
   foreach my $cat (keys %$cats_table) {
     $cats_table->{$cat}{a}++, $self->{a}++ if  $assigned{$cat} and  $correct->{$cat};
     $cats_table->{$cat}{b}++, $self->{b}++ if  $assigned{$cat} and !$correct->{$cat};
@@ -107,9 +107,9 @@ sub _F1 {
 }
 
 # Fills in precision, recall, etc. for each category, and computes their averages
-sub _micro_stats {
+sub _macro_stats {
   my $self = shift;
-  return $self->{micro} if $self->{micro};
+  return $self->{macro} if $self->{macro};
   
   my @metrics = qw(precision recall F1 accuracy error);
 
@@ -127,24 +127,24 @@ sub _micro_stats {
   foreach (@metrics) {
     $results{$_} /= keys %$cats;
   }
-  $self->{micro} = \%results;
+  $self->{macro} = \%results;
 }
 
-sub macro_accuracy  { $_[0]->_accuracy( $_[0]) }
-sub macro_error     { $_[0]->_error(    $_[0]) }
-sub macro_precision { $_[0]->_precision($_[0]) }
-sub macro_recall    { $_[0]->_recall(   $_[0]) }
-sub macro_F1        { $_[0]->_F1(       $_[0]) }
+sub micro_accuracy  { $_[0]->_accuracy( $_[0]) }
+sub micro_error     { $_[0]->_error(    $_[0]) }
+sub micro_precision { $_[0]->_precision($_[0]) }
+sub micro_recall    { $_[0]->_recall(   $_[0]) }
+sub micro_F1        { $_[0]->_F1(       $_[0]) }
 
-sub micro_accuracy  { shift()->_micro_stats->{accuracy} }
-sub micro_error     { shift()->_micro_stats->{error} }
-sub micro_precision { shift()->_micro_stats->{precision} }
-sub micro_recall    { shift()->_micro_stats->{recall} }
-sub micro_F1        { shift()->_micro_stats->{F1} }
+sub macro_accuracy  { shift()->_macro_stats->{accuracy} }
+sub macro_error     { shift()->_macro_stats->{error} }
+sub macro_precision { shift()->_macro_stats->{precision} }
+sub macro_recall    { shift()->_macro_stats->{recall} }
+sub macro_F1        { shift()->_macro_stats->{F1} }
 
 sub category_stats {
   my $self = shift;
-  $self->_micro_stats;
+  $self->_macro_stats;
 
   return $self->{categories};
 }
@@ -158,14 +158,14 @@ sub stats_table {
   $out   .= "+---------------------------------------------------------+\n";
 
   return sprintf($out,
-		 $self->micro_recall,
-		 $self->micro_precision,
-		 $self->micro_F1,
-		 $self->micro_error,
 		 $self->macro_recall,
 		 $self->macro_precision,
 		 $self->macro_F1,
 		 $self->macro_error,
+		 $self->micro_recall,
+		 $self->micro_precision,
+		 $self->micro_F1,
+		 $self->micro_error,
 		);
 }
 
@@ -190,7 +190,7 @@ AI::Categorizer::Experiment - Coordinate experimental results
    $e->add_hypothesis($h, [$d->categories]);
  }
  
- print "Macro F1: ", $e->macro_F1, "\n"; # Access a single statistic
+ print "Micro F1: ", $e->micro_F1, "\n"; # Access a single statistic
  print $e->stats_table; # Show several stats in table form
 
 =head1 DESCRIPTION
@@ -201,16 +201,16 @@ categorization results (Hypotheses) back from the Learner, you can
 feed these results to the Experiment class, along with the correct
 answers.  When all results have been collected, you can get a report
 on accuracy, precision, recall, F1, and so on, with both
-micro-averaging and macro-averaging over categories.
+macro-averaging and micro-averaging over categories.
 
-=head2 Micro vs. Macro Statistics
+=head2 Macro vs. Micro Statistics
 
 All of the statistics offered by this module can be calculated for
 each category and then averaged, or can be calculated over all
-decisions and then averaged.  The former is called micro-averaging,
-and the latter is called macro-averaging.  They bias the results
-differently - macro-averaging tends to over-emphasize the performance
-on the largest categories, while micro-averaging over-emphasizes the
+decisions and then averaged.  The former is called macro-averaging,
+and the latter is called micro-averaging.  They bias the results
+differently - micro-averaging tends to over-emphasize the performance
+on the largest categories, while macro-averaging over-emphasizes the
 performance on the smallest.  It's usually best to look at both
 of them to get a better idea of how your categorizer is performing.
 
@@ -228,7 +228,7 @@ table", which looks like this:
 
 a, b, c, and d are counts that reflect how the assigned categories
 matched the correct categories.  Depending on whether a
-micro-statistic or a macro-statistic is being calculated, these
+macro-statistic or a micro-statistic is being calculated, these
 numbers will be tallied per-category or for the entire result set.
 
 The following statistics are available:
@@ -306,26 +306,6 @@ there is only one category.
 As of the current implementation, the Hypothesis itself is not stored,
 it is only used to generate the counts for the contingency table.
 
-=item * $e->macro_accuracy
-
-Returns the macro-averaged accuracy for the Experiment.
-
-=item * $e->macro_error
-
-Returns the macro-averaged error for the Experiment.
-
-=item * $e->macro_precision
-
-Returns the macro-averaged precision for the Experiment.
-
-=item * $e->macro_recall
-
-Returns the macro-averaged recall for the Experiment.
-
-=item * $e->macro_F1
-
-Returns the macro-averaged F1 for the Experiment.
-
 =item * $e->micro_accuracy
 
 Returns the micro-averaged accuracy for the Experiment.
@@ -345,6 +325,26 @@ Returns the micro-averaged recall for the Experiment.
 =item * $e->micro_F1
 
 Returns the micro-averaged F1 for the Experiment.
+
+=item * $e->macro_accuracy
+
+Returns the macro-averaged accuracy for the Experiment.
+
+=item * $e->macro_error
+
+Returns the macro-averaged error for the Experiment.
+
+=item * $e->macro_precision
+
+Returns the macro-averaged precision for the Experiment.
+
+=item * $e->macro_recall
+
+Returns the macro-averaged recall for the Experiment.
+
+=item * $e->macro_F1
+
+Returns the macro-averaged F1 for the Experiment.
 
 =item * $e->stats_table
 

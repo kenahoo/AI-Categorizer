@@ -1,6 +1,7 @@
 package AI::Categorizer::Category;
 
 use strict;
+use Set::Class;
 use Class::Container;
 use base qw(Class::Container);
 use Params::Validate qw(:types);
@@ -22,17 +23,41 @@ __PACKAGE__->make_accessors(':all');
 
 sub new {
   my $self = shift()->SUPER::new(@_);
-  $self->{document_hash} = map {$_->name => 1} @{$self->documents};
+  $self->{documents} = new Set::Object( @{$self->{documents}} );
   return $self;
 }
 
+sub documents {
+  my $d = $_[0]->{documents};
+  return wantarray ? $d->members : $d->size;
+}
+
 sub contains_document {
-  return $_[0]->{document_hash}{ $_[1]->name };
+  return $_[0]->{documents}->includes( $_[1] );
 }
 
 sub add_document {
   my $self = shift;
-  push @{$self->{documents}}, $_[0];
+  $self->{documents}->insert( $_[0] );
+  delete $self->{features};  # Could be more efficient?
+}
+
+sub features {
+  my $self = shift;
+  return $self->{features} if exists $self->{features};
+
+  my @docs = $self->documents;
+  if (!@docs) {
+    # XXX shouldn't hard-code class name
+    return $self->{features} = AI::Categorize::FeatureVector->new(features => {});
+  }
+
+  my $sum = (shift @docs)->features->clone;
+  while (@docs) {
+    $sum->add((shift @docs)->features);
+  }
+
+  return $self->{features} = $sum;
 }
 
 1;

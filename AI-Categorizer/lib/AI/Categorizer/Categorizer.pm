@@ -26,6 +26,14 @@ __PACKAGE__->contained_objects
 sub categorize;
 sub create_model;
 
+sub verbose {
+  my $self = shift;
+  if (@_) {
+    $self->{verbose} = shift;
+  }
+  return $self->{verbose};
+}
+
 sub knowledge {
   my $self = shift;
   if (@_) {

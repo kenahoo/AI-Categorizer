@@ -26,22 +26,31 @@ sub new {
   
   die "Must provide 'dbh' or 'connection_string' arguments"
     unless $self->{dbh} or $self->{connection_string};
-
+  
   unless ($self->{dbh}) {
     $self->{dbh} = DBI->connect($self->{connection_string}, '', '', {RaiseError => 1})
       or die DBI->errstr;
     delete $self->{connection_string};
   }
   
-  $self->{sth} = $self->dbh->prepare($self->{select_statement});
-  $self->{sth}->execute;
-  
+  $self->rewind;
   return $self;
 }
 
-sub dbh {
+sub dbh { shift()->{dbh} }
+
+sub rewind {
   my $self = shift;
-  return $self->{dbh};
+  
+  if (!$self->{sth}) {
+    $self->{sth} = $self->dbh->prepare($self->{select_statement});
+  }
+
+  if ($self->{sth}{Active}) {
+    $self->{sth}->finish;
+  }
+
+  $self->{sth}->execute;
 }
 
 sub next {

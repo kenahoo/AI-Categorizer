@@ -47,7 +47,10 @@ sub next {
   my $content = do {local $/ = $self->{delimiter}; <$fh>};
 
   if (!defined $content) { # File has been exhausted
-    return undef unless @{$self->{path}};
+    unless (@{$self->{path}}) { # All files have been exhausted
+      $self->{fh} = undef;
+      return undef;
+    }
     $self->_next_path;
     return $self->next;
   } elsif ($content =~ /^\s*$self->{delimiter}$/) { # Skip empty docs
@@ -59,10 +62,8 @@ sub next {
   my ($doc, $categories) = $self->call_method('document', 'parse', 
 					      content => $content,
 					     );
-  my $k = $self->container;
-  my @categories = map $k->category_by_name($_), @$categories;
   my $name = delete $doc->{name};
-  return $k->create_delayed_object('document', name => $name, content => $doc, categories => \@categories);
+  return $self->create_delayed_object('document', name => $name, content => $doc, categories => $categories);
 }
 
 1;

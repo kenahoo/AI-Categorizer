@@ -236,6 +236,7 @@ sub read {
   close $fh;
   
   $self->finish;
+  return $self;
 }
 
 sub dump_features {

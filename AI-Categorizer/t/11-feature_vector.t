@@ -33,9 +33,8 @@ ok keys(%$h), 2;
 ok $f1->dot($f2), 10;
 ok $f2->dot($f1), 10;
 
-{
-  use AI::Categorizer::FeatureVector::FastDot;
-  my $pkg = 'AI::Categorizer::FeatureVector::FastDot';
+my $pkg = 'AI::Categorizer::FeatureVector::FastDot';
+if (eval "use $pkg; 1") {
   my $f1 = $pkg->new(features => {sports => 2, finance => 3});
   my $f2 = $pkg->new(features => {sports => 5, hockey  => 7});
   ok $f1;
@@ -46,6 +45,8 @@ ok $f2->dot($f1), 10;
 
   ok $f1->dot($f2), 10;
   ok $f2->dot($f1), 10;
+} else {
+  skip "skip $pkg is not available", 1 for 1..5;
 }
 
 {

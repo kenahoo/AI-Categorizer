@@ -11,16 +11,26 @@ Revision history for Perl extension AI::Categorizer.
  - Added a k-Nearest-Neighbor machine learner. [Implemented by David
    Bell]
 
- - Fixed documentation for add_hypothesis() [spotted by Thierry
-   Guillotin]
-
- - Fixed a problem in which stopword filtering was being applied after
-   stemming, which isn't correct.
-
  - Fixed a problem in the Hypothesis' best_category() method that
    would often result in the wrong category being reported.  Added a
    regression test to exercise the Hypothesis class.  [Spotted by
    Xiaobo Li]
+
+ - Added the 'stopword_behavior' parameter for controlling how
+   stopword lists and stemming interact.  Previously, if stopwords &
+   stemming were both used, stopwords were assumed to be pre-stemmed,
+   which often isn't the case.
+
+ - parse() is now an instance method of the Document class, not a
+   class method.  This means it can operate directly on an object, it
+   doesn't have to return a hash of content.  This allows more
+   flexible document parsing.
+
+ - Added a parse_handle() method, which can parse a document directly
+   from a filehandle.
+
+ - Fixed documentation for add_hypothesis() [spotted by Thierry
+   Guillotin]
 
  - Added documentation for the AI::Categorizer::Collection::Files
    class.

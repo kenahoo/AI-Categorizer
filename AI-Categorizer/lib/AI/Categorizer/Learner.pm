@@ -30,6 +30,9 @@ __PACKAGE__->contained_objects
 sub get_scores;
 sub create_model;
 
+# Optional virtual method for on-line learning:
+sub add_knowledge;
+
 sub verbose {
   my $self = shift;
   if (@_) {

@@ -36,6 +36,10 @@ __PACKAGE__->valid_params
 			 type => SCALAR,
 			 default => 'document_frequency',
 			},
+   collection_weighting => {
+			    type => SCALAR,
+			    default => 'x',
+			   },
    verbose => {
 	       type => SCALAR,
 	       default => 0,
@@ -94,6 +98,11 @@ sub categories {
 sub documents {
   my $d = $_[0]->{documents};
   return wantarray ? $d->members : $d->size;
+}
+
+sub document {
+  my ($self, $name) = @_;
+  return $self->{documents}->retrieve($name);
 }
 
 sub verbose {
@@ -219,14 +228,33 @@ sub read {
   print "\n" if $self->verbose;
 }
 
+sub finish {
+  my $self = shift;
+  return if $self->{finished}++;
+  
+  if ($self->{collection_weighting} eq 'x') {
+    return;
+  } elsif ($self->{collection_weighting} =~ /^(f|p)$/) {
+    my $subtrahend = ($1 eq 'f' ? 0 : 1);
+    my $num_docs = $self->documents;
+    $self->document_frequency('foo');  # Initialize
+    foreach my $doc ($self->documents) {
+      my $f = $doc->features->as_hash;
+      $f->{$_} *= log($num_docs / $self->{doc_freq_vector}{$_} - $subtrahend) foreach keys %$f;
+    }
+  } else {
+    die "Unknown vector_weighting type '$self->{collection_weighting}'";
+  }
+}
+
 sub document_frequency {
   my ($self, $term) = @_;
   
   unless (exists $self->{doc_freq_vector}) {
-    die "No corpus has been scanned for features" unless @{$self->{documents}};
+    die "No corpus has been scanned for features" unless $self->documents;
 
     my $doc_freq = $self->create_delayed_object('features', features => {});
-    foreach my $doc (@{$self->{documents}}) {
+    foreach my $doc ($self->documents) {
       $doc_freq->add( $doc->features->as_boolean_hash );
     }
     $self->{doc_freq_vector} = $doc_freq->as_hash;

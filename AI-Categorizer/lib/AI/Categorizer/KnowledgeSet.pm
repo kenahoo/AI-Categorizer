@@ -27,6 +27,14 @@ __PACKAGE__->valid_params
 				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'), @_ },
 			       },
 		 },
+   features_kept => {
+		     type => SCALAR,
+		     default => 0.2,
+		    },
+   verbose => {
+	       type => SCALAR,
+	       default => 0,
+	      },
   );
 
 __PACKAGE__->contained_objects
@@ -35,6 +43,8 @@ __PACKAGE__->contained_objects
 		 class => 'AI::Categorizer::Document' },
    category => { delayed => 1,
 		 class => 'AI::Categorizer::Category' },
+   features => { delayed => 1,
+		 class => 'AI::Categorizer::FeatureVector' },
   );
 
 sub new {
@@ -83,6 +93,69 @@ sub trim_doc_features {
   }
 }
 
+sub scan_features {
+  my ($self, %args) = @_;
+
+  my $features = $self->create_delayed_object('features', features => {});
+  
+  if (my $dir = $args{directory}) {
+    
+    local (*DIRH, *FH);
+    opendir DIRH, $dir or die "$dir: $!";
+    while (defined (my $file = readdir DIRH)) {
+      next if $file =~ /^\./;
+      print "$file\n" if $self->{verbose};
+
+      open FH, "< $dir/$file" or die "$dir/$file: $!";
+      my $body = do {local $/; <FH>};
+      close FH;
+
+      my $doc = $self->create_delayed_object('document', 
+					     name => $file,
+					     content => $body,
+					     term_weighting => 'boolean',
+					    );
+      $features->add( $doc->features );
+    }
+    closedir DIRH;
+
+  } else {
+    die "Must specify 'directory' argument to scan_features()";
+  }
+
+  $features = $self->_reduce_features($features);
+  
+  $self->delayed_object_params('document', use_features => $features);
+}
+
+sub _reduce_features {
+  # Takes a feature vector whose weights are "feature scores", and
+  # chops to the highest n features.  n is specified by the
+  # 'features_kept' parameter.  If it's zero, all features are kept.
+  # If it's between 0 and 1, we multiply by the present number of
+  # features.  If it's greater than 1, we treat it as the number of
+  # features to use.
+
+  my ($self, $f) = @_;
+  return $f unless $self->{features_kept};
+
+  my $kept = ($self->{features_kept} < 1 ? 
+	      $f->length * $self->{features_kept} :
+	      $self->{features_kept});
+
+  print "Trimming features - # features = " . $f->length . "\n" if $self->{verbose};
+  
+  # This is algorithmic overkill, but the sort seems fast enough.  Will revisit later.
+  my $features = $f->as_hash;
+  my @new_features = (sort {$features->{$b} <=> $features->{$a}} keys %$features)
+                      [0 .. $kept];
+
+  my $result = $f->intersection( \@new_features );
+  print "Finished trimming features - # features = " . $result->length . "\n" if $self->{verbose};
+  return $result;
+}
+
+
 sub select_features {
   # This just uses a simple document-frequency criterion, controlled
   # by 'features_kept'.  Other algorithms may follow later, controlled
@@ -94,19 +167,8 @@ sub select_features {
   my $kept = exists($args{features_kept}) ? $args{features_kept} : $self->{features_kept};
   return unless $kept;
   
-  my $f = $self->features;
-
-  my $num_features = $f->length;
-  print "Trimming features - # features = $num_features\n" if $self->{verbose};
-  
-  # This is algorithmic overkill, but the sort seems fast enough.  Will revisit later.
-  my $features = $f->as_hash;
-  my @new_features = (sort {$features->{$b} <=> $features->{$a}} keys %$features)
-                      [0 .. $kept * $num_features];
-  my $new_features = $f->intersection( \@new_features );
-  $self->features( $new_features );
-
-  print "Finished trimming features - # features = " . $self->features->length . "\n" if $self->{verbose};
+  my $f = $self->_reduce_features($self->features, $kept);
+  $self->features($f);
 }
 
 sub partition {

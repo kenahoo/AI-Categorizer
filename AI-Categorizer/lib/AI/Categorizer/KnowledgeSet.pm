@@ -225,9 +225,10 @@ sub scan_stats {
 
 sub load {
   my ($self, %args) = @_;
+  my $scan = delete($args{scan_features}) || 0;
   my $c = $self->_make_collection(\%args);
 
-  if ($args{scan_features}) {
+  if ($scan) {
     # Figure out the feature set first, then read data in
     $self->scan_features( collection => $c );
     $c->rewind;

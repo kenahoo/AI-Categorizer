@@ -2,13 +2,31 @@ package AI::Categorizer::Util;
 
 use Exporter;
 use base qw(Exporter);
-@EXPORT_OK = qw(intersection average F1 recall precision accuracy error);
+@EXPORT_OK = qw(intersection average F1 recall precision accuracy error max min);
 
 use strict;
 
 # It's possible that this can be a class - something like 
 # 
 # $e = Evaluate->new(); $e->correct([...]); $e->assigned([...]); print $e->precision;
+
+sub max {
+  return undef unless @_;
+  my $max = shift;
+  foreach (@_) {
+    $max = $_ if $_ > $max;
+  }
+  return $max;
+}
+
+sub min {
+  return undef unless @_;
+  my $min = shift;
+  foreach (@_) {
+    $min = $_ if $_ > $min;
+  }
+  return $min;
+}
 
 sub average {
   return undef unless @_;

@@ -62,79 +62,83 @@ sub _invert {
   return 1 / (1 + $y/$x);
 }
 
-sub macro_accuracy {
-  my $self = shift;
-  return +($self->{a} + $self->{d}) / ($self->{a} + $self->{b} + $self->{c} + $self->{d});
+sub _accuracy {
+  my $h = $_[1];
+  return +($h->{a} + $h->{d}) / ($h->{a} + $h->{b} + $h->{c} + $h->{d});
 }
 
-sub macro_error {
-  my $self = shift;
-  return +($self->{b} + $self->{c}) / ($self->{a} + $self->{b} + $self->{c} + $self->{d});
+sub _error {
+  my $h = $_[1];
+  return +($h->{b} + $h->{c}) / ($h->{a} + $h->{b} + $h->{c} + $h->{d});
 }
 
-sub macro_precision {
-  my ($self) = @_;
-  return $self->_invert($self->{a}, $self->{b});
+sub _precision {
+  my ($self, $h) = @_;
+  return $self->_invert($h->{a}, $h->{b});
+}
+  
+sub _recall {
+  my ($self, $h) = @_;
+  return $self->_invert($h->{a}, $h->{c});
+}
+  
+sub _F1 {
+  my ($self, $h) = @_;
+  return $self->_invert(2 * $h->{a}, $h->{b} + $h->{c});
 }
 
-sub macro_recall {
-  my $self = shift;
-  return $self->_invert($self->{a}, $self->{c});
-}
+sub macro_accuracy  { $_[0]->_accuracy( $_[0]) }
+sub macro_error     { $_[0]->_error(    $_[0]) }
+sub macro_precision { $_[0]->_precision($_[0]) }
+sub macro_recall    { $_[0]->_recall(   $_[0]) }
+sub macro_F1        { $_[0]->_F1(       $_[0]) }
 
-sub macro_F1 {
+# Fills in precision, recall, etc. for each category, and computes their averages
+sub _micro_stats {
   my $self = shift;
-  return $self->_invert(2 * $self->{a}, $self->{b} + $self->{c});
+  return $self->{micro} if $self->{micro};
+  
+  my @metrics = qw(precision recall F1 accuracy error);
+
+  my $cats = $self->{categories};
+  my %results;
+  while (my ($cat, $scores) = each %$cats) {
+    foreach my $metric (@metrics) {
+      my $method = "_$metric";
+      $results{$metric} += ($scores->{$metric} = $self->$method($scores));
+    }
+  }
+  foreach (@metrics) {
+    $results{$_} /= keys %$cats;
+  }
+  $self->{micro} = \%results;
 }
 
 sub micro_precision {
-  my $self = shift;
-  my $cats = $self->{categories};
-  my $result;
-  while (my ($cat, $scores) = each %$cats) {
-    $result += $self->_invert($scores->{a}, $scores->{b});
-  }
-  return $result / keys %$cats;
+  return shift()->_micro_stats->{precision};
 }
 
 sub micro_recall {
-  my $self = shift;
-  my $cats = $self->{categories};
-  my $result;
-  while (my ($cat, $scores) = each %$cats) {
-    $result += $self->_invert($scores->{a}, $scores->{c});
-  }
-  return $result / keys %$cats;
+  return shift()->_micro_stats->{recall};
 }
 
 sub micro_F1 {
-  my $self = shift;
-  my $cats = $self->{categories};
-  my $result;
-  while (my ($cat, $scores) = each %$cats) {
-    $result += $self->_invert(2 * $scores->{a}, $scores->{b} + $scores->{c});
-  }
-  return $result / keys %$cats;
+  return shift()->_micro_stats->{F1};
 }
 
 sub micro_accuracy {
-  my $self = shift;
-  my $cats = $self->{categories};
-  my $result;
-  while (my ($cat, $scores) = each %$cats) {
-    $result += ($scores->{a} + $scores->{d}) / $self->{hypotheses};
-  }
-  return $result / keys %$cats;
+  return shift()->_micro_stats->{accuracy};
 }
 
 sub micro_error {
+  return shift()->_micro_stats->{error};
+}
+
+sub category_stats {
   my $self = shift;
-  my $cats = $self->{categories};
-  my $result;
-  while (my ($cat, $scores) = each %$cats) {
-    $result += ($scores->{b} + $scores->{c}) / $self->{hypotheses};
-  }
-  return $result / keys %$cats;
+  $self->_micro_stats;
+
+  return $self->{categories};
 }
 
 sub stats_table {

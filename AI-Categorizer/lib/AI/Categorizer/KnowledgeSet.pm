@@ -29,6 +29,10 @@ __PACKAGE__->valid_params
 				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'), @_ },
 			       },
 		 },
+   scan_first => {
+		  type => BOOLEAN,
+		  default => 1,
+		 },
    feature_selector => {
 			isa => 'AI::Categorizer::FeatureSelector',
 		       },
@@ -225,10 +229,9 @@ sub scan_stats {
 
 sub load {
   my ($self, %args) = @_;
-  my $scan = delete($args{scan_features}) || 0;
   my $c = $self->_make_collection(\%args);
 
-  if ($scan) {
+  if ($self->{scan_first}) {
     # Figure out the feature set first, then read data in
     $self->scan_features( collection => $c );
     $c->rewind;

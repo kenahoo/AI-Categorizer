@@ -25,6 +25,7 @@ my $build = new Module::Build
    build_requires => {
 		      Module::Build     => 0.15,
 		     },
+   create_makefile_pl => 'passthrough',
   );
 
 my $categorizer = File::Spec->catfile('eg', 'categorizer');

@@ -96,7 +96,7 @@ sub categorize_collection {
   my $pb = $self->verbose ? $self->prog_bar($c->count_documents) : sub {};
   while (my $d = $c->next) {
     my $h = $self->categorize($d);
-    $experiment->add_result([$h->categories], [map $_->name, $d->categories], $d->name);
+    $experiment->add_hypothesis($h, [map $_->name, $d->categories]);
     $pb->($experiment);
     if ($self->verbose > 1) {
       printf STDERR ("%s: assigned=(%s) correct=(%s)\n",
@@ -211,7 +211,9 @@ details on how to use this object.
 =item categorize_collection(collection => $collection)
 
 Categorizes every document in a collection and returns an Experiment
-object representing the results.
+object representing the results.  Note that the Experiment does not
+contain knowledge of the assigned categories for every document, only
+a statistical summary of the results.
 
 =item knowledge_set()
 
@@ -233,7 +235,7 @@ is inherited from C<AI::Categorizer::Storable>.
 
 =head1 AUTHOR
 
-Ken Williams, ken@forum.swarthmore.edu
+Ken Williams, ken@mathforum.org
 
 =head1 COPYRIGHT
 

@@ -89,7 +89,7 @@ sub evaluate_test_set {
   my $self = shift;
   $self->_load_progress( '03', 'learner' );
   my $c = $self->create_delayed_object('collection', path => $self->{test_set} );
-  my @all_cats = map $_->name, $self->knowledge_set->categories;
+  my @all_cats = map $_->name, $self->learner->categories;
   $self->{experiment} = $self->create_delayed_object('experiment', categories => \@all_cats);
   while (my $d = $c->next) {
     my $h = $self->learner->categorize($d);

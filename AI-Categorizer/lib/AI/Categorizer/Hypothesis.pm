@@ -1,5 +1,7 @@
 package AI::Categorizer::Hypothesis;
 
+use AI::Categorizer::Util;
+
 sub new {
   my $package = shift;
   my $self = bless {@_}, $package;
@@ -25,5 +27,21 @@ sub scores {
   my $self = shift;
   return @{$self->{scores}}{@_};
 }
+
+sub precision {
+  my ($self, $correct) = @_;
+  return AI::Categorizer::Util::precision([$self->categories], $correct);
+}
+
+sub recall {
+  my ($self, $correct) = @_;
+  return AI::Categorizer::Util::recall([$self->categories], $correct);
+}
+
+sub F1 {
+  my ($self, $correct) = @_;
+  return AI::Categorizer::Util::F1([$self->categories], $correct);
+}
+
 
 1;

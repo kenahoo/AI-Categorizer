@@ -10,6 +10,7 @@ __PACKAGE__->valid_params
   (
    path => { type => SCALAR|ARRAYREF },
    categories => { type => HASHREF, default => {} },
+   verbose => { type => BOOLEAN, default => 0 },
   );
 
 __PACKAGE__->contained_objects

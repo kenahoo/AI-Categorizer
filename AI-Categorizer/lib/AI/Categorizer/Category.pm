@@ -63,17 +63,20 @@ sub add_document {
 
 sub features {
   my $self = shift;
-  return $self->{features} if exists $self->{features};
 
-  my @docs = $self->documents
-    or return $self->{features} = $self->create_delayed_object('features', features => {});
-
-  my $sum = (shift @docs)->features->clone;
-  while (@docs) {
-    $sum->add((shift @docs)->features);
+  if (@_) {
+    $self->{features} = shift;
   }
+  return $self->{features} if $self->{features};
 
-  return $self->{features} = $sum;
+  my $v = $self->create_delayed_object('features');
+  return $self->{features} = $v unless $self->documents;
+
+  foreach my $document ($self->documents) {
+    $v->add( $document->features );
+  }
+  
+  return $self->{features} = $v;
 }
 
 1;

@@ -2,11 +2,20 @@ Revision history for Perl extension AI::Categorizer.
 
 0.05
 
+ - Added a Document class for XML documents. [Implemented by Jae-Moon
+   Lee]
+
+ - Added a 'Build.PL' file for an alternate installation method using
+   Module::Build.
+
  - Added a k-Nearest-Neighbor machine learner. [Implemented by David
    Bell]
 
  - Fixed documentation for add_hypothesis() [spotted by Thierry
    Guillotin]
+
+ - Fixed a problem in which stopword filtering was being applied after
+   stemming, which isn't correct.
 
  - Fixed a problem in the Hypothesis' best_category() method that
    would often result in the wrong category being reported.  Added a

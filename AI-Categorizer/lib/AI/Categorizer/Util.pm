@@ -2,7 +2,7 @@ package AI::Categorizer::Util;
 
 use Exporter;
 use base qw(Exporter);
-@EXPORT_OK = qw(intersection average F1 recall precision accuracy error max min);
+@EXPORT_OK = qw(intersection average max min random_elements);
 
 use strict;
 
@@ -35,49 +35,6 @@ sub average {
   return $total/@_;
 }
 
-sub F1 { # F1 = 2I/(A+C), I=Intersection, A=Assigned, C=Correct
-  my ($assigned, $correct) = @_;
-  return 1 unless @$assigned or @$correct;  # score 1 for correctly assigning zero categories
-  return 2 * intersection($assigned, $correct) / (@$assigned + @$correct);
-}
-
-sub recall {
-  my ($assigned, $correct) = @_;
-  return 1 if !@$assigned and !@$correct;
-  return 0 if  @$assigned and !@$correct; # Don't divide by zero
-  
-  return intersection($assigned, $correct) / @$correct;
-}
-
-sub precision {
-  my ($assigned, $correct) = @_;
-  return 1 if !@$assigned and !@$correct;
-  return 0 if !@$assigned and  @$correct; # Don't divide by zero
-  
-  return intersection($assigned, $correct) / @$assigned;
-}
-
-sub accuracy {
-  # accuracy = 1-error, and error is easier to compute.
-  return 1 - error(@_);
-}
-
-# Returns the error rate among all binary decisions made over all categories.
-sub error {
-  my ($assigned, $correct, $all) = @_;
-  $correct  = _hashify($correct);
-  $assigned = _hashify($assigned);
-
-  my $symmetric_diff = 0;
-  foreach (@$assigned) {
-    $symmetric_diff++ unless exists $correct->{$_};
-  }
-  foreach (@$correct ) {
-    $symmetric_diff++ unless exists $assigned->{$_};
-  }
-  return $symmetric_diff / @$all;
-}
-
 sub intersection {
   my ($one, $two) = @_;
   $two = _hashify($two);
@@ -90,6 +47,19 @@ sub intersection {
 sub _hashify {
   return $_[0] if UNIVERSAL::isa($_[0], 'HASH');
   return {map {$_=>1} @{$_[0]}};
+}
+
+sub random_elements {
+  my ($a_ref, $n) = @_;
+  return @$a_ref if $n >= @$a_ref;
+  
+  my ($select, $mode) = ($n < @$a_ref/2) ? ($n, 'include') : (@$a_ref - $n, 'exclude');
+
+  my %i;
+  $i{int rand @$a_ref} = 1 while keys(%i) < $select;
+
+  return @{$a_ref}[keys %i] if $mode eq 'include';
+  return map {$i{$_} ? () : $a_ref->[$_]} 0..$#$a_ref;
 }
 
 1;

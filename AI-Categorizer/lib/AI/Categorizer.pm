@@ -6,6 +6,12 @@ use Class::Container;
 use base qw(Class::Container);
 use Params::Validate qw(:types);
 use File::Spec;
+use AI::Categorizer::Learner;
+use AI::Categorizer::Document;
+use AI::Categorizer::Category;
+use AI::Categorizer::Collection;
+use AI::Categorizer::Hypothesis;
+
 
 __PACKAGE__->valid_params
   (

@@ -18,12 +18,15 @@ lib/AI/Categorizer/Document.pm
 lib/AI/Categorizer/Document/SMART.pm
 lib/AI/Categorizer/Document/Text.pm
 lib/AI/Categorizer/Experiment.pm
+lib/AI/Categorizer/FeatureSelector.pm
+lib/AI/Categorizer/FeatureSelector/DocFrequency.pm
 lib/AI/Categorizer/FeatureVector.pm
 lib/AI/Categorizer/Hypothesis.pm
 lib/AI/Categorizer/KnowledgeSet.pm
 lib/AI/Categorizer/Learner.pm
 lib/AI/Categorizer/Learner/Boolean.pm
 lib/AI/Categorizer/Learner/DecisionTree.pm
+lib/AI/Categorizer/Learner/KNN.pm
 lib/AI/Categorizer/Learner/NaiveBayes.pm
 lib/AI/Categorizer/Learner/SVM.pm
 lib/AI/Categorizer/Learner/Weka.pm
@@ -35,6 +38,7 @@ t/02-experiment.t
 t/03-weka.t
 t/04-decision_tree.t
 t/05-svm.t
+t/06-knn.t
 t/10-tools.t
 t/11-feature_vector.t
 t/common.pl

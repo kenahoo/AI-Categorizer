@@ -5,6 +5,7 @@ CVS
 ~$
 ^\.
 \.\#
+^NOTES$
 
 MANIFEST\.SKIP
 ^Makefile$
@@ -18,3 +19,4 @@ MANIFEST\.SKIP
 ^AI-Categorizer
 BayesBoolean
 NNetTC
+DBI2

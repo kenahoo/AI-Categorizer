@@ -166,7 +166,7 @@ constructor parameter, or C<undef> if none was specified.
 
 =head1 AUTHOR
 
-Ken Williams <kenw@ee.usyd.edu.au>
+Ken Williams <ken@mathforum.org>
 
 =head1 COPYRIGHT
 

@@ -482,7 +482,7 @@ won't call this method directly, it's called by C<new()>.
 
 =head1 AUTHOR
 
-Ken Williams <kenw@ee.usyd.edu.au>
+Ken Williams <ken@mathforum.org>
 
 =head1 COPYRIGHT
 

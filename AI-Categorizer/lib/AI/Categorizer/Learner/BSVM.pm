@@ -1,4 +1,4 @@
-package AI::Categorizer::Learner::Weka;
+package AI::Categorizer::Learner::BSVM;
 
 use strict;
 use AI::Categorizer::Learner::Boolean;
@@ -11,11 +11,8 @@ use File::Temp ();
 
 __PACKAGE__->valid_params
   (
-   java_path => {type => SCALAR, default => 'java'},
-   java_args => {type => SCALAR|ARRAYREF, optional => 1},
-   weka_path => {type => SCALAR, optional => 1},
-   weka_classifier => {type => SCALAR, default => 'weka.classifiers.NaiveBayes'},
-   weka_args => {type => SCALAR|ARRAYREF, optional => 1},
+   bsvm_train_path   => {type => SCALAR, default => 'bsvm-train'},
+   bsvm_predict_path => {type => SCALAR, default => 'bsvm-predict'},
    tmpdir => {type => SCALAR, default => File::Spec->tmpdir},
   );
 
@@ -24,136 +21,115 @@ __PACKAGE__->contained_objects
    features => {class => 'AI::Categorizer::FeatureVector', delayed => 1},
   );
 
-sub new {
-  my $class = shift;
-  my $self = $class->SUPER::new(@_);
-
-  for ('java_args', 'weka_args') {
-    $self->{$_} = [] unless defined $self->{$_};
-    $self->{$_} = [$self->{$_}] unless UNIVERSAL::isa($self->{$_}, 'ARRAY');
-  }
-  
-  if (defined $self->{weka_path}) {
-    push @{$self->{java_args}}, '-classpath', $self->{weka_path};
-    delete $self->{weka_path};
-  }
-  return $self;
-}
-
-# java -classpath /Applications/Science/weka-3-2-3/weka.jar weka.classifiers.NaiveBayes -t /tmp/train_file.arff -d /tmp/weka-machine
-
 sub create_model {
   my ($self) = shift;
   my $m = $self->{model} ||= {};
   $m->{all_features} = [ $self->knowledge_set->features->names ];
+  $m->{rev_features} = { map {( $m->{all_features}[$_] => $_ )} 0..$#{$m->{all_features}} };
   $m->{_in_dir} = File::Temp::tempdir( DIR => $self->{tmpdir} );
-
-  # Create a dummy test file $dummy_file in ARFF format (a kludgey WEKA requirement)
-  my $dummy_features = $self->create_delayed_object('features');
-  $m->{dummy_file} = $self->create_arff_file("dummy", [[$dummy_features, 0]]);
 
   $self->SUPER::create_model(@_);
 }
 
+# bsvm-train -t 2 -c 1000  vehicle.scale vehicle_model
+
 sub create_boolean_model {
   my ($self, $pos, $neg, $cat) = @_;
 
-  my @docs = (map([$_->features, 1], @$pos),
-	      map([$_->features, 0], @$neg));
-  my $train_file = $self->create_arff_file($cat->name . '_train', \@docs);
-
+  # Create the training file
+  my ($train_fh, $train_file) = $self->new_data_file($cat->name . '_train');
+warn "Creating training file '$train_file'" if $self->{verbose};
+  foreach my $doc (@$pos) {
+    print $train_fh $self->data_file_line($doc->features, 1);
+  }
+  foreach my $doc (@$neg) {
+    print $train_fh $self->data_file_line($doc->features, 0);
+  }
+  close $train_fh;
+  
   my %info = (machine_file => $cat->name . '_model');
   my $outfile = File::Spec->catfile($self->{model}{_in_dir}, $info{machine_file});
-
-  my @args = ($self->{java_path},
-	      @{$self->{java_args}},
-	      $self->{weka_classifier}, 
-	      @{$self->{weka_args}},
-	      '-t', $train_file,
-	      '-T', $self->{model}{dummy_file},
-	      '-d', $outfile,
-	      '-v',
-	      '-p', '0',
+  
+  my @args = ($self->{bsvm_train_path},
+	      '-t', 2,
+	      '-c', 1000,
+	      $train_file,
+	      $outfile,
 	     );
+  
   $self->do_cmd(@args);
-  unlink $train_file or warn "Couldn't remove $train_file: $!";
+#  unlink $train_file or warn "Couldn't remove $train_file: $!";
 
   return \%info;
 }
 
-# java -classpath /Applications/Science/weka-3-2-3/weka.jar weka.classifiers.NaiveBayes -l out -T test.arff -p 0
+# bsvm-predict vehicle.scale vehicle_model classified_result
 
 sub get_boolean_score {
   my ($self, $doc, $info) = @_;
   
   # Create document file
-  my $doc_file = $self->create_arff_file('doc', [[$doc->features, 0]], $self->{tmpdir});
+  my $doc_file = $self->create_data_file('doc', [[$doc->features, 0]], $self->{tmpdir});
   my $machine_file = File::Spec->catfile($self->{model}{_in_dir}, $info->{machine_file});
+  my $outfile = File::Temp::tmpnam($self->{tmpdir});
 
-  my @args = ($self->{java_path},
-	      @{$self->{java_args}},
-	      $self->{weka_classifier},
-	      '-l', $machine_file,
-	      '-T', $doc_file,
-	      '-p', 0,
-	     );
+  my @args = ($self->{bsvm_predict_path},
+	      $doc_file,
+	      $machine_file,
+	      $outfile);
+  $self->do_cmd(@args);
 
-  my @output = $self->do_cmd(@args);
-
-  my %scores;
-  foreach (@output) {
-    # <doc> <category> <score> <real_category>
-    # 0 large.elem 0.4515551620220952 numberth.high
-    next unless my ($index, $predicted, $score) = /^([\d.]+)\s+(\S+)\s+([\d.]+)/;
-    $scores{$predicted} = $score;
+  open my($fh), $outfile or die "Can't read result file '$outfile': $!";
+  my $result;
+  while (<$fh>) {
+    $result = $1, last if /(\d+)/;
   }
-
-  return $scores{1} || 0;  # Not sure what weka's scores represent...
+  unlink $outfile or warn "Couldn't clean up '$outfile': $!";
+  
+  return $result;
 }
 
 sub categorize_collection {
   my ($self, %args) = @_;
   my $c = $args{collection} or die "No collection provided";
-  
-  my @alldocs;
-  while (my $d = $c->next) {
-    push @alldocs, $d;
-  }
-  my $doc_file = $self->create_arff_file("docs", [map [$_->features, 0], @alldocs]);
 
-  my @assigned;
+  # Create the data file
+  my ($doc_fh, $doc_file) = $self->new_data_file("docs");
+  while (my $d = $c->next) {
+    print $doc_fh $self->data_file_line($d->features, 0);
+  }
+  close $doc_fh;
+
+  my $outfile = File::Temp::tmpnam($self->{tmpdir});
   
+  my @assigned;
   my $l = $self->{model}{learners};
   foreach my $cat (keys %$l) {
     my $machine_file = File::Spec->catfile($self->{model}{_in_dir}, "${cat}_model");
-    my @args = ($self->{java_path},
-		@{$self->{java_args}},
-		$self->{weka_classifier},
-		'-l', $machine_file,
-		'-T', $doc_file,
-		'-p', 0,
-               );
-
-    my @output = $self->do_cmd(@args);
-
-    foreach my $line (@output) {
-      next unless $line =~ /\S/;
-      
-      # 0 large.elem 0.4515551620220952 numberth.high
-      unless ( $line =~ /^([\d.]+)\s+(\S+)\s+([\d.]+)\s+(\S+)/ ) {
-	warn "Can't parse line $line";
-	next;
-      }
-      my ($index, $predicted, $score) = ($1, $2, $3);
-      $assigned[$index]{$cat} = $score if $predicted;  # Not sure what weka's scores represent
-      print STDERR "$index: assigned=($predicted) correct=(", $alldocs[$index]->is_in_category($cat) ? 1 : 0, ")\n"
-	if $self->verbose;
+    my @args = ($self->{bsvm_predict_path},
+		$doc_file,
+		$machine_file,
+		$outfile);
+    $self->do_cmd(@args);
+    
+    open my($fh), $outfile or die "Can't read result file '$outfile': $!";
+    my $index = 0;
+    while (<$fh>) {
+      next unless /^\d+$/;
+      $assigned[$index]{$cat} = 1 if /1/;
+      $index++;
     }
   }
+  unlink $outfile or warn "Couldn't clean up '$outfile': $!";
 
+  # Sum up the results in an Experiment object
   my $experiment = $self->create_delayed_object('experiment', categories => [map $_->name, $self->categories]);
-  foreach my $i (0..$#alldocs) {
-    $experiment->add_result([keys %{$assigned[$i]}], [map $_->name, $alldocs[$i]->categories], $alldocs[$i]->name);
+  
+  my $i = 0;
+  $c->rewind;
+  while (my $d = $c->next) {
+    $experiment->add_result([keys %{$assigned[$i]}], [map $_->name, $d->categories], $d->name);
+    $i++;
   }
 
   return $experiment;
@@ -163,56 +139,35 @@ sub categorize_collection {
 sub do_cmd {
   my ($self, @cmd) = @_;
   print STDERR " % @cmd\n" if $self->verbose;
-  
-  my @output;
-  local *KID_TO_READ;
-  my $pid = open(KID_TO_READ, "-|");
-  
-  if ($pid) {   # parent
-    @output = <KID_TO_READ>;
-    close(KID_TO_READ) or warn "@cmd exited $?";
-    
-  } else {      # child
-    exec(@cmd) or die "Can't exec @cmd: $!";
-  }
-  
-  return @output;
+  system @cmd;
 }
 
-sub create_arff_file {
-  my ($self, $name, $docs, $dir) = @_;
+sub new_data_file {
+  my ($self, $name, $dir) = @_;
   $dir = $self->{model}{_in_dir} unless defined $dir;
 
   my ($fh, $filename) = File::Temp::tempfile(
 					     $name . "_XXXX",  # Template
 					     DIR    => $dir,
-					     SUFFIX => '.arff',
+					     SUFFIX => '.scale',
 					    );
-  print $fh "\@RELATION foo\n\n";
-  
-  my $feature_names = $self->{model}{all_features};
-  foreach my $name (@$feature_names) {
-    print $fh "\@ATTRIBUTE feature-$name REAL\n";
-  }
-  print $fh "\@ATTRIBUTE category {1, 0}\n\n";
-  
-  my %feature_indices = map {$feature_names->[$_], $_} 0..$#{$feature_names};
-  my $last_index = keys %feature_indices;
-  
-  # We use the 'sparse' format, see http://www.cs.waikato.ac.nz/~ml/weka/arff.html
-  
-  print $fh "\@DATA\n";
-  foreach my $doc (@$docs) {
-    my ($features, $cat) = @$doc;
-    my $f = $features->as_hash;
-    my @ordered_keys = (sort {$feature_indices{$a} <=> $feature_indices{$b}} 
-			grep {exists $feature_indices{$_}}
-			keys %$f);
+  return ($fh, $filename);
+}
 
-    print $fh ("{",
-	       join(', ', map("$feature_indices{$_} $f->{$_}", @ordered_keys), "$last_index '$cat'"),
-	       "}\n"
-	      );
+sub data_file_line {
+  my ($self, $features, $cat) = @_;
+  my $f = $features->normalize->as_hash;
+  return "$cat " . join(' ', map "$self->{model}{rev_features}{$_}:$f->{$_}", keys %$f) . "\n";
+}
+
+sub create_data_file {
+  my ($self, $name, $docs, $dir) = @_;
+  my $feature_indices = $self->{model}{rev_features};
+
+  my ($fh, $filename) = $self->new_data_file($name, $dir);
+  
+  foreach my $doc (@$docs) {
+    print $fh $self->data_file_line(@$doc);
   }
   
   return $filename;

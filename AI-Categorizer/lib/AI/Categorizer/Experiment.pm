@@ -121,7 +121,7 @@ of the following are legal:
 
 =head1 AUTHOR
 
-Ken Williams <kenw@ee.usyd.edu.au>
+Ken Williams <ken@mathforum.org>
 
 =head1 COPYRIGHT
 

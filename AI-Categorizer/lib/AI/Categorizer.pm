@@ -510,7 +510,7 @@ about each other or use conflicting namespaces.
 
 =head1 AUTHOR
 
-Ken Williams <kenw@ee.usyd.edu.au>
+Ken Williams <ken@mathforum.org>
 
 Discussion about this module can be directed to the perl-AI list at
 <perl-ai@perl.org>.  For more info about the list, see
@@ -525,7 +525,7 @@ pp. 1-47.
 
 =head1 COPYRIGHT
 
-Copyright 2000-2002 Ken Williams.  All rights reserved.
+Copyright 2000-2003 Ken Williams.  All rights reserved.
 
 This distribution is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.  These terms apply to

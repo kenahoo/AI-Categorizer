@@ -3,6 +3,7 @@ use strict;
 use Test;
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
+use AI::Categorizer::Collection::InMemory;
 
 sub have_module {
   my $module = shift;
@@ -90,8 +91,14 @@ sub perform_standard_tests {
   ok $l;
 
   run_test_docs($l);
+
+  my $train_collection = AI::Categorizer::Collection::InMemory->new(data => \%docs);
+  ok $train_collection;
+  
+  my $h = $l->categorize_collection(collection => $train_collection);
+  ok $h->micro_precision > 0.5;
 }
 
-sub num_standard_tests () { 8 }
+sub num_standard_tests () { 10 }
 
 1;

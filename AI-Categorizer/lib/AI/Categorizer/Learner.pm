@@ -51,6 +51,7 @@ sub train {
   $self->{knowledge_set} = $args{knowledge_set} if $args{knowledge_set};
   die "No knowledge_set provided" unless $self->{knowledge_set};
 
+  $self->{knowledge_set}->finish;
   $self->create_model;    # Creates $self->{model}
   $self->delayed_object_params('hypothesis',
 			       all_categories => [keys %{$self->{model}{cat_prob}}]

@@ -43,7 +43,7 @@ sub run_test_docs {
   my $r = $l->categorize($doc);
   
   print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'farming');
+  ok($r->best_category, 'farming', "Best category is 'farming'");
   
   $doc = new AI::Categorizer::Document
     ( name => 'test2',
@@ -51,7 +51,7 @@ sub run_test_docs {
   $r = $l->categorize($doc);
   
   print "Categories: ", join(', ', $r->categories), "\n";
-  ok($r->best_category, 'vampire');
+  ok($r->best_category, 'vampire', "Best category is 'vampire'");
 
 }
 
@@ -62,10 +62,11 @@ sub set_up_tests {
 			      (
 			       name => 'Vampires/Farmers',
 			       stopwords => [qw(are be in of and)],
-			      ), 
+			      ),
+			      verbose => $ENV{TEST_VERBOSE} ? 1 : 0,
 			      %params,
 			     );
-  ok($c);
+  ok ref($c), 'AI::Categorizer', "Create an AI::Categorizer object";
   
   my %docs = training_docs();
   while (my ($name, $data) = each %docs) {
@@ -76,9 +77,9 @@ sub set_up_tests {
   ok $l;
   
   if ($params{learner_class}) {
-    ok ref $l, $params{learner_class};
+    ok ref($l), $params{learner_class}, "Make sure the correct Learner class is instantiated";
   } else {
-    ok 1;
+    ok 1, 1, "Dummy test";
   }
 
   $l->train;

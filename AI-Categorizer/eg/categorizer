@@ -128,7 +128,7 @@ EOF
 
 sub memory_usage {
   my ($rss, $vsz);
-  if ($^O eq 'darwin') {
+  if ($^O eq 'darwin' or $^O eq 'linux') {
     ($rss, $vsz) = `ps -eo rss,vsz -p $$` =~ /(\d+)\s+(\d+)/;
   } elsif ($^O eq 'solaris') {
     ($rss, $vsz) = `ps -o rss,vsz -p $$` =~ /(\d+)\s+(\d+)/;

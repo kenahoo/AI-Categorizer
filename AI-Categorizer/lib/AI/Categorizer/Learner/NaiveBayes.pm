@@ -119,6 +119,11 @@ sub save_state {
   $self->SUPER::save_state(@_);
 }
 
+sub categories {
+  my $self = shift;
+  return map AI::Categorizer::Category->by_name( name => $_ ), keys %{ $self->{model}{cat_prob} };
+}
+
 1;
 
 __END__

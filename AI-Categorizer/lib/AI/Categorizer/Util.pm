@@ -5,6 +5,12 @@ use strict;
 # 
 # $e = Evaluate->new(); $e->correct([...]); $e->assigned([...]); print $e->precision;
 
+sub average {
+  return undef unless @_;
+  my $total;
+  $total += $_ foreach @_;
+  return $total/@_;
+}
 
 sub F1 { # F1 = 2I/(A+C), I=Intersection, A=Assigned, C=Correct
   my ($assigned, $correct) = @_;

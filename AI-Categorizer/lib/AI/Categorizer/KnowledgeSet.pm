@@ -154,7 +154,7 @@ sub scan {
 
     next unless @cats;
 
-    # Compute the variance
+    # Compute the skews
     my $ssum;
     foreach my $cat (@cats) {
       $ssum += ($stats{categories}{$cat}{"${thing}_count"} - $stats{"${thing}s_per_category"}) ** 2;
@@ -298,19 +298,5 @@ sub category_by_name {
   return $self->{category_names}{$cat} if exists $self->{category_names}{$cat};
   return $self->{category_names}{$cat} = $self->create_delayed_object('category', name => $cat);
 }
-
-#  sub save_state {
-#    my $self = shift;
-  
-#    # With large corpora it's infeasible to save the whole knowledge
-#    # base.  We'll just save feature vectors & relationships.
-
-#    local $self->{documents_save} = {};
-#    foreach my $doc ($self->documents) {
-#      $self->
-#    }
-
-#    return $self->SUPER::save_state(@_);
-#  }
 
 1;

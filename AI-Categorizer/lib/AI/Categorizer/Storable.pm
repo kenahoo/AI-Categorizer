@@ -24,7 +24,7 @@ __END__
 
 =head1 NAME
 
-AI::Categorizer::Learner::Storable - Saving and Restoring State
+AI::Categorizer::Storable - Saving and Restoring State
 
 =head1 SYNOPSIS
 

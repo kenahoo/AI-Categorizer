@@ -28,7 +28,6 @@ sub create_model {
 
   $m->{features} = $k->features;
   my @features = $m->{features}->names;
-  print "$#features features\n" if $self->{verbose};
   my %feature2int = map { $features[$_] => $_ } 0..$#features;
 
   my @categories = $k->categories;
@@ -39,6 +38,7 @@ sub create_model {
   my $vec_file = File::Spec->catfile($self->{tmpdir}, 'model.vec');
   open FH, "> $vec_file" or die "> $vec_file: $!";
   foreach my $doc ($k->documents) {
+    print "." if $self->{verbose};
     printf FH ".%s  %s\n", $doc->name, join(" ", map $cat2int{$_->name}, $doc->categories);
     my $f = $doc->features->as_hash;
     foreach my $feature (keys %$f) {
@@ -47,6 +47,7 @@ sub create_model {
   }
   close FH;
   $m->{vec_file} = $vec_file;
+  print "\n" if $self->{verbose};
 
   # Train the network
   $m->{train_file} = File::Spec->catfile($self->{tmpdir}, "training.nnt");

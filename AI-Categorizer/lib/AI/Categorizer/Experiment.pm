@@ -86,16 +86,20 @@ its methods are available here, with the following additions:
 
 =item new( categories => \%categories )
 
-=item new( categories => \@categories, verbose => 1 )
+=item new( categories => \@categories, verbose => 1, sig_figs => 2 )
 
 Returns a new Experiment object.  A required C<categories> parameter
 specifies the names of all categories in the data set.  The category
 names may be specified either the keys in a reference to a hash, or as
 the entries in a reference to an array.
 
-In addition, the C<new()> method accepts a C<verbose> parameter which
+The C<new()> method accepts a C<verbose> parameter which
 will cause some status/debugging information to be printed to
 C<STDOUT> when C<verbose> is set to a true value.
+
+A C<sig_figs> indicates the number of significant figures that should
+be used when showing the results in the C<results_table()> method.  It
+does not affect the other methods like C<micro_precision()>.
 
 =item add_result($assigned, $correct, $name)
 

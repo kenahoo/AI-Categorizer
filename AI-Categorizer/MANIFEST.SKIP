@@ -15,5 +15,6 @@ MANIFEST\.SKIP
 ^t/classpath$
 ^t/state
 
+^AI-Categorizer
 BayesBoolean
 NNetTC

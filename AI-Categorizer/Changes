@@ -1,6 +1,55 @@
 Revision history for Perl extension AI::Categorizer.
 
-0.04
+0.04  Thu Nov  7 19:27:15 AEST 2002
+
+ - Added learners for SVMs, Decision Trees, and a pass-through to
+   Weka.
+
+ - Added a virtual class for binary classifiers.
+
+ - Wrote documentation for lots of the undocumented classes.
+
+ - Added a PNG file giving an overview diagram of the classes.
+
+ - Added a script 'categorizer' to provide a simple command-line
+   interface to AI::Categorizer
+
+ - save_state() and restore_state() now save to a directory, not a
+   file.
+
+ - Removed F1(), precision(), recall(), etc. from Util package since
+   they're in Statistics::Contingency.  Added random_elements() to
+   Util.
+
+ - Collection::Files now warns when no category information is known
+   about a document in the collection (knowing it's in zero categories
+   is okay).
+
+ - Added the Collection::InMemory class
+
+ - Much more thorough testing with 'make test'.
+
+ - Added add_hypothesis() method to Experiment.
+
+ - Added dot() and value() methods to FeatureVector.
+
+ - Added 'feature_selection' parameter to KnowledgeSet.
+
+ - Added document($name) accessor method to KnowledgeSet.
+
+ - In KnowledgeSet, load(), read(), and scan_*() can now accept a
+   Collection object.
+
+ - Added document_frequency(), finish(), and weigh_features() methods
+   to KnowledgeSet.
+
+ - Added save_features() and restore_features() to KnowledgeSet.
+
+ - Added default categories() and categorize() methods to Learner base
+   class.  get_scores() is now abstract.
+
+ - Extended interface of ObjectSet class with retrieve(), includes(),
+   and includes_name().
 
  - Moved 'term_weighting' parameter from Document to KnowledgeSet,
    since the normalized version needs to know the maximum

@@ -36,4 +36,5 @@ t/03-weka.t
 t/04-decision_tree.t
 t/05-svm.t
 t/10-tools.t
+t/11-feature_vector.t
 t/common.pl

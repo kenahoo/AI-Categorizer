@@ -21,16 +21,23 @@ sub as_hash {
   return $self->{features};
 }
 
-sub normalize {
+sub euclidean_length {
   my $self = shift;
+  my $f = $self->{features};
+
   my $total = 0;
-  local $_;
-  while ( (undef, $_) = each %{ $self->{features} } ) {
+  foreach (values %$f) {
     $total += $_**2;
   }
-  $total = sqrt($total);
-  foreach ( values %{ $self->{features} } ) {
-    $_ /= $total;
+  return sqrt($total);
+}
+
+sub normalize {
+  my $self = shift;
+  
+  my $e_length = $self->euclidean_length;
+  foreach (values %{$self->{features}}) {
+    $_ /= $e_length;
   }
   return $self;
 }

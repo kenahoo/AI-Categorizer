@@ -110,7 +110,7 @@ sub trim_doc_features {
 sub prog_bar {
   my ($self, $count) = @_;
   
-  return sub { local $|=1; print '.' } unless eval "use Time::Progress; 1";
+  return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
   
   my $pb = 'Time::Progress'->new;
   $pb->attr(max => $count);
@@ -118,8 +118,7 @@ sub prog_bar {
   return sub {
     $i++;
     return if $i % 25;
-    local $|=1;
-    print $pb->report("%50b %p ($i/$count)\r", $i);
+    print STDERR $pb->report("%50b %p ($i/$count)\r", $i);
   };
 }
 

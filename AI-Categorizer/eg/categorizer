@@ -44,7 +44,7 @@ run_section('train',             3, $do_stage);
 run_section('evaluate_test_set', 4, $do_stage);
 if ($do_stage->{5}) {
   my $result = $c->stats_table;
-  print $result;
+  print $result if $c->verbose;
   print $out_fh $result if $out_fh;
 }
 
@@ -52,7 +52,7 @@ sub run_section {
   my ($section, $stage, $do_stage) = @_;
   return unless $do_stage->{$stage};
   if (keys %$do_stage > 1) {
-    print " % $0 @ARGV -$stage\n";
+    print " % $0 @ARGV -$stage\n" if $c->verbose;
     die "$0 is not executable, please change its execution permissions"
       unless -x $0;
     system($0, @ARGV, "-$stage") == 0
@@ -64,7 +64,7 @@ sub run_section {
   my $end = new Benchmark;
   my $summary = timestr(timediff($end, $start));
   my ($rss, $vsz) = memory_usage();
-  print "$summary (memory: rss=$rss, vsz=$vsz)\n";
+  print "$summary (memory: rss=$rss, vsz=$vsz)\n" if $c->verbose;
   print $out_fh "Stage $stage: $summary (memory: rss=$rss, vsz=$vsz)\n" if $out_fh;
 }
 

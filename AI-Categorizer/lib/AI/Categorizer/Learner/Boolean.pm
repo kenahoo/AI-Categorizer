@@ -7,7 +7,7 @@ use base qw(AI::Categorizer::Learner);
 
 sub create_model {
   my $self = shift;
-  my $m = $self->{model} = {};
+  my $m = $self->{model} ||= {};
 
   foreach my $cat ($self->knowledge_set->categories) {
     my (@p, @n);

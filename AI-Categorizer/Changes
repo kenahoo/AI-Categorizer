@@ -1,5 +1,11 @@
 Revision history for Perl extension AI::Categorizer.
 
+0.05
+
+ - Fixed documentation for add_hypothesis() [spotted by Thierry
+   Guillotin]
+
+
 0.04  Thu Nov  7 19:27:15 AEST 2002
 
  - Added learners for SVMs, Decision Trees, and a pass-through to

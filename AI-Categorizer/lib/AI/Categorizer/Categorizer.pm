@@ -11,7 +11,6 @@ use AI::Categorizer::ObjectSet;
 __PACKAGE__->valid_params
   (
    knowledge  => { isa => 'AI::Categorizer::KnowledgeSet', optional => 1 },
-   features_kept => { type => SCALAR, default => 0.2 },
    verbose => {type => SCALAR, default => 0},
   );
 

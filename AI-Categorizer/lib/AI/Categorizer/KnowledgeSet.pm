@@ -750,15 +750,3 @@ modify it under the same terms as Perl itself.
 AI::Categorizer(3)
 
 =cut
-
-
-
-=item term_weighting
-
-Specifies how word counts should be converted to feature vector
-values.  If C<term_weighting> is set to C<natural>, the word counts
-themselves will be used as the values.  C<boolean> indicates that each
-positive word count will be converted to 1 (or whatever the
-C<content_weight> for this section is).  C<log> indicates that the
-values will be set to C<1+log(count)>.
-

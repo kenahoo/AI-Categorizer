@@ -187,9 +187,6 @@ sub load {
 sub read {
   my ($self, %args) = @_;
 
-  my $data_path = delete $args{path}
-    or die "read() requires a 'path' argument";
-
   my $collection = $self->create_delayed_object('collection', %args);
 
   local $| = 1;

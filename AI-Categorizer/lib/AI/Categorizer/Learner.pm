@@ -90,6 +90,7 @@ sub categorize_collection {
     $experiment->add_result([$h->categories], [map $_->name, $d->categories], $d->name);
     $pb->($experiment);
   }
+  print STDERR "\n" if $self->verbose;
 
   return $experiment;
 }

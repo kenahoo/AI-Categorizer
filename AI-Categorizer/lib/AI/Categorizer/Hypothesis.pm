@@ -147,14 +147,15 @@ the given category.
 =item scores(@names)
 
 Returns a list of result scores for the given categories.  Since the
-interface is still changing, not very much can officially be said
+interface is still changing, and since different Learners implement
+scoring in different ways, not very much can officially be said
 about the scores, except that a good score is higher than a bad
 score.  Individual Learners will have their own procedures for
 determining scores, so you cannot compare one Learner's score with
-another Learner's.  You often cannot compare scores from a single
-Learner on two different categorization tasks either (for instance,
-one Learner might always give scores between 0 and 1, and another
-Learner might always return scores less than 0).
+another Learner's - for instance, one Learner might always give scores
+between 0 and 1, and another Learner might always return scores less
+than 0.  You often cannot compare scores from a single Learner on two
+different categorization tasks either.
 
 =item all_categories()
 

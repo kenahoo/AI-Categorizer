@@ -30,6 +30,5 @@ sub new {
 
 # Abstract methods
 sub next;
-sub count_documents;
 
 1;

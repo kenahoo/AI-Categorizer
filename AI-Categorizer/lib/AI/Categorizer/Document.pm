@@ -69,8 +69,8 @@ sub new {
   return $self;
 }
 
-# Read a document from an external source - a virtual method
-sub read;
+# Parse a document format - a virtual method
+sub parse;
 
 
 sub new_from_string {

@@ -26,6 +26,7 @@ die $@ if $@;
 my $out_fh;
 if ($outfile) {
   open $out_fh, ">> $outfile" or die "Can't create $outfile: $!";
+  select((select($out_fh), $|=1)[0]);
   if (keys(%$do_stage) > 1) {
     print $out_fh "~~~~~~~~~~~~~~~~", scalar(localtime), "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     if ($HAVE_YAML) {

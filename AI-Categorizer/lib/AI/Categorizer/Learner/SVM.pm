@@ -7,6 +7,7 @@ use base qw(AI::Categorizer::Learner::Boolean);
 use Algorithm::SVM;
 use Algorithm::SVM::DataSet;
 use Params::Validate qw(:types);
+use File::Spec;
 
 __PACKAGE__->valid_params
   (
@@ -48,9 +49,7 @@ sub create_boolean_model {
     push @neg, $self->_doc_2_dataset($doc, 0, $self->{model}{feature_map});
   }
 
-  warn "Training...", $cat->name, "\n" if $self->verbose;
   $svm->train(@pos, @neg);
-
   return $svm;
 }
 
@@ -59,6 +58,37 @@ sub get_boolean_score {
   my $ds = $self->_doc_2_dataset($doc, -1, $self->{model}{feature_map});
   my $result = $svm->predict($ds);
   return $result;
+}
+
+sub save_state {
+  my ($self, $path) = @_;
+  {
+    local $self->{model}{learners};
+    $self->SUPER::save_state($path);
+  }
+  return unless $self->{model};
+  
+  my $svm_dir = File::Spec->catdir($path, 'svms');
+  mkdir($svm_dir, 0777) or die "Couldn't create $svm_dir: $!";
+  while (my ($name, $learner) = each %{$self->{model}{learners}}) {
+    my $path = File::Spec->catfile($svm_dir, $name);
+    $learner->save($path);
+  }
+}
+
+sub restore_state {
+  my ($self, $path) = @_;
+  $self = $self->SUPER::restore_state($path);
+  
+  my $svm_dir = File::Spec->catdir($path, 'svms');
+  return $self unless -e $svm_dir;
+  opendir my($dh), $svm_dir or die "Can't open directory $svm_dir: $!";
+  while (defined (my $file = readdir $dh)) {
+    my $full_file = File::Spec->catfile($svm_dir, $file);
+    next if -d $full_file;
+    $self->{model}{learners}{$file} = new Algorithm::SVM(Model => $full_file);
+  }
+  return $self;
 }
 
 1;

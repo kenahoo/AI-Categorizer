@@ -23,7 +23,7 @@ sub restore_state {
 
 =head1 NAME
 
-AI::Categorizer::Learner::SVM - Support Vector Machine Learner
+AI::Categorizer::Learner::Storable - Saving and Restoring State
 
 =head1 SYNOPSIS
 

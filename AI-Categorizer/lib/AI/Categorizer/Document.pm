@@ -27,6 +27,7 @@ __PACKAGE__->valid_params
 		},
    content   => {
 		 type => HASHREF|SCALAR,
+		 default => '',
 		},
    content_weights => {
 		       type => HASHREF,
@@ -52,8 +53,8 @@ __PACKAGE__->valid_params
 
 __PACKAGE__->contained_objects
   (
-   feature_vector => { delayed => 1,
-		       class => 'AI::Categorizer::FeatureVector' },
+   features => { delayed => 1,
+		 class => 'AI::Categorizer::FeatureVector' },
   );
 
 ### Constructors
@@ -87,9 +88,9 @@ sub name { $_[0]->{name} }
 sub features {
   my $self = shift;
   if (@_) {
-    $self->{feature_vector} = shift;
+    $self->{features} = shift;
   }
-  return $self->{feature_vector};
+  return $self->{features};
 }
 
 sub categories {
@@ -112,7 +113,7 @@ sub create_feature_vector {
     my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{$name} : 1 );
     @features{keys %$h} = values %$h;
   }
-  $self->{feature_vector} = $self->create_delayed_object('feature_vector', features => \%features);
+  $self->{features} = $self->create_delayed_object('features', features => \%features);
 }
 
 sub is_in_category {
@@ -234,7 +235,7 @@ AI::Categorizer::Document - Embodies a document
  my $d = new AI::Categorizer::Document(name => $string,
                                        content => $string);
  
- # More arguments are accepted:
+ # Other parameters are accepted:
  my $d = new AI::Categorizer::Document(name => $string,
                                        categories => \@category_objects,
                                        content => { subject => $string,
@@ -248,15 +249,127 @@ AI::Categorizer::Document - Embodies a document
                                        use_features => $feature_vector,
                                       );
  
- # Pass the document to a categorization algorithm:
+ # Specify explicit feature vector:
+ my $d = new AI::Categorizer::Document(name => $string);
+ $d->features( $feature_vector );
+ 
+ # Now pass the document to a categorization algorithm:
  my $learner = AI::Categorizer::Learner::NaiveBayes->restore_state($path);
  my $hypothesis = $learner->categorize($document);
 
 =head1 DESCRIPTION
 
-The Document class embodies the data in a single document.  
+The Document class embodies the data in a single document, and
+contains methods for turning this data into a FeatureVector.  Usually
+documents are plain text, but subclasses of the Document class may
+handle any kind of data.
 
-(more documentation to follow)
+=head1 METHODS
+
+=over 4
+
+=item new(%parameters)
+
+Creates a new Document object.  Accepts the following parameters:
+
+=over 4
+
+=item name
+
+A string that identifies this document.  Required.
+
+=item content
+
+The raw content of this document.  May be specified as either a string
+or as a hash reference, allowing structured document types.
+
+=item content_weights
+
+A hash reference indicating the weights that should be assigned to
+features in different sections of a structured document when creating
+its feature vector.  The weight is a multiplier of the feature vector
+values.  For instance, if a C<subject> section has a weight of 3 and a
+C<body> section has a weight of 1, and word counts are used as feature
+vector values, then it will be as if all words appearing in the
+C<subject> appeared 3 times.
+
+If no weights are specified, all weights are set to 1.
+
+=item front_bias
+
+Allows smooth bias of the weights of words in a document according to
+their position.  The value should be a number between -1 and 1.
+Positive numbers indicate that words toward the beginning of the
+document should have higher weight than words toward the end of the
+document.  Negative numbers indicate the opposite.  A bias of 0
+indicates that no biasing should be done.
+
+=item term_weighting
+
+Specifies how word counts should be converted to feature vector
+values.  If C<term_weighting> is set to C<natural>, the word counts
+themselves will be used as the values.  C<boolean> indicates that each
+positive word count will be converted to 1 (or whatever the
+C<content_weight> for this section is).  C<log> indicates that the
+values will be set to C<1+log(count)>.
+
+=item categories
+
+A reference to an array of Category objects that this document belongs
+to.  Optional.
+
+=item stopwords
+
+A list/hash of features (words) that should be ignored when parsing
+document content.  A hash reference is preferred, with the features as
+the keys.  If you pass an array reference containing the features, it
+will be converted to a hash reference internally.
+
+=item use_features
+
+A Feature Vector specifying the only features that should be
+considered when parsing this document.  This is an alternative to
+using C<stopwords>.
+
+=item stemming
+
+Indicates the linguistic procedure that should be used to convert
+tokens in the document to features.  Possible values are C<none>,
+which indicates that the tokens should be used without change, or
+C<porter>, indicating that the Porter stemming algorithm should be
+applied to each token.  This requires the C<Lingua::Stem> module from
+CPAN.
+
+=back
+
+=item read( path =E<gt> $path )
+
+An alternative constructor method which reads a file on disk and
+returns a document with that file's contents.
+
+=item name()
+
+Returns this document's C<name> property as specified when the
+document was created.
+
+=item features()
+
+Returns the Feature Vector associated with this document.
+
+=item categories()
+
+In a list context, returns a list of Category objects to which this
+document belongs.  In a scalar context, returns the number of such
+categories.
+
+=item create_feature_vector()
+
+Creates this document's Feature Vector by parsing its content.  You
+won't call this method directly, it's called by C<new()>.
+
+=back
+
+
 
 =head1 AUTHOR
 

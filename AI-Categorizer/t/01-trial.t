@@ -48,7 +48,7 @@ my $nb = new AI::Categorizer::Learner::NaiveBayes
   );
 ok($nb);
 
-$nb->train(knowledge => $k);
+$nb->train(knowledge_set => $k);
 
 my $doc = new AI::Categorizer::Document
   ( name => 'test1',

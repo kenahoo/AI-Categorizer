@@ -4,6 +4,7 @@ Makefile.PL
 README
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Categorizer.pm
+lib/AI/Categorizer/Categorizer/NNetTC.pm
 lib/AI/Categorizer/Categorizer/NaiveBayes.pm
 lib/AI/Categorizer/Category.pm
 lib/AI/Categorizer/Collection.pm

@@ -35,10 +35,13 @@ sub euclidean_length {
 sub normalize {
   my $self = shift;
   
-  my $e_length = $self->euclidean_length;
-  foreach (values %{$self->{features}}) {
-    $_ /= $e_length;
-  }
+  $self->scale( 1 / $self->euclidean_length );
+  return $self;
+}
+
+sub scale {
+  my ($self, $scalar) = @_;
+  $_ *= $scalar foreach values %{$self->{features}};
   return $self;
 }
 
@@ -85,8 +88,8 @@ sub dot {
 
   my $sum = 0;
   my $f = $self->{features};
-  while (my ($k, $v) = each %$other) {
-    $sum += $f->{$k} * $v if exists $f->{$k};
+  while (my ($k, $v) = each %$f) {
+    $sum += $other->{$k} * $v if exists $other->{$k};
   }
   return $sum;
 }
@@ -106,6 +109,11 @@ sub includes {
 
 sub value {
   return $_[0]->{features}{$_[1]};
+}
+
+sub values {
+  my $self = shift;
+  return @{ $self->{features} }{ @_ };
 }
 
 1;

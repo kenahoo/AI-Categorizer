@@ -37,10 +37,6 @@ __PACKAGE__->valid_params
 		  type => SCALAR,
 		  default => 0,
 		  },
-   term_weighting  => {
-		       type => SCALAR,
-		       default => 'natural',
-		      },
    use_features => {
 		    type => HASHREF|UNDEF,
 		    default => undef,
@@ -188,21 +184,7 @@ sub _weigh_tokens {
 sub vectorize {
   my ($self, %args) = @_;
   my $tokens = $self->_filter_tokens($args{tokens});
-
-  return { map {( $_ => $args{weight})} @$tokens }
-    if $self->{term_weighting} eq 'boolean';
-
-  my $counts = $self->_weigh_tokens($tokens, $args{weight});
-
-  if ($self->{term_weighting} eq 'natural') {
-    # Nothing to do
-  } elsif ($self->{term_weighting} eq 'log') {
-    $_ = 1 + log($_) foreach values %$counts;
-  } else {
-    die "term_weighting must be one of 'natural', 'log', or 'boolean'";
-  }
-  
-  return $counts;
+  return $self->_weigh_tokens($tokens, $args{weight});
 }
 
 sub read {

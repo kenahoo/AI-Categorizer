@@ -16,3 +16,4 @@ MANIFEST\.SKIP
 ^t/state
 
 BayesBoolean
+NNetTC

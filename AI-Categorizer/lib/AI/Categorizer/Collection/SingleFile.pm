@@ -50,14 +50,17 @@ sub next {
     return undef unless @{$self->{path}};
     $self->_next_path;
     return $self->next;
+  } elsif ($content =~ /^\s*$self->{delimiter}$/) { # Skip empty docs
+    return $self->next;
   }
 
   my ($doc, $categories) = $self->call_method('document', 'parse', 
-					      text => $content,
+					      content => $content,
 					     );
   my $k = $self->container;
-  my @categories = map $k->category_by_name($_) @$categories;
-  return $k->create_contained_object('document', content => $doc, categories => \@categories);
+  my @categories = map $k->category_by_name($_), @$categories;
+  my $name = delete $doc->{name};
+  return $k->create_delayed_object('document', name => $name, content => $doc, categories => \@categories);
 }
 
 1;

@@ -29,10 +29,19 @@ __PACKAGE__->contained_objects
 	       },
   );
 
+my %REGISTRY = ();
+
 sub new {
   my $self = shift()->SUPER::new(@_);
   $self->{documents} = new AI::Categorizer::ObjectSet( @{$self->{documents}} );
+  $REGISTRY{$self->{name}} = $self;
   return $self;
+}
+
+sub by_name {
+  my ($class, %args) = @_;
+  return $REGISTRY{$args{name}} if exists $REGISTRY{$args{name}};
+  return $class->new(%args);
 }
 
 sub name { $_[0]->{name} }

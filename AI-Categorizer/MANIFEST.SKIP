@@ -12,6 +12,8 @@ MANIFEST\.SKIP
 ^blib
 ^test-
 ^pm_to_blib$
+^_build
+^Build$
 
 ^t/classpath$
 ^t/state

@@ -2,6 +2,7 @@ Build.PL
 Changes
 INSTALL
 MANIFEST
+META.yml
 Makefile.PL
 README
 doc/classes-overview.png

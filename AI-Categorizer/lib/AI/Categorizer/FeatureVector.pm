@@ -72,6 +72,18 @@ sub add {
   }
 }
 
+sub dot {
+  my ($self, $other) = @_;
+  $other = $other->as_hash if UNIVERSAL::isa($other, __PACKAGE__);
+
+  my $sum = 0;
+  my $f = $self->{features};
+  while (my ($k, $v) = each %$other) {
+    $sum += $f->{$k} * $v if exists $f->{$k};
+  }
+  return $sum;
+}
+
 sub sum {
   my ($self) = @_;
 
@@ -83,6 +95,10 @@ sub sum {
 
 sub includes {
   return exists $_[0]->{features}{$_[1]};
+}
+
+sub value {
+  return $_[0]->{features}{$_[1]};
 }
 
 1;
@@ -103,6 +119,8 @@ AI::Categorizer::FeatureVector - Features vs. Values
   $x = $f1->length;
   $x = $f1->sum;
   $x = $f1->includes('howdy');
+  $x = $f1->value('howdy');
+  $x = $f1->dot($f2);
   
   $f3 = $f1->clone;
   $f3 = $f1->intersection($f2);

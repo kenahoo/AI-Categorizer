@@ -1,0 +1,8 @@
+--- #YAML:1.0
+# This is an example YAML config file for run_experiment.pl.  It won't be much good
+# to you without editing, since you don't have the drmath-1.00 corpus.
+data_root: "../../corpora/drmath-1.00"
+stopword_file: "../../corpora/drmath-1.00/SMART.stoplist"
+progress_file: "../../corpora/drmath"
+stemming: porter
+verbose: 1

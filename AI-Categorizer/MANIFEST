@@ -2,6 +2,8 @@ Changes
 MANIFEST
 Makefile.PL
 README
+doc/classes.png
+eg/drmath-1.00.yaml
 eg/run_experiment.pl
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Category.pm

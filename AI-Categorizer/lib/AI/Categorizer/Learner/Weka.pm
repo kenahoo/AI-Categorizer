@@ -1,13 +1,13 @@
 package AI::Categorizer::Learner::Weka;
 
 use strict;
-use AI::Categorizer::Learner;
-use base qw(AI::Categorizer::Learner);
+use AI::Categorizer::Learner::Boolean;
+use base qw(AI::Categorizer::Learner::Boolean);
 use Params::Validate qw(:types);
 use File::Spec;
 use File::Copy;
 use File::Path ();
-
+use File::Temp ();
 
 __PACKAGE__->valid_params
   (
@@ -16,7 +16,7 @@ __PACKAGE__->valid_params
    weka_path => {type => SCALAR, optional => 1},
    weka_classifier => {type => SCALAR, default => 'weka.classifiers.NaiveBayes'},
    weka_args => {type => SCALAR|ARRAYREF, optional => 1},
-   tmpdir => {type => SCALAR, default => '/tmp'},
+   tmpdir => {type => SCALAR, default => File::Spec->tmpdir},
   );
 
 __PACKAGE__->contained_objects
@@ -43,110 +43,112 @@ sub new {
 # java -classpath /Applications/Science/weka-3-2-3/weka.jar weka.classifiers.NaiveBayes -t /tmp/train_file.arff -d /tmp/weka-machine
 
 sub create_model {
-  my $self = shift;
-  my $m = $self->{model} = {};
-  
-  $m->{categories} = [ $self->knowledge_set->categories ];
+  my ($self) = shift;
+  my $m = $self->{model} ||= {};
   $m->{all_features} = [ $self->knowledge_set->features->names ];
-  
-  # Create data file $train_file in ARFF format
-  my $train_file = File::Spec->catfile($self->{tmpdir}, 'train_file.arff');
+  $m->{_in_dir} = File::Temp::tempdir( DIR => $self->{tmpdir} );
 
-  my @docs = map { [$_->features, $_->categories ? ($_->categories)[0]->name : 'unknown'] } $self->knowledge_set->documents;
-
-  $self->create_arff_file($train_file, \@docs);
-  
   # Create a dummy test file $dummy_file in ARFF format (a kludgey WEKA requirement)
-  my $dummy_file = File::Spec->catfile($self->{tmpdir}, 'dummy.arff');
   my $dummy_features = $self->create_delayed_object('features');
-  $self->create_arff_file($dummy_file, [[$dummy_features, 'unknown']]);
+  $m->{dummy_file} = $self->create_arff_file("dummy", [[$dummy_features, 0]]);
 
-  my $outfile = File::Spec->catfile($self->{tmpdir}, 'weka-machine');
+  $self->SUPER::create_model(@_);
+}
+
+sub create_boolean_model {
+  my ($self, $pos, $neg, $cat) = @_;
+
+  my @docs = (map([$_->features, 1], @$pos),
+	      map([$_->features, 0], @$neg));
+  my $train_file = $self->create_arff_file($cat->name . '_train', \@docs);
+
+  my %info = (machine_file => $cat->name . '_model');
+  my $outfile = File::Spec->catfile($self->{model}{_in_dir}, $info{machine_file});
 
   my @args = ($self->{java_path},
 	      @{$self->{java_args}},
 	      $self->{weka_classifier}, 
 	      @{$self->{weka_args}},
 	      '-t', $train_file,
-	      '-T', $dummy_file,
+	      '-T', $self->{model}{dummy_file},
 	      '-d', $outfile,
 	      '-v',
 	      '-p', '0',
 	     );
   $self->do_cmd(@args);
   
-  $m->{machine_file} = $outfile;
-  return $m;
+  return \%info;
 }
 
 # java -classpath /Applications/Science/weka-3-2-3/weka.jar weka.classifiers.NaiveBayes -l out -T test.arff -p 0
 
-sub get_scores {
-  my ($self, $doc) = @_;
-
-  # XXX Create document file
-  my $doc_file = File::Spec->catfile( $self->{tmpdir}, "doc_$$" );
-  my $cat = $doc->categories ? ($doc->categories)[0]->name : 'unknown';
-  $self->create_arff_file($doc_file, [[$doc->features, $cat]]);
+sub get_boolean_score {
+  my ($self, $doc, $info) = @_;
+  
+  # Create document file
+  my $doc_file = $self->create_arff_file('doc', [[$doc->features, 0]], $self->{tmpdir});
+  my $machine_file = File::Spec->catfile($self->{model}{_in_dir}, $info->{machine_file});
 
   my @args = ($self->{java_path},
 	      @{$self->{java_args}},
 	      $self->{weka_classifier},
-	      '-l', $self->{model}{machine_file},
+	      '-l', $machine_file,
 	      '-T', $doc_file,
 	      '-p', 0,
 	     );
 
   my @output = $self->do_cmd(@args);
 
-  my $scores = { map {$_->name,0} @{ $self->{model}{categories} } };
+  my %scores;
   foreach (@output) {
+    # <doc> <category> <score> <real_category>
     # 0 large.elem 0.4515551620220952 numberth.high
     next unless my ($index, $predicted, $score) = /^([\d.]+)\s+(\S+)\s+([\d.]+)/;
-    $scores->{$predicted} = 1;
+    $scores{$predicted} = $score;
   }
 
-  return ($scores, 0.5);
+  return $scores{1} || 0;  # Not sure what weka's scores represent...
 }
 
-sub categorize_collection {
-  my ($self, %args) = @_;
-  my $c = $args{collection} or die "No collection provided";
+# XXX not updated yet for boolean task
+#  sub categorize_collection {
+#    my ($self, %args) = @_;
+#    my $c = $args{collection} or die "No collection provided";
   
-  my $doc_file = File::Spec->catfile( $self->{tmpdir}, "doc_$$" );
-  my @docs;
-  while (my $d = $c->next) {
-    push @docs, [$d->features, $d->categories ? ($d->categories)[0]->name : 'unknown'];
-  }
-  $self->create_arff_file($doc_file, \@docs);
+#    my $doc_file = File::Spec->catfile( $self->{tmpdir}, "doc_$$" );
+#    my @docs;
+#    while (my $d = $c->next) {
+#      push @docs, [$d->features, 0];
+#    }
+#    $self->create_arff_file($doc_file, \@docs);
   
-  my $experiment = $self->create_delayed_object('experiment', categories => [map $_->name, $self->categories]);
+#    my $experiment = $self->create_delayed_object('experiment', categories => [map $_->name, $self->categories]);
   
-  my @args = ($self->{java_path},
-              @{$self->{java_args}},
-              $self->{weka_classifier},
-              '-l', $self->{model}{machine_file},
-              '-T', $doc_file,
-              '-p', 0,
-             );
+#    my @args = ($self->{java_path},
+#                @{$self->{java_args}},
+#                $self->{weka_classifier},
+#                '-l', $self->{model}{machine_file},
+#                '-T', $doc_file,
+#                '-p', 0,
+#               );
   
-  my @output = $self->do_cmd(@args);
-  foreach my $line (@output) {
-    # 0 large.elem 0.4515551620220952 numberth.high
-    unless ( $line =~ /^([\d.]+)\s+(\S+)\s+([\d.]+)\s+(\S+)/ ) {
-      warn "Can't parse line $line";
-      next;
-    }
-    my ($index, $predicted, $score, $real) = ($1, $2, $3, $4);
-    $experiment->add_result($predicted, $real, $index);
+#    my @output = $self->do_cmd(@args);
+#    foreach my $line (@output) {
+#      # 0 large.elem 0.4515551620220952 numberth.high
+#      unless ( $line =~ /^([\d.]+)\s+(\S+)\s+([\d.]+)\s+(\S+)/ ) {
+#        warn "Can't parse line $line";
+#        next;
+#      }
+#      my ($index, $predicted, $score, $real) = ($1, $2, $3, $4);
+#      $experiment->add_result($predicted, $real, $index);
 
-    if ($self->verbose) {
-      print STDERR "$index: assigned=($predicted) correct=($real)\n";
-    }
-  }
+#      if ($self->verbose) {
+#        print STDERR "$index: assigned=($predicted) correct=($real)\n";
+#      }
+#    }
 
-  return $experiment;
-}
+#    return $experiment;
+#  }
 
 
 sub do_cmd {
@@ -168,18 +170,22 @@ sub do_cmd {
   return @output;
 }
 
-
 sub create_arff_file {
-  my ($self, $file, $docs) = @_;
-  
-  open my $fh, "> $file" or die "Can't create $file: $!";
+  my ($self, $name, $docs, $dir) = @_;
+  $dir = $self->{model}{_in_dir} unless defined $dir;
+
+  my ($fh, $filename) = File::Temp::tempfile(
+					     $name . "_XXXX",  # Template
+					     DIR    => $dir,
+					     SUFFIX => '.arff',
+					    );
   print $fh "\@RELATION foo\n\n";
   
   my $feature_names = $self->{model}{all_features};
   foreach my $name (@$feature_names) {
     print $fh "\@ATTRIBUTE feature-$name REAL\n";
   }
-  print $fh "\@ATTRIBUTE category {", join(',', map($_->name, $self->categories), 'unknown'), "}\n\n";
+  print $fh "\@ATTRIBUTE category {1, 0}\n\n";
   
   my %feature_indices = map {$feature_names->[$_], $_} 0..$#{$feature_names};
   my $last_index = keys %feature_indices;
@@ -199,34 +205,39 @@ sub create_arff_file {
 	       "}\n"
 	      );
   }
+  
+  return $filename;
 }
 
 sub save_state {
   my ($self, $path) = @_;
-  local $self->{knowledge_set};  # Don't need the knowledge_set to categorize
 
-  if (-e $path) {
-    File::Path::rmtree($path, 1, 0);
-    die "Couldn't remove existing $path" if -e $path;
+  {
+    local $self->{knowledge_set};
+    $self->SUPER::save_state($path);
   }
+  return unless $self->{model};
 
-  mkdir $path or die "Couldn't create dir $path: $!";
-  $self->SUPER::save_state(File::Spec->catfile($path, 'self'));
-  File::Copy::copy($self->{model}{machine_file}, File::Spec->catfile($path, 'weka-machine'));
+  my $model_dir = File::Spec->catdir($path, 'models');
+  mkdir($model_dir, 0777) or die "Couldn't create $model_dir: $!";
+  while (my ($name, $learner) = each %{$self->{model}{learners}}) {
+    my $oldpath = File::Spec->catdir($self->{model}{_in_dir}, $learner->{machine_file});
+    my $newpath = File::Spec->catfile($model_dir, "${name}_model");
+    File::Copy::copy($oldpath, $newpath);
+  }
+  $self->{model}{_in_dir} = $model_dir;
 }
 
 sub restore_state {
   my ($pkg, $path) = @_;
   
-  my $self = $pkg->SUPER::restore_state( File::Spec->catfile($path, 'self') );
-  $self->{model}{machine_file} = File::Spec->catfile($path, 'weka-machine');
+  my $self = $pkg->SUPER::restore_state($path);
+
+  my $model_dir = File::Spec->catdir($path, 'models');
+  return $self unless -e $model_dir;
+  $self->{model}{_in_dir} = $model_dir;
   
   return $self;
-}
-
-sub categories {
-  my $self = shift;
-  return @{ $self->{model}{categories} };
 }
 
 1;

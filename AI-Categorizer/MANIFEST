@@ -6,10 +6,16 @@ lib/AI/Categorizer.pm
 lib/AI/Categorizer/Categorizer.pm
 lib/AI/Categorizer/Categorizer/NaiveBayes.pm
 lib/AI/Categorizer/Category.pm
+lib/AI/Categorizer/Collection.pm
+lib/AI/Categorizer/Collection/Files.pm
+lib/AI/Categorizer/Collection/SingleFile.pm
 lib/AI/Categorizer/Document.pm
+lib/AI/Categorizer/Document/SMART.pm
+lib/AI/Categorizer/Document/Text.pm
 lib/AI/Categorizer/FeatureVector.pm
 lib/AI/Categorizer/Hypothesis.pm
 lib/AI/Categorizer/KnowledgeSet.pm
 lib/AI/Categorizer/ObjectSet.pm
 lib/AI/Categorizer/Storable.pm
+lib/AI/Categorizer/Util.pm
 test.pl

@@ -32,6 +32,10 @@ __PACKAGE__->valid_params
 		       type => HASHREF,
 		       default => {},
 		      },
+   front_bias => {
+		  type => SCALAR,
+		  default => 0,
+		  },
    term_weighting  => {
 		       type => SCALAR,
 		       default => 'natural',
@@ -154,32 +158,64 @@ sub stem_words {
   @$tokens = @{ Lingua::Stem::stem(@$tokens) };
 }
 
+sub _filter_tokens {
+  my ($self, $tokens_in) = @_;
+
+  if ($self->{use_features}) {
+    my $f = $self->{use_features}->as_hash;
+    return [ grep  exists($f->{$_}), @$tokens_in ];
+  } elsif ($self->{stopwords}) {
+    my $s = $self->{stopwords};
+    return [ grep !exists($s->{$_}), @$tokens_in ];
+  }
+  return $tokens_in;
+}
+
+sub _weigh_tokens {
+  my ($self, $tokens, $weight) = @_;
+
+  my %counts;
+  if (my $b = 0+$self->{front_bias}) {
+    die "'front_bias' value must be between -1 and 1"
+      unless -1 < $b and $b < 1;
+    
+    my $n = @$tokens;
+    my $r = ($b-1)**2 / ($b+1);
+    my $mult = $weight * log($r)/($r-1);
+    
+    my $i = 0;
+    foreach my $feature (@$tokens) {
+      $counts{$feature} += $mult * $r**($i/$n);
+      $i++;
+    }
+    
+  } else {
+    foreach my $feature (@$tokens) {
+      $counts{$feature} += $weight;
+    }
+  }
+
+  return \%counts;
+}
+
 sub vectorize {
   my ($self, %args) = @_;
-  my %counts;
+  my $tokens = $self->_filter_tokens($args{tokens});
 
-  # Do the loops separately for a speedup
-  if ($self->{use_features}) {
-    #warn "Using features: $self->{use_features} (@{[ $self->{use_features}->length ]})\n";
-    foreach my $feature (@{$args{tokens}}) {
-      $counts{$feature} += $args{weight} if $self->{use_features}->includes($feature);
-    }
-  } else {
-    foreach my $feature (@{$args{tokens}}) {
-      $counts{$feature} += $args{weight} unless exists $self->{stopwords}{$feature};
-    }
-  }
+  return { map {( $_ => $args{weight})} @$tokens }
+    if $self->{term_weighting} eq 'boolean';
+
+  my $counts = $self->_weigh_tokens($tokens, $args{weight});
 
   if ($self->{term_weighting} eq 'natural') {
-    return \%counts;
-  } elsif ($self->{term_weighting} eq 'boolean') {
-    return { map {( $_ => $args{weight})} keys %counts };
+    # Nothing to do
   } elsif ($self->{term_weighting} eq 'log') {
-    return { map {( $_ => 1 + log($counts{$_}))} keys %counts };
+    $_ = 1 + log($_) foreach values %$counts;
   } else {
-    die "term_weighting can only be 'natural', 'log', or 'boolean' (so far)";
+    die "term_weighting must be one of 'natural', 'log', or 'boolean'";
   }
-  return \%counts;
+  
+  return $counts;
 }
 
 sub read {

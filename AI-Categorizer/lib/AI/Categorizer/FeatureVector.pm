@@ -42,10 +42,21 @@ sub intersection {
 sub add {
   my ($self, $other) = @_;
 
-  $other = $other->as_has;
+  $other = $other->as_hash;
   while (my ($k,$v) = each %$other) {
     $self->{features}{$k} += $v;
   }
+}
+
+sub sum {
+  my ($self) = @_;
+
+  # Return total of values in this vector
+  my $total = 0;
+  while ( (undef, my $v) = each %{ $self->{features} } ) {
+    $total += $v;
+  }
+  return $total;
 }
 
 1;

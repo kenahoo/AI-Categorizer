@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: AI-Categorizer
-version: 0.06
+version: 0.07
 license: perl
 distribution_type: module
 requires:
@@ -23,7 +23,7 @@ conflicts: {}
 provides:
   AI::Categorizer:
     file: lib/AI/Categorizer.pm
-    version: 0.06
+    version: 0.07
   AI::Categorizer::Category:
     file: lib/AI/Categorizer/Category.pm
     version: ~
@@ -114,4 +114,4 @@ provides:
   AI::Categorizer::Util:
     file: lib/AI/Categorizer/Util.pm
     version: ~
-generated_by: Module::Build version 0.18
+generated_by: Module::Build version 0.18_02

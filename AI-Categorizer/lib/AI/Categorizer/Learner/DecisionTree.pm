@@ -9,7 +9,7 @@ use base qw(AI::Categorizer::Learner::Boolean);
 sub create_model {
   my $self = shift;
   $self->SUPER::create_model;
-  $self->{model}{first_tree}->do_streamline;
+  $self->{model}{first_tree}->do_purge;
   delete $self->{model}{first_tree};
 }
 
@@ -39,7 +39,7 @@ sub create_boolean_model {
 			);
       }
     }
-    $t->streamline(0);
+    $t->purge(0);
     $self->{model}{first_tree} = $t;
   }
 

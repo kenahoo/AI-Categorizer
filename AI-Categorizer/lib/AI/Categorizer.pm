@@ -69,8 +69,95 @@ knowledge set representation of those documents, training a
 categorizer on that knowledge set, and saving the trained categorizer
 for later use.
 
+Disclaimer: the results of any of these algorithms are far from
+infallible (close to fallible?).  Categorization of documents is often
+a difficult task even for humans well-trained in the particular domain
+of knowledge, and there are many things a human would consider that
+none of these algorithms consider.  These are only statistical tests -
+at best they are neat tricks or helpful assistants, and at worst they
+are totally unreliable.  If you plan to use this module for anything
+important, human supervision is essential.
+
 For the usage details, please see the documentation of each individual
 module.
+
+=head2 Knowledge Sets
+
+A "knowledge set" is defined as a collection of documents, stored in a
+particular format, together with some information on the categories
+each document belongs to.  Note that this term is somewhat unique to
+this project - other sources may call it a "training corpus", or
+"prior knowledge".
+
+A knowledge set is encapsulated by the
+C<AI::Categorizer::KnowledgeSet> class.  Before you can start playing
+with categorizers, you will have to start playing with knowledge sets,
+so that the categorizers have some data to train on.  See the
+documentation for the C<AI::Categorizer::KnowledgeSet> module for
+information on its interface.
+
+=head2 Categorization Algorithms
+
+Currently two different algorithms are implemented in this bundle,
+with more to come:
+
+  AI::Categorizer::Categorizer::NaiveBayes
+  AI::Categorizer::Categorizer::NNetTC
+
+These are subclasses of C<AI::Categorizer::Categorizer>.  The NNetTC
+module is currently just a wrapper around a proprietary Neural Net
+implementation.  A separate NNet categorizer is planned, and when it
+is implemented we will drop the NNetTC package from the distribution
+(since nobody else has it, and they couldn't use it even if they did).
+
+Please see the documentation of these individual modules for more
+details on their guts and quirks.  See the
+C<AI::Categorizer::Categorizer> documentation for a description of the
+general categorizer interface.
+
+=head2 Feature Vectors
+
+Most categorization algorithms don't deal directly with a document's
+data, they instead deal with a I<vector representation> of a
+document's I<features>.  The features may be any property of the
+document that seems indicative of its category, but they are usually
+some version of the "most important" words in the document.  A list of
+features and their weights in each document is encapsulated by the
+C<AI::Categorizer::FeatureVector> class.  You may think of this class
+as roughly analogous to a Perl hash, where the keys are the names of
+features and the values are their weights.
+
+=head2 Feature Selection
+
+Deciding which features are the most important is a very large part of
+the categorization task - you cannot simply consider all the words in
+all the documents when training, and all the words in the document
+being categorized.  There are two main reasons for this - first, it
+would mean that your training and categorizing processes would take
+forever and use tons of memory, and second, the significant bits of
+the documents would get lost in the "noise" of the insignificant bits.
+
+The process of selecting the most important features in the training
+set is called "feature selection".  It is managed by the
+C<AI::Categorizer::KnowledgeSet> class, and you will find the details
+of feature selection processes in that class's documentation.
+
+=head2 Hypotheses
+
+The result of asking a categorizer to categorize a previously unseen
+document is called a hypothesis, because it is some kind of
+"statistical guess" of what categories this document should be
+assigned to.  Since you may be interested in any of several pieces of
+information about the hypothesis (for instance, which categories were
+assigned, which category was the single most likely category, the
+scores assigned to each category, etc.), the hypothesis is returned as
+an object of the C<AI::Categorizer::Hypothesis> class, and you can use
+its object methods to get information about the hypothesis.  See its
+class documentation for the details.
+
+=head2 Experiments
+
+...XXX... to do...
 
 =head1 HISTORY
 

@@ -44,6 +44,10 @@ sub run_test_docs {
   
   print "Categories: ", join(', ', $r->categories), "\n";
   ok($r->best_category, 'farming', "Best category is 'farming'");
+  ok $r->in_category('farming'),  1, sprintf("threshold = %s, score = %s", $r->threshold, $r->scores('farming'));
+  ok $r->in_category('vampire'), '', sprintf("threshold = %s, score = %s", $r->threshold, $r->scores('vampire'));
+  
+  ok $r->all_categories, 2, "Should be 2 categories in total";
   
   $doc = new AI::Categorizer::Document
     ( name => 'test2',
@@ -52,7 +56,8 @@ sub run_test_docs {
   
   print "Categories: ", join(', ', $r->categories), "\n";
   ok($r->best_category, 'vampire', "Best category is 'vampire'");
-
+  ok $r->in_category('farming'), '', sprintf("threshold = %s, score = %s", $r->threshold, $r->scores('farming'));
+  ok $r->in_category('vampire'),  1, sprintf("threshold = %s, score = %s", $r->threshold, $r->scores('vampire'));
 }
 
 sub set_up_tests {
@@ -105,6 +110,7 @@ sub perform_standard_tests {
   ok $h->micro_precision > 0.5;
 }
 
-sub num_standard_tests () { 10 }
+sub num_setup_tests    () { 3 }
+sub num_standard_tests () { num_setup_tests + 17 }
 
 1;

@@ -56,10 +56,11 @@ sub next {
   }
 
   my $k = $self->container;
-  my @cats = map $k->category_by_name($_), @{ $self->{categories}{$file} || [] };
+  my @cats = map AI::Categorizer::Category->by_name(name => $_), @{ $self->{categories}{$file} || [] };
 
   return $self->call_method('document', 'read', 
 			    path => "$self->{cur_dir}/$file",
+			    name => $file,
 			    categories => \@cats,
 			   );
 }

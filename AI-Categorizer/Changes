@@ -1,6 +1,13 @@
 Revision history for Perl extension AI::Categorizer.
 
-0.05
+0.06
+
+ - Fixed a bug in which the 'documents' and 'categories' parameters to
+   the KnowledgeSet objects were never accepted, claiming that it
+   failed the "All are Document objects" or "All are Category objects"
+   callbacks. [Spotted by rob@phraud.org]
+
+0.05  Sat Mar 29 00:38:21 CST 2003
 
  - Feature selection is now handled by an abstract FeatureSelector
    framework class.  Currently the only concrete subclass implemented

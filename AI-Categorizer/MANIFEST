@@ -41,4 +41,5 @@ t/05-svm.t
 t/06-knn.t
 t/10-tools.t
 t/11-feature_vector.t
+t/12-hypothesis.t
 t/common.pl

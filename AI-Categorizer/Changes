@@ -5,6 +5,11 @@ Revision history for Perl extension AI::Categorizer.
  - Fixed documentation for add_hypothesis() [spotted by Thierry
    Guillotin]
 
+ - Fixed a problem in the Hypothesis' best_category() method that
+   would often result in the wrong category being reported.  Added a
+   regression test to exercise the Hypothesis class.  [Spotted by
+   Xiaobo Li]
+
 
 0.04  Thu Nov  7 19:27:15 AEST 2002
 

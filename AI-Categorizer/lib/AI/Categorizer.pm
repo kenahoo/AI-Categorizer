@@ -35,9 +35,10 @@ sub new {
     $defaults{training_set} = "$args{data_root}/training";
     $defaults{test_set} = "$args{data_root}/test";
     $defaults{category_file} = "$args{data_root}/cats.txt";
+    delete $args{data_root};
   }
 
-  return $package->SUPER::new(%defaults, @_);
+  return $package->SUPER::new(%defaults, %args);
 }
 
 sub knowledge_set { shift->{knowledge_set} }

@@ -19,7 +19,8 @@ use File::Spec;
 
 die("Usage: $0 <corpus>\n".
     "  A sample corpus (data set) can be downloaded from\n".
-    "  http://ee.usyd.edu.au/~kenw/reuters-21578.tar.gz\n")
+    "     http://ee.usyd.edu.au/~kenw/reuters-21578.tar.gz\n".
+    "  or http://www.campstaff.com/~ken/reuters-21578.tar.gz\n")
   unless @ARGV == 1;
 
 my $corpus = shift;

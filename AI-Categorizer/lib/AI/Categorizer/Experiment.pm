@@ -22,7 +22,6 @@ use base qw(Class::Container);
 use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
-#   categories => {type => ARRAYREF},
   );
 
 sub new {
@@ -138,7 +137,7 @@ sub micro_error {
   return $result / keys %$cats;
 }
 
-sub display_stats {
+sub stats_table {
   my $self = shift;
   
   my $out = "+---------------------------------------------------------+\n";

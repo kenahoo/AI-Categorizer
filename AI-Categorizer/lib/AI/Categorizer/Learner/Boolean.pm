@@ -71,7 +71,9 @@ AI::Categorizer::Learner::Boolean - Abstract class for boolean categorizers
 
 =head1 SYNOPSIS
 
+ package AI::Categorizer::Learner::SomethingNew;
  use AI::Categorizer::Learner::Boolean;
+ @ISA = qw(AI::Categorizer::Learner::Boolean);
  
  sub create_boolean_model {
    my ($self, $positives, $negatives, $category) = @_;

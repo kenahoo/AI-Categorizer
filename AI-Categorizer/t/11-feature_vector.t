@@ -8,7 +8,7 @@
 use strict;
 use Test;
 BEGIN { 
-  plan tests => 17;
+  plan tests => 18;
 }
 
 use AI::Categorizer::FeatureVector;
@@ -55,4 +55,5 @@ if (eval "use $pkg; 1") {
   ok $f->euclidean_length, 0;
   eval {$f->normalize};
   ok $@, '';
+  ok $f->normalize, $f;
 }

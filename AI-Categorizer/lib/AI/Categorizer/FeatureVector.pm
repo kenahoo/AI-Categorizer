@@ -36,9 +36,7 @@ sub normalize {
   my $self = shift;
 
   my $length = $self->euclidean_length;
-  return unless $length;
-  $self->scale( 1 / $length );
-  return $self;
+  return $length ? $self->scale(1/$length) : $self;
 }
 
 sub scale {

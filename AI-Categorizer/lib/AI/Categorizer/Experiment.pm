@@ -10,7 +10,6 @@ use base qw(Class::Container AI::Categorizer::Storable Statistics::Contingency);
 use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
-   verbose => { type => SCALAR, default => 0 },
    categories => { type => ARRAYREF|HASHREF },
   );
 

@@ -1,8 +1,8 @@
 package AI::Categorizer;
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 use strict;
-use Class::Container 0.02;
+use Class::Container;
 use base qw(Class::Container);
 use Params::Validate qw(:types);
 use File::Spec;

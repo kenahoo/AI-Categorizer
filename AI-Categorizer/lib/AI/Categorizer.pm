@@ -1,4 +1,4 @@
-package AI::Classifier;
+package AI::Categorizer;
 
 use 5.006;
 use strict;
@@ -15,16 +15,16 @@ __END__
 
 =head1 NAME
 
-AI::Classify - Perl extension for blah blah blah
+AI::Categorizer - Perl extension for blah blah blah
 
 =head1 SYNOPSIS
 
-  use AI::Classify;
+  use AI::Categorizer;
   blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for AI::Classify, created by h2xs. It looks like the
+Stub documentation for AI::Categorizer, created by h2xs. It looks like the
 author of the extension was negligent enough to leave the stub
 unedited.
 

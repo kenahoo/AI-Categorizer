@@ -1,4 +1,4 @@
-package AI::Classifier::Category;
+package AI::Categorizer::Category;
 
 use strict;
 use Class::Container;
@@ -7,12 +7,14 @@ use Params::Validate qw(:types);
 
 __PACKAGE__->valid_params
   (
-   name => {type => SCALAR},
+   name => {type => SCALAR, public => 0},
    documents  => {
 		  type => ARRAYREF,
+		  default => [],
 		  callbacks => { 'all are Document objects' => 
-				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Classifier::Document'), @_ },
+				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'), @_ },
 			       },
+		  public => 0,
 		 },
   );
 
@@ -26,6 +28,11 @@ sub new {
 
 sub contains_document {
   return $_[0]->{document_hash}{ $_[1]->name };
+}
+
+sub add_document {
+  my $self = shift;
+  push @{$self->{documents}}, $_[0];
 }
 
 1;

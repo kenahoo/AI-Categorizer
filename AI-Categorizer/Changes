@@ -1,6 +1,6 @@
-Revision history for Perl extension AI::Classify.
+Revision history for Perl extension AI::Categorizer.
 
 0.01  Wed Apr 17 10:47:21 2002
 	- original version; created by h2xs 1.21 with options
-		-XA -n AI::Classify
+		-XA -n AI::Categorizer
 

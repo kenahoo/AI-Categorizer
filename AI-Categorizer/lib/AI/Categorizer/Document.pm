@@ -1,4 +1,4 @@
-package AI::Classifier::Document;
+package AI::Categorizer::Document;
 
 use strict;
 use Class::Container;
@@ -7,29 +7,55 @@ use Params::Validate qw(:types);
 
 __PACKAGE__->valid_params
   (
-   name => {type => SCALAR},
-   body => {type => SCALAR},
+   name => {type => SCALAR, public => 0},
+   body => {type => SCALAR, public => 0},
    categories => {
 		  type => ARRAYREF,
+		  default => [],
 		  callbacks => { 'all are Category objects' => 
-				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Classifier::Category'), @_ },
+				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Category'), @{$_[0]} },
 			       },
+		  public => 0,
 		 },
+   stopwords => {type => ARRAYREF|HASHREF, default => []},
   );
 
 __PACKAGE__->contained_objects
   (
    feature_vector => { delayed => 1,
-		       class => 'AI::Classifier::FeatureVector' },
+		       class => 'AI::Categorizer::FeatureVector' },
   );
 
-__PACKAGE__->make_accessors(':all');
+### Constructors
 
 sub new {
   my $self = shift()->SUPER::new(@_);
-  $self->{category_hash} = map {$_->name => 1} @{$self->categories};
+
+  # Get efficient internal data structures
+  $self->{categories} = new Set::Object( @{$self->{categories}} );
+  $self->{stopwords} = map {($_ => 1)} @{ $self->{stopwords} } 
+    if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
   return $self;
 }
+
+sub new_from_string {
+  my ($class, %args) = @_;
+  $args{categories} ||= [];
+  my @cats = map { UNIVERSAL::isa($_, 'AI::Categorizer::Category') 
+                   ? $_ 
+		   : $args{knowledge}->category_by_name($_) } @{$args{categories}};
+  
+  return $class->new( name => $args{name},
+		      body => $args{string},
+		      categories => \@cats );
+}
+
+sub new_from_xml;
+sub new_from_textfile;
+
+### Accessors
+
+sub name { $_[0]->{name} }
 
 sub features {
   my $self = shift;
@@ -40,8 +66,16 @@ sub features {
   return $self->{feature_vector};
 }
 
+sub categories {
+  my $c = $_[0]->{categories};
+  return wantarray ? $c->members : $c->size;
+}
+
+
+### Workers
+
 sub is_in_category {
-  return $_[0]->{category_hash}{ $_[1]->name };
+  return $_[0]->{categories}->includes( $_[1] );
 }
 
 sub tokenize {
@@ -51,10 +85,14 @@ sub tokenize {
   }
 }
 
+# Need to implement stemming options
+sub stem_words {}
+
 sub vectorize {
   my $self = shift;
   my %counts;
   foreach my $feature (@{$self->{tokens}}) {
+    next if exists $self->{stopwords}{$feature};
     $counts{$feature}++;
   }
   $self->{feature_vector} = $self->create_delayed_object('feature_vector', features => \%counts);

@@ -19,6 +19,7 @@ lib/AI/Categorizer/FeatureVector.pm
 lib/AI/Categorizer/Hypothesis.pm
 lib/AI/Categorizer/KnowledgeSet.pm
 lib/AI/Categorizer/Learner.pm
+lib/AI/Categorizer/Learner/Boolean.pm
 lib/AI/Categorizer/Learner/NNetTC.pm
 lib/AI/Categorizer/Learner/NaiveBayes.pm
 lib/AI/Categorizer/Learner/Weka.pm

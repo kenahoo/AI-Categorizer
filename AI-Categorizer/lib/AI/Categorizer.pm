@@ -14,6 +14,7 @@ __PACKAGE__->valid_params
    verbose       => { type => BOOLEAN, default => 0 },
    training_set  => { type => SCALAR, optional => 1 },
    test_set      => { type => SCALAR, optional => 1 },
+   stopword_file => { type => SCALAR, optional => 1 },
    data_root     => { type => SCALAR, optional => 1 },
   );
 
@@ -36,6 +37,16 @@ sub new {
     $defaults{test_set} = "$args{data_root}/test";
     $defaults{category_file} = "$args{data_root}/cats.txt";
     delete $args{data_root};
+  }
+  if (exists $args{stopword_file}) {
+    local *FH;
+    open FH, "< $args{stopword_file}" or die "$args{stopword_file}: $!";
+    while (<FH>) {
+      chomp;
+      $args{stopwords}{$_} = 1;
+    }
+    close FH;
+    delete $args{stopword_file};
   }
 
   return $package->SUPER::new(%defaults, %args);

@@ -250,11 +250,16 @@ sub read {
 }
 
 sub finish {
+  my $self = shift;
+  return if $self->{finished}++;
+  $self->weigh_features;
+}
+
+sub weigh_features {
   # This could be made more efficient by figuring out an execution
   # plan in advance
 
   my $self = shift;
-  return if $self->{finished}++;
   
   if ( $self->{term_weighting} =~ /^(t|x)$/ ) {
     # Nothing to do

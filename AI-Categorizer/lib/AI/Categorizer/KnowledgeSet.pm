@@ -109,7 +109,7 @@ sub features {
   return $self->{features} if $self->{features};
 
   # Create a feature vector encompassing the whole set of documents
-  my $v = $self->create_delayed_object('features', features => {});
+  my $v = $self->create_delayed_object('features');
   foreach my $document ($self->documents) {
     $v->add( $document->features );
   }

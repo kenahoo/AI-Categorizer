@@ -2,6 +2,9 @@ Revision history for Perl extension AI::Categorizer.
 
 0.05
 
+ - Added a k-Nearest-Neighbor machine learner. [Implemented by David
+   Bell]
+
  - Fixed documentation for add_hypothesis() [spotted by Thierry
    Guillotin]
 

@@ -4,12 +4,12 @@ use strict;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
 use Params::Validate qw(:types);
-use AI::Categorizer::Util qw(max average binary_search);
 
 __PACKAGE__->valid_params
   (
-   threshold => {type => SCALAR, default => 0.1},
-   k_value => {type => SCALAR, default => 5},
+   threshold => {type => SCALAR, default => 0.4},
+   k_value => {type => SCALAR, default => 20},
+   knn_weighting => {type => SCALAR, default => 'score'},
   );
 
 sub create_model {
@@ -17,6 +17,7 @@ sub create_model {
   foreach my $doc ($self->knowledge_set->documents) {
     $doc->features->normalize;
   }
+  $self->knowledge_set->features;  # Initialize
 }
 
 sub threshold {
@@ -25,60 +26,77 @@ sub threshold {
   return $self->{threshold};
 }
 
-#--- returns scores of this document with k closest neighbours
-sub subIn{
-    my($value, $arr)=@_;
-    return -1 if $arr->[0] > $value;
-
-    my $i = binary_search($arr, $value);
-    splice @$arr, $i, 0, $value;
-    pop @$arr;
-    return $i;
+sub categorize_collection {
+  my $self = shift;
+  
+  my $f_class = $self->knowledge_set->contained_class('features');
+  if ($f_class->can('all_features')) {
+    $f_class->all_features([$self->knowledge_set->features->names]);
+  }
+  $self->SUPER::categorize_collection(@_);
 }
 
 sub get_scores {
   my ($self, $newdoc) = @_;
-  my @docs = $self->knowledge_set->documents;
-
   my $currentDocName = $newdoc->name;
   #print "classifying $currentDocName\n";
 
-  my $features = $newdoc->features->normalize;
-  my (%scores, @dscores, @kdocs);
-  my $k = $self->{k_value};
-
-  @dscores = (0) x $k;
-  @kdocs = (undef) x $k;
+  my $features = $newdoc->features->intersection($self->knowledge_set->features)->normalize;
+  my $q = AI::Categorizer::Learner::KNN::Queue->new(size => $self->{k_value});
   
-  foreach my $doc (@docs) { # each doc in corpus 
+  foreach my $doc ($self->knowledge_set->documents) { # each doc in corpus 
     my $score = $doc->features->dot( $features );
     warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, "): $score" if $self->verbose > 1;
-    
-    local $^W; # @dscores may have lots of undef's in it - needs to be fixed
-    my $index = subIn($score, \@dscores);
-    if($index>-1){
-      splice @kdocs, $index, 0, $doc;
-      pop @kdocs;
+    $q->add($doc, $score);
+  }
+  
+  my %scores = map {+$_->name, 0} $self->categories;
+  foreach my $e (@{$q->entries}) {
+    foreach my $cat ($e->{thing}->categories) {
+      $scores{$cat->name} += ($self->{knn_weighting} eq 'score' ? $e->{score} : 1); #increment cat score
     }
   }
   
-  my $no_of_cats =0;
-  foreach my $e (0..$k) {
-    next unless defined $kdocs[$e];
-    
-    if($dscores[$e]){
-      foreach my $cat($kdocs[$e]->categories){
-	$no_of_cats++;
-	$scores{$cat->name}++; #increment cat score
-      }
-    }
-  } 
-  
-  foreach my $key (keys %scores) {
-    $scores{$key} /= $no_of_cats;
-  }
+  $_ /= $self->{k_value} foreach values %scores;
   
   return (\%scores, $self->{threshold});
+}
+
+###################################################################
+package AI::Categorizer::Learner::KNN::Queue;
+
+sub new {
+  my ($pkg, %args) = @_;
+  return bless {
+		size => $args{size},
+		entries => [],
+	       }, $pkg;
+}
+
+sub add {
+  my ($self, $thing, $score) = @_;
+
+  # scores may be (0.2, 0.4, 0.4, 0.8) - ascending
+
+  return unless (@{$self->{entries}} < $self->{size}       # Queue not filled
+		 or $score > $self->{entries}[0]{score});  # Found a better entry
+  
+  my $i;
+  if (!@{$self->{entries}}) {
+    $i = 0;
+  } elsif ($score > $self->{entries}[-1]{score}) {
+    $i = @{$self->{entries}};
+  } else {
+    for ($i = 0; $i < @{$self->{entries}}; $i++) {
+      last if $score < $self->{entries}[$i]{score};
+    }
+  }
+  splice @{$self->{entries}}, $i, 0, { thing => $thing, score => $score};
+  shift @{$self->{entries}} if @{$self->{entries}} > $self->{size};
+}
+
+sub entries {
+  return shift->{entries};
 }
 
 1;

@@ -46,6 +46,11 @@ sub knowledge_set {
   return $self->{knowledge_set};
 }
 
+sub categories {
+  my $self = shift;
+  return $self->knowledge_set->categories;
+}
+
 sub train {
   my ($self, %args) = @_;
   $self->{knowledge_set} = $args{knowledge_set} if $args{knowledge_set};

@@ -144,7 +144,9 @@ sub tokenize {
 sub stem_words {
   my ($self, $tokens) = @_;
   return unless $self->{stemming};
-  die "Unknown stemming option '$self->{stemming}' - options are 'porter'" unless $self->{stemming} eq 'porter';
+  return if $self->{stemming} eq 'none';
+  die "Unknown stemming option '$self->{stemming}' - options are 'porter' or 'none'"
+    unless $self->{stemming} eq 'porter';
   
   eval {require Lingua::Stem; 1}
     or die "Porter stemming requires the Lingua::Stem module, available from CPAN.\n";

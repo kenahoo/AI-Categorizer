@@ -11,6 +11,7 @@ use AI::Categorizer::Document;
 use AI::Categorizer::Category;
 use AI::Categorizer::Collection;
 use AI::Categorizer::Hypothesis;
+use AI::Categorizer::KnowledgeSet;
 
 
 __PACKAGE__->valid_params

@@ -47,7 +47,7 @@ WriteMakefile
              },
    'clean' => {FILES => "t/state"},
    'PREREQ_PM' => {
-		   Class::Container => 0.08,
+		   Class::Container => 0.09,
 		   Storable => 0,
 		   Params::Validate => 0.18,
 		   Statistics::Contingency => 0.06,

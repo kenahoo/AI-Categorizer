@@ -11,6 +11,7 @@ use AI::Categorizer::Document;
 use AI::Categorizer::Category;
 use AI::Categorizer::FeatureVector;
 use AI::Categorizer::Util;
+use Carp qw(croak);
 
 __PACKAGE__->valid_params
   (
@@ -417,6 +418,40 @@ sub add_document {
   }
   $self->{documents}->insert($doc);
   $self->{categories}->insert($doc->categories);
+}
+
+sub save_features {
+  my ($self, $file) = @_;
+  
+  my $f = ($self->{features} || { $self->delayed_object_params('document') }->{use_features})
+    or croak "No features to save";
+  
+  open my($fh), "> $file" or croak "Can't create $file: $!";
+  my $h = $f->as_hash;
+  print $fh "# Total: ", $f->length, "\n";
+  
+  foreach my $k (sort {$h->{$b} <=> $h->{$a}} keys %$h) {
+    print $fh "$k\t$h->{$k}\n";
+  }
+  close $fh;
+}
+
+sub restore_features {
+  my ($self, $file, $n) = @_;
+  
+  open my($fh), "< $file" or croak "Can't open $file: $!";
+
+  my %hash;
+  while (<$fh>) {
+    next if /^#/;
+    /^(.*)\t([\d.]+)$/ or croak "Malformed line: $_";
+    $hash{$1} = $2;
+    last if defined $n and $. >= $n;
+  }
+  my $features = $self->create_delayed_object('features', features => \%hash);
+  
+  $self->delayed_object_params('document',   use_features => $features);
+  $self->delayed_object_params('collection', use_features => $features);
 }
 
 1;

@@ -167,7 +167,7 @@ choose these features), what format the documents are in, and so on.
 
 The basic process of using this module will typically involve
 obtaining a collection of B<pre-categorized> documents, creating a
-knowledge set representation of those documents, training a
+"knowledge set" representation of those documents, training a
 categorizer on that knowledge set, and saving the trained categorizer
 for later use.  There are several ways to carry out this process.  The
 top-level C<AI::Categorizer> module provides an umbrella class for
@@ -181,7 +181,7 @@ particular domain of knowledge, and there are many things a human
 would consider that none of these algorithms consider.  These are only
 statistical tests - at best they are neat tricks or helpful
 assistants, and at worst they are totally unreliable.  If you plan to
-use this module for anything important, human supervision is
+use this module for anything really important, human supervision is
 essential, both of the categorization process and the final results.
 
 For the usage details, please see the documentation of each individual
@@ -190,23 +190,24 @@ module.
 =head1 FRAMEWORK COMPONENTS
 
 This section explains the major pieces of the C<AI::Categorizer>
-object framework.  This section gives a conceptual overview, but does
-not get into any of the details about interfaces or usage.  See the
-documentation for the individual classes for more details.
+object framework.  We give a conceptual overview, but don't get into
+any of the details about interfaces or usage.  See the documentation
+for the individual classes for more details.
 
 A diagram of the various classes in the framework can be seen in
-C<doc/classes.png>.
+C<doc/classes-overview.png>, and a more detailed view of the same
+thing can be seen in C<doc/classes.png>.
 
 =head2 Knowledge Sets
 
-A "knowledge set" is defined as a collection of documents, stored in a
-particular format, together with some information on the categories
-each document belongs to.  Note that this term is somewhat unique to
-this project - other sources may call it a "training corpus", or
-"prior knowledge".  A knowledge set also contains some information on
-how documents will be parsed and how their features (words) will be
-extracted and culled.  In this sense, a knowledge set represents not
-only a collection of data, but a particular view on that data.
+A "knowledge set" is defined as a collection of documents, together
+with some information on the categories each document belongs to.
+Note that this term is somewhat unique to this project - other sources
+may call it a "training corpus", or "prior knowledge".  A knowledge
+set also contains some information on how documents will be parsed and
+how their features (words) will be extracted and turned into
+meaningful representations.  In this sense, a knowledge set represents
+not only a collection of data, but a particular view on that data.
 
 A knowledge set is encapsulated by the
 C<AI::Categorizer::KnowledgeSet> class.  Before you can start playing
@@ -222,8 +223,8 @@ the categorization task - you cannot simply consider all the words in
 all the documents when training, and all the words in the document
 being categorized.  There are two main reasons for this - first, it
 would mean that your training and categorizing processes would take
-forever and use tons of memory, and second, the significant bits of
-the documents would get lost in the "noise" of the insignificant bits.
+forever and use tons of memory, and second, the significant stuff of
+the documents would get lost in the "noise" of the insignificant stuff.
 
 The process of selecting the most important features in the training
 set is called "feature selection".  It is managed by the
@@ -233,36 +234,97 @@ of feature selection processes in that class's documentation.
 =head2 Collections
 
 Because documents may be stored in lots of different formats, a
-I<Collection> class has been created as an abstraction of a stored set
+"collection" class has been created as an abstraction of a stored set
 of documents, together with a way to iterate through the set and
-return Document objects.  A C<KnowledgeSet> contains a single
-collection object.  A C<Categorizer> generally contains two
-collections, one for training and one for testing.  A C<Learner> can
-mass-categorize a collection.
+return Document objects.  A knowledge set contains a single collection
+object.  A C<Categorizer> doing a complete test run generally contains
+two collections, one for training and one for testing.  A C<Learner>
+can mass-categorize a collection.
 
-=head2 Categorization Algorithms
+The C<AI::Categorizer::Collection> class and its subclasses
+instantiate the idea of a collection in this sense.
 
-Each categorization algorithm is a subclass of
-C<AI::Categorizer::Learner>.  Currently the framework only includes
-one categorizer in its default distribution,
-C<AI::Categorizer::Learner::NaiveBayes>.
+=head2 Documents
 
-There will soon be a Neural Network categorizer.  Next on the agenda
-will/may be a k-Nearest-Neighbor algorithm, a decision tree algorithm,
-a mixture-of-experts combiner, and/or a general interface to the
-"Weka" machine learning system.  No timetable for their creation has
+Each document is represented by an C<AI::Categorizer::Document>
+object, or an object of one of its subclasses.  Each document class
+contains methods for turning a bunch of data into a Feature Vector.
+Each document also has a method to report which categories it belongs
+to.
+
+=head2 Categories
+
+Each category is represented by an C<AI::Categorizer::Category>
+object.  Its main purpose is to keep track of which documents belong
+to it, though you can also examine statistical properties of an entire
+category, such as obtaining a Feature Vector representing an
+amalgamation of all the documents that belong to it.
+
+=head2 Machine Learning Algorithms
+
+There are lots of different ways to make the inductive leap from the
+training documents to unseen documents.  The Machine Learning
+community has studied many algorithms for this purpose.  To allow
+flexibility in choosing and configuring categorization algorithms,
+each such algorithm is a subclass of C<AI::Categorizer::Learner>.
+There are currently four categorizers included in the distribution:
+
+=over 4
+
+=item AI::Categorizer::Learner::NaiveBayes
+
+A pure-perl implementation of a Naive Bayes classifier.  No
+dependencies on external modules or other resources.  Naive Bayes is
+usually very fast to train and fast to make categorization decisions,
+but isn't always the most accurate categorizer.
+
+=item AI::Categorizer::Learner::SVM
+
+An interface to Corey Spencer's C<Algorithm::SVM>, which implements a
+Support Vector Machine classifier.  SVMs can take a while to train
+(though in certain conditions there are optimizations to make them
+quite fast), but are pretty quick to categorize.  They often have very
+good accuracy.
+
+=item AI::Categorizer::Learner::DecisionTree
+
+An interface to C<AI::DecisionTree>, which implements a Decision Tree
+classifier.  Decision Trees generally take longer to train than Naive
+Bayes or SVM classifiers, but they are also quite fast when
+categorizing.  Decision Trees have the advantage that you can
+scrutinize the structures of trained decision trees to see how
+decisions are being made.
+
+=item AI::Categorizer::Learner::Weka
+
+An interface to version 2 of the Weka Knowledge Analysis system that
+lets you use any of the machine learners it defines.  This gives you
+access to lots and lots of machine learning algorithms in use by
+machine learning researches.  The main drawback is that Weka tends to
+be quite slow and use a lot of memory, and the current interface
+between Weka and C<AI::Categorizer> is a bit clumsy.
+
+=back
+
+Other machine learning methods that may be implemented soonish include
+Neural Networks, k-Nearest-Neighbor, and/or a mixture-of-experts
+combiner for ensemble learning.  No timetable for their creation has
 yet been set.
 
 Please see the documentation of these individual modules for more
 details on their guts and quirks.  See the C<AI::Categorizer::Learner>
 documentation for a description of the general categorizer interface.
 
+If you wish to create your own classifier, you should inherit from
+C<AI::Categorizer::Learner> or C<AI::Categorizer::Learner::Boolean>,
+which are abstract classes that manage some of the work for you.
+
 =head2 Feature Vectors
 
-Most categorization algorithms don't deal directly with a document's
+Most categorization algorithms don't deal directly with documents'
 data, they instead deal with a I<vector representation> of a
 document's I<features>.  The features may be any properties of the
-document that seem indicative of its category, but they are usually
+document that seem helpful for determining its category, but they are usually
 some version of the "most important" words in the document.  A list of
 features and their weights in each document is encapsulated by the
 C<AI::Categorizer::FeatureVector> class.  You may think of this class
@@ -290,8 +352,10 @@ categorization results (Hypotheses) back from the Learner, you can
 feed these results to the Experiment class, along with the correct
 answers.  When all results have been collected, you can get a report
 on accuracy, precision, recall, F1, and so on, with both
-micro-averaging and macro-averaging over categories.  See the docs for
-C<AI::Categorizer::Experiment> for more details.
+micro-averaging and macro-averaging over categories.  We use the
+C<Statistics::Contingency> module from CPAN to manage the
+calculations. See the docs for C<AI::Categorizer::Experiment> for more
+details.
 
 =head1 METHODS
 

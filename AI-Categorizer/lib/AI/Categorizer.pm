@@ -2,7 +2,8 @@ package AI::Categorizer;
 $VERSION = '0.01';
 
 use strict;
-
+use AI::Categorizer::KnowledgeSet;
+use AI::Categorizer::Categorizer;
 
 
 # Preloaded methods go here.

@@ -2,13 +2,29 @@ package AI::Categorizer::Util;
 
 use Exporter;
 use base qw(Exporter);
-@EXPORT_OK = qw(intersection average max min random_elements);
+@EXPORT_OK = qw(intersection average max min random_elements binary_search);
 
 use strict;
 
 # It's possible that this can be a class - something like 
 # 
 # $e = Evaluate->new(); $e->correct([...]); $e->assigned([...]); print $e->precision;
+
+# A simple binary search
+sub binary_search {
+  my ($arr, $target) = @_;
+  my ($low, $high) = (0, scalar @$arr);
+  use integer;
+  while ( $low < $high ) {
+    my $cur = ($low + $high)/2;
+    if ( $arr->[$cur] < $target ) {
+      $low = $cur + 1;
+    } else {
+      $high = $cur;
+    }
+  }
+  return $low;
+}
 
 sub max {
   return undef unless @_;

@@ -30,16 +30,16 @@ use Carp; $SIG{__DIE__} = \&Carp::confess;
 
 $k->make_document( name => 'doc1',
 		   categories => ['farming'], 
-		   body => 'Sheep are very valuable in farming.' );
+		   content => 'Sheep are very valuable in farming.' );
 $k->make_document( name => 'doc2',
 		   categories => ['farming'],
-		   body => 'Farming requires many kinds of animals.' );
+		   content => 'Farming requires many kinds of animals.' );
 $k->make_document( name => 'doc3',
 		   categories => ['vampire'],
-		   body => 'Vampires drink blood and may be staked.' );
+		   content => 'Vampires drink blood and may be staked.' );
 $k->make_document( name => 'doc4',
 		   categories => ['vampire'],
-		   body => 'Vampires cannot see their images in mirrors.' );
+		   content => 'Vampires cannot see their images in mirrors.' );
 
 
 my $nb = new AI::Categorizer::Categorizer::NaiveBayes
@@ -53,7 +53,7 @@ $nb->train(knowledge => $k);
 
 my $doc = new AI::Categorizer::Document
   ( name => 'test1',
-    body => 'I would like to begin farming sheep.' );
+    content => 'I would like to begin farming sheep.' );
 my $r = $nb->categorize($doc);
 
 print "Categories: ", join(', ', $r->categories), "\n";
@@ -61,7 +61,7 @@ ok(($r->categories)[0], 'farming');
 
 $doc = new AI::Categorizer::Document
   ( name => 'test2',
-    body => "I see that many vampires may have eaten my beautiful daughter's blood." );
+    content => "I see that many vampires may have eaten my beautiful daughter's blood." );
 $r = $nb->categorize($doc);
 
 print "Categories: ", join(', ', $r->categories), "\n";

@@ -12,7 +12,7 @@ use base qw(AI::Categorizer::Document);
 
 sub parse {
   my ($self, %args) = @_;
-  return { body => $args{content} };
+  $self->{content} = { body => $args{content} };
 }
 
 1;

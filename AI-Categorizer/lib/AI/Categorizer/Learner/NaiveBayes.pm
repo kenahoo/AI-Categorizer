@@ -17,8 +17,7 @@ sub create_model {
 
   my $totaldocs = $self->knowledge_set->documents;
   $m->{features} = $self->knowledge_set->features;
-  $m->{vocab_size} = $self->knowledge_set->features->length;
-  $m->{total_tokens} = $self->knowledge_set->features->sum;
+  my $vocab_size = $self->knowledge_set->features->length;
 
   # Calculate the log-probabilities for each category
   foreach my $cat ($self->knowledge_set->categories) {
@@ -28,9 +27,9 @@ sub create_model {
     $m->{cat_tokens}{$cat->name} = $cat->features->sum;
 
     # Compute a smoothing term so P(word|cat)==0 can be avoided
-    $m->{smoothing}{$cat->name} = -log($m->{cat_tokens}{$cat->name} + $m->{vocab_size});
+    $m->{smoothing}{$cat->name} = -log($m->{cat_tokens}{$cat->name} + $vocab_size);
 
-    my $denominator = log($m->{cat_tokens}{$cat->name} + $m->{vocab_size});
+    my $denominator = log($m->{cat_tokens}{$cat->name} + $vocab_size);
 
     my $features = $cat->features->as_hash;
     while (my ($feature, $count) = each %$features) {
@@ -41,8 +40,8 @@ sub create_model {
 }
 
 # Counts:
-# Total number of words (types)  in all docs: (V)        $self->knowledge_set->features->length or $m->{vocab_size}
-# Total number of words (tokens) in all docs:            $self->knowledge_set->features->sum or $m->{total_tokens}
+# Total number of words (types)  in all docs: (V)        $self->knowledge_set->features->length
+# Total number of words (tokens) in all docs:            $self->knowledge_set->features->sum
 # Total number of words (types)  in category $c:         $c->features->length
 # Total number of words (tokens) in category $c:(N)      $c->features->sum or $m->{cat_tokens}{$c->name}
 

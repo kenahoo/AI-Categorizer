@@ -2,22 +2,54 @@ Revision history for Perl extension AI::Categorizer.
 
 0.05
 
- - Added a Document class for XML documents. [Implemented by Jae-Moon
-   Lee]
+ - Feature selection is now handled by an abstract FeatureSelector
+   framework class.  Currently the only concrete subclass implemented
+   is FeatureSelector::DocFrequency.  The 'feature_selection'
+   parameter has been replaced with a 'feature_selector_class'
+   parameter.
+
+ - Added a k-Nearest-Neighbor machine learner. [First revision
+   implemented by David Bell]
+
+ - Added a Rocchio machine learner. [Partially implemented by Xiaobo
+   Li]
+
+ - Added a "Guesser" machine learner which simply uses overall class
+   probabilities to make categorization decisions.  Sometimes useful
+   for providing a set of baseline scores against which to evaluate
+   other machine learners.
+
+ - The NaiveBayes learner is now a wrapper around my new
+   Algorithm::NaiveBayes module, which is just the old NaiveBayes code
+   from here, turned into its own standalone module.
+
+ - Much more extensive regression testing of the code.
+
+ - Added a Document subclass for XML documents. [Implemented by
+   Jae-Moon Lee] Its interface is still unstable, it may change in
+   later releases.
 
  - Added a 'Build.PL' file for an alternate installation method using
    Module::Build.
-
- - Added a k-Nearest-Neighbor machine learner. [Implemented by David
-   Bell]
 
  - Fixed a problem in the Hypothesis' best_category() method that
    would often result in the wrong category being reported.  Added a
    regression test to exercise the Hypothesis class.  [Spotted by
    Xiaobo Li]
 
+ - The 'categorizer' script now records more useful benchmarking
+   information about time & memory in its outfile.
+
+ - The AI::Categorizer->dump_parameters() method now tries to avoid
+   showing you its entire list of stopwords.
+
+ - Document objects now use a default 'name' if none is supplied.
+
  - For some Learner classes, the generated Hypothesis objects had
-   non-functioning all_categories() methods.
+   non-functioning all_categories() methods.  Fixed.
+
+ - The Collection::Files class now uses File::Spec internally to
+   manage cross-platform filenames.
 
  - Added the 'stopword_behavior' parameter for controlling how
    stopword lists and stemming interact.  Previously, if stopwords &
@@ -27,7 +59,9 @@ Revision history for Perl extension AI::Categorizer.
  - parse() is now an instance method of the Document class, not a
    class method.  This means it can operate directly on an object, it
    doesn't have to return a hash of content.  This allows more
-   flexible document parsing.
+   flexible document parsing.  This may cause some backward
+   compatibility problems if people were overriding the parse()
+   method.
 
  - Added a parse_handle() method, which can parse a document directly
    from a filehandle.

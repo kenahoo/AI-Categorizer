@@ -19,6 +19,7 @@ lib/AI/Categorizer/Collection/SingleFile.pm
 lib/AI/Categorizer/Document.pm
 lib/AI/Categorizer/Document/SMART.pm
 lib/AI/Categorizer/Document/Text.pm
+lib/AI/Categorizer/Document/XML.pm
 lib/AI/Categorizer/Experiment.pm
 lib/AI/Categorizer/FeatureSelector.pm
 lib/AI/Categorizer/FeatureSelector/DocFrequency.pm

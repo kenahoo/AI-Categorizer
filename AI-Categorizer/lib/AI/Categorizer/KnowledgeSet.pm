@@ -106,6 +106,23 @@ sub trim_doc_features {
   }
 }
 
+
+sub prog_bar {
+  my ($self, $count) = @_;
+  
+  return sub { local $|=1; print '.' } unless eval "use Time::Progress; 1";
+  
+  my $pb = 'Time::Progress'->new;
+  $pb->attr(max => $count);
+  my $i = 0;
+  return sub {
+    $i++;
+    return if $i % 25;
+    local $|=1;
+    print $pb->report("%50b %p ($i/$count)\r", $i);
+  };
+}
+
 sub scan {
   # Should determine:
   #  - number of documents
@@ -117,13 +134,15 @@ sub scan {
   #  - "category skew index" (% variance?) by num. documents, tokens, and types
 
   my ($self, %args) = @_;
+  my $pb;
+  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
   my $collection = $self->create_delayed_object('collection', %args);
 
   my %stats;
 
-  local $| = 1;
+
   while (my $doc = $collection->next) {
-    print "." if $self->verbose;
+    $pb->() if $self->verbose;
     $stats{category_count_with_duplicates} += $doc->categories;
 
     my ($sum, $length) = ($doc->features->sum, $doc->features->length);
@@ -186,32 +205,35 @@ sub load {
 sub read {
   my ($self, %args) = @_;
 
+  my $pb;
+  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
   my $collection = $self->create_delayed_object('collection', %args);
 
-  local $| = 1;
   while (my $doc = $collection->next) {
-    print "." if $self->{verbose};
+    $pb->() if $self->verbose;
     $self->add_document($doc);
   }
-  print "\n" if $self->{verbose};
+  print "\n" if $self->verbose;
 }
 
 sub scan_features {
   my ($self, %args) = @_;
+  my $pb;
+  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
 
   my $features   = $self->create_delayed_object('features', features => {});
   my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
 
-  local $| = 1;
   while (my $doc = $collection->next) {
-    print "." if $self->{verbose};
+    $pb->() if $self->verbose;
     $features->add( $doc->features );
   }
-  print "\n" if $self->{verbose};
+  print "\n" if $self->verbose;
 
   $features = $self->_reduce_features($features);
   
   $self->delayed_object_params('document', use_features => $features);
+  $self->delayed_object_params('collection', use_features => $features);
 }
 
 sub _reduce_features {

@@ -21,6 +21,20 @@ sub as_hash {
   return $self->{features};
 }
 
+sub normalize {
+  my $self = shift;
+  my $total = 0;
+  local $_;
+  while ( (undef, $_) = each %{ $self->{features} } ) {
+    $total += $_**2;
+  }
+  $total = sqrt($total);
+  foreach ( %{ $self->{features} } ) {
+    $_ /= $total;
+  }
+  return $self;
+}
+
 sub as_boolean_hash {
   my $self = shift;
   return { map {($_ => 1)} keys %{$self->{features}} };

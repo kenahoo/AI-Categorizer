@@ -54,6 +54,7 @@ sub get_scores {
     my $score = $doc->features->dot( $features );
     warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, "): $score" if $self->verbose > 1;
     
+    local $^W; # @dscores may have lots of undef's in it - needs to be fixed
     my $index = subIn($score, \@dscores);
     if($index>-1){
       splice @kdocs, $index, 0, $doc;

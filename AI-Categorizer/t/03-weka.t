@@ -8,50 +8,23 @@ use Test;
 BEGIN {
   require 't/common.pl';
   skip_test("Weka is not installed") unless -e "t/classpath";
-  plan tests => 5;
+  plan tests => 1 + num_standard_tests();
 }
-use AI::Categorizer;
-use AI::Categorizer::KnowledgeSet;
-use AI::Categorizer::Learner::Weka;
 
 ok(1);
 
 #########################
 
-# Insert your test code below, the Test module is use()ed here so read
-# its man page ( perldoc Test ) for help writing this test script.
+my @args;
+local *FH;
+open FH, "t/classpath" or die "Can't open t/classpath: $!";
+my $line = <FH>;
+push @args, weka_path => $line
+  unless $line eq '-';
 
-use Carp; $SIG{__DIE__} = \&Carp::confess;
+perform_standard_tests(
+		       learner_class => 'AI::Categorizer::Learner::Weka',
+		       weka_classifier => 'weka.classifiers.SMO',
+		       @args,
+		      );
 
-my %docs = training_docs();
-{
-  my $k = new AI::Categorizer::KnowledgeSet
-    (
-     name => 'Vampires/Farmers',
-     stopwords => [qw(are be in of and)],
-    );
-  ok($k);
-
-  while (my ($name, $data) = each %docs) {
-    $k->make_document(name => $name, %$data);
-  }
-
-  my @args;
-  
-  local *FH;
-  open FH, "t/classpath" or die "Can't open t/classpath: $!";
-  my $line = <FH>;
-  push @args, weka_path => $line
-    unless $line eq '-';
-
-  my $l = new AI::Categorizer::Learner::Weka
-    (
-     verbose => 0,
-     @args,
-    );
-  ok($l);
-
-  $l->train(knowledge_set => $k);
-
-  run_test_docs($l);
-}

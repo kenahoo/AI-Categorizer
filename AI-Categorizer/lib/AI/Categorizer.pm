@@ -115,6 +115,10 @@ sub progress_file {
   shift->{progress_file};
 }
 
+sub verbose {
+  shift->{verbose};
+}
+
 sub _save_progress {
   my ($self, $stage, $node) = @_;
   return unless $self->{progress_file};

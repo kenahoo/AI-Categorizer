@@ -53,11 +53,15 @@ sub create_boolean_model {
   return $svm;
 }
 
+sub get_scores {
+  my ($self, $doc) = @_;
+  local $self->{current_doc} = $self->_doc_2_dataset($doc, -1, $self->{model}{feature_map});
+  return $self->SUPER::get_scores($doc);
+}
+
 sub get_boolean_score {
   my ($self, $doc, $svm) = @_;
-  my $ds = $self->_doc_2_dataset($doc, -1, $self->{model}{feature_map});
-  my $result = $svm->predict($ds);
-  return $result;
+  return $svm->predict($self->{current_doc});
 }
 
 sub save_state {

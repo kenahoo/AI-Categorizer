@@ -48,10 +48,15 @@ sub create_boolean_model {
   return $t;
 }
 
+sub get_scores {
+  my ($self, $doc) = @_;
+  local $self->{current_doc} = $doc->features->as_boolean_hash;
+  return $self->SUPER::get_scores($doc);
+}
+
 sub get_boolean_score {
   my ($self, $doc, $t) = @_;
-  my $result = $t->get_result( attributes => $doc->features->as_boolean_hash ) || 0;
-  return $result;
+  return $t->get_result( attributes => $self->{current_doc} ) || 0;
 }
 
 1;

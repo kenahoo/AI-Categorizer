@@ -1,5 +1,16 @@
 Revision history for Perl extension AI::Categorizer.
 
+0.04
+
+ - Moved 'term_weighting' parameter from Document to KnowledgeSet,
+   since the normalized version needs to know the maximum
+   term-frequency.  Also changed its values to 'n', 'l', 'b', and 't',
+   with 'x' a synonym for 't'.
+
+ - Implemented full range of TF/IDF term weighting methods (see Salton
+   & Buckley, "Term Weighting Approaches in Automatic Text Retrieval",
+   in journal "Information Processing & Management", 1988 #5)
+
 0.03  Wed Jul 24 01:57:00 AEST 2002
 
  - First version released to CPAN

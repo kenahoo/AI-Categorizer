@@ -2,6 +2,7 @@ CVS
 \.bak$
 \.old$
 ~$
+^\.
 
 MANIFEST\.SKIP
 ^Makefile$

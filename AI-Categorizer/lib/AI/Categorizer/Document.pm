@@ -112,7 +112,10 @@ sub create_feature_vector {
 }
 
 sub is_in_category {
-  return $_[0]->{categories}->includes( $_[1] );
+  return (ref $_[1]
+	  ? $_[0]->{categories}->includes( $_[1] )
+	  : $_[0]->{categories}->includes_name( $_[1] ));
+    
 }
 
 sub tokenize {

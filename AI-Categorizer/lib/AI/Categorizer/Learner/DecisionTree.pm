@@ -6,24 +6,51 @@ use AI::DecisionTree;
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);
 
+sub create_model {
+  my $self = shift;
+  $self->SUPER::create_model;
+  $self->{model}{first_tree}->do_streamline;
+  delete $self->{model}{first_tree};
+}
+
 sub create_boolean_model {
   my ($self, $positives, $negatives, $cat) = @_;
   
-  my $t = new AI::DecisionTree(noise_mode => 'pick_best');
+  my $t = new AI::DecisionTree(noise_mode => 'pick_best', 
+			       verbose => $self->verbose);
+
+  my %results;
   for ($positives, $negatives) {
     foreach my $doc (@$_) {
-      $t->add_instance( attributes => $doc->features->as_boolean_hash,
-			result => $_ eq $positives );
+      $results{$doc->name} = $_ eq $positives ? 1 : 0;
     }
   }
 
+  if ($self->{model}{first_tree}) {
+    $t->copy_instances(from => $self->{model}{first_tree});
+    $t->set_results(\%results);
+
+  } else {
+    for ($positives, $negatives) {
+      foreach my $doc (@$_) {
+	$t->add_instance( attributes => $doc->features->as_boolean_hash,
+			  result => $results{$doc->name},
+			  name => $doc->name,
+			);
+      }
+    }
+    $t->streamline(0);
+    $self->{model}{first_tree} = $t;
+  }
+
+  print STDERR "\nBuilding tree for category '", $cat->name, "'" if $self->verbose;
   $t->train;
   return $t;
 }
 
 sub get_boolean_score {
   my ($self, $doc, $t) = @_;
-  my $result = $t->get_result( attributes => $doc->features->as_boolean_hash );
+  my $result = $t->get_result( attributes => $doc->features->as_boolean_hash ) || 0;
   return $result;
 }
 

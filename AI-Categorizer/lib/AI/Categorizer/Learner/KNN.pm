@@ -22,24 +22,17 @@ sub threshold {
 }
 
 #--- returns scores of this document with k closest neighbours
-my $index =-1;
 sub subIn{
-    my($value,@arr)=@_;
-    #print "subing $value into @arr\n";
-    for(my $i=0; $i<scalar(@arr);$i++){
-	if($arr[$i]<$value){
-	    
-	    my $old_val = $arr[$i];
-	    #print "$value inserted into position $i in place of $old_val\n";
-	    $arr[$i]=$value;
-	    
-	    @arr = subIn($old_val,@arr);
-	    $index = $i;
-	    return @arr;
+    my($value, $arr)=@_;
+    #print "subing $value into @$arr\n";
+    for (my $i=0; $i<@$arr; $i++){
+	if ($arr->[$i] <= $value){
+	  splice @$arr, $i, 0, $value;
+	  pop @$arr;
+	  return $i;
 	}
     }
-    $index = -1;
-    return @arr;
+    return -1;
 }
 sub get_scores {
   my ($self, $newdoc) = @_;
@@ -54,13 +47,9 @@ sub get_scores {
   my @kdocs;
   my $k =$self->{k_value};
 
+  $dscores[$k-1] = 0;
+  $kdocs[$k-1] = undef;
   
-  for(my $i=0;$i<$k;$i++){
-      if($i>@docs){
-	  last;
-      }
-      $dscores[$i]=-1;
-  }
   foreach my $doc(@docs){ # each doc in corpus 
      warn "comparing to: ", $doc->name, "\n" if $self->verbose;
 	my $score=0;
@@ -72,12 +61,11 @@ sub get_scores {
 	warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, ") is $score" if $self->verbose > 1;
         
 	#print "adding score: $score\n";
-	@dscores = subIn($score,@dscores);
+	my $index = subIn($score, \@dscores);
 	if($index>-1){
-	    $kdocs[$index] = $doc;
+	  splice @kdocs, $index, 0, $doc;
+	  pop @kdocs;
 	}
-	    
- 	    
   }
   #warn "scores: @dscores";
   #print "nearest docs @kdocs" ; 

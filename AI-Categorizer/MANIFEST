@@ -2,6 +2,7 @@ Changes
 MANIFEST
 Makefile.PL
 README
+doc/classes-overview.png
 doc/classes.png
 eg/drmath-1.00.yaml
 eg/run_experiment.pl

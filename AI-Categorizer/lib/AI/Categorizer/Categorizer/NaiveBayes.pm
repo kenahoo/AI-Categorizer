@@ -7,7 +7,7 @@ use Params::Validate qw(:types);
 
 __PACKAGE__->valid_params
   (
-   bayes_threshold => {type => SCALAR, default => 0.3},
+   threshold => {type => SCALAR, default => 0.3},
   );
 
 sub create_model {
@@ -81,6 +81,12 @@ sub get_scores {
   return \%scores;
 }
 
+sub threshold {
+  my $self = shift;
+  $self->{threshold} = shift if @_;
+  return $self->{threshold};
+}
+
 sub categorize {
   my ($self, $doc) = @_;
 
@@ -94,7 +100,7 @@ sub categorize {
 
   return $self->create_delayed_object('hypothesis',
 				      scores => $scores,
-				      threshold => $self->{bayes_threshold},
+				      threshold => $self->{threshold},
 				      all_categories => [keys %{$self->{model}{cat_prob}}],
 				     );
 }

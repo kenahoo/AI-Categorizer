@@ -32,7 +32,7 @@ __END__
 
 =head1 NAME
 
-AI::Categorizer::Learner::Guesser - Naive guessing based on class probabilities
+AI::Categorizer::Learner::Guesser - Simple guessing based on class probabilities
 
 =head1 SYNOPSIS
 
@@ -56,7 +56,7 @@ AI::Categorizer::Learner::Guesser - Naive guessing based on class probabilities
 
 =head1 DESCRIPTION
 
-This implements a naive category guesser that makes assignments based
+This implements a simple category guesser that makes assignments based
 solely on the prior probabilities of categories.  For instance, if 5%
 of the training documents belong to a certain category, then the
 probability of any test document being assigned to that category is

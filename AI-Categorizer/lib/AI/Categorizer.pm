@@ -495,6 +495,10 @@ about each other or use conflicting namespaces.
 
 Ken Williams <kenw@ee.usyd.edu.au>
 
+Discussion about this module can be directed to the perl-AI list at
+<perl-ai@perl.org>.  For more info about the list, see
+http://lists.perl.org/showlist.cgi?name=perl-ai
+
 =head1 REFERENCES
 
 An excellent introduction to the academic field of Text Categorization

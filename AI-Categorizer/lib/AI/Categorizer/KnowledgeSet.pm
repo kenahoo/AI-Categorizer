@@ -19,14 +19,16 @@ __PACKAGE__->valid_params
 		  type => ARRAYREF,
 		  default => [],
 		  callbacks => { 'all are Category objects' => 
-				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Category'), @_ },
+				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Category'),
+					 @{$_[0]} },
 			       },
 		 },
    documents  => {
 		  type => ARRAYREF,
 		  default => [],
 		  callbacks => { 'all are Document objects' => 
-				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'), @_ },
+				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'),
+					 @{$_[0]} },
 			       },
 		 },
    scan_first => {

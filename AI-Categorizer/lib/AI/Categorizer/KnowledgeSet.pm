@@ -133,9 +133,11 @@ sub scan {
   #  - "category skew index" (% variance?) by num. documents, tokens, and types
 
   my ($self, %args) = @_;
-  my $pb;
-  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
   my $collection = $self->create_delayed_object('collection', %args);
+
+  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
+  my $pb;
+  $pb = $self->prog_bar($count) if $self->verbose;
 
   my %stats;
 
@@ -203,10 +205,11 @@ sub load {
 
 sub read {
   my ($self, %args) = @_;
-
-  my $pb;
-  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
   my $collection = $self->create_delayed_object('collection', %args);
+
+  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
+  my $pb;
+  $pb = $self->prog_bar($count) if $self->verbose;
 
   while (my $doc = $collection->next) {
     $pb->() if $self->verbose;
@@ -217,11 +220,13 @@ sub read {
 
 sub scan_features {
   my ($self, %args) = @_;
-  my $pb;
-  $pb = $self->prog_bar(delete $args{count}) if $self->verbose;
 
   my $features   = $self->create_delayed_object('features', features => {});
   my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
+
+  my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
+  my $pb;
+  $pb = $self->prog_bar($count) if $self->verbose;
 
   while (my $doc = $collection->next) {
     $pb->() if $self->verbose;

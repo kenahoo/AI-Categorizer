@@ -1,4 +1,9 @@
 package AI::Categorizer::Util;
+
+use Exporter;
+use base qw(Exporter);
+@EXPORT_OK = qw(intersection average F1 recall precision accuracy error);
+
 use strict;
 
 # It's possible that this can be a class - something like 

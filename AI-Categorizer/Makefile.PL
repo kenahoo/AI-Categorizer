@@ -20,14 +20,14 @@ WriteMakefile
              },
    # 'clean' => {FILES => "t/httpd.conf t/error_log t/httpd"},
    'PREREQ_PM' => {
-		   Class::Container => 0.05,
+		   Class::Container => 0.07,
 		   Storable => 0,
 		   Params::Validate => 0.18,
-		   Statistics::Contingency => 0,
+		   Statistics::Contingency => 0.01,
+		   Lingua::Stem => 0.50,
 		  },
 
-   # Recommended: Lingua::Stem
-   #            : Scalar::Util
+   # Recommended: Scalar::Util
 
    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
     (ABSTRACT_FROM => $file, # retrieve abstract from module

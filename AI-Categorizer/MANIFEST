@@ -13,10 +13,12 @@ lib/AI/Categorizer/Collection/SingleFile.pm
 lib/AI/Categorizer/Document.pm
 lib/AI/Categorizer/Document/SMART.pm
 lib/AI/Categorizer/Document/Text.pm
+lib/AI/Categorizer/Experiment.pm
 lib/AI/Categorizer/FeatureVector.pm
 lib/AI/Categorizer/Hypothesis.pm
 lib/AI/Categorizer/KnowledgeSet.pm
 lib/AI/Categorizer/ObjectSet.pm
 lib/AI/Categorizer/Storable.pm
 lib/AI/Categorizer/Util.pm
-test.pl
+t/01-trial.t
+t/02-experiment.pl

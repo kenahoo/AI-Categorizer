@@ -69,6 +69,10 @@ sub new {
   return $self;
 }
 
+# Read a document from an external source - a virtual method
+sub read;
+
+
 sub new_from_string {
   my ($class, %args) = @_;
   $args{categories} ||= [];

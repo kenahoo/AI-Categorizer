@@ -2,15 +2,29 @@ package AI::Categorizer::Categorizer;
 
 use strict;
 use Class::Container;
-use base qw(Class::Container);
+use AI::Categorizer::Storable;
+use base qw(Class::Container AI::Categorizer::Storable);
+
 use Params::Validate qw(:types);
 use Set::Object;
 
 __PACKAGE__->valid_params
   (
-   knowledge  => { isa => 'AI::Categorizer::KnowledgeSet' },
+   knowledge  => { isa => 'AI::Categorizer::KnowledgeSet', optional => 1 },
    features_kept => { type => SCALAR, default => 0.2 },
   );
+
+__PACKAGE__->contained_objects
+  (
+   hypothesis => {
+		  class => 'AI::Categorizer::Hypothesis',
+		  delayed => 1,
+		 },
+  );
+
+# Subclasses must override these virtual methods:
+sub categorize;
+sub create_model;
 
 sub train {
   my ($self, %args) = @_;
@@ -21,13 +35,12 @@ sub train {
   $self->create_model;    # Creates $self->{model}
 }
 
-# sub categorize
-# sub create_model
-
 sub select_features {
   # This just uses a simple document-frequency criterion, controlled
   # by 'features_kept'.  Other algorithms may follow later, controlled
   # by other parameters.
+
+# XXX this is doing word-frequency right now, not document-frequency
 
   my $self = shift;
   return unless $self->{features_kept};

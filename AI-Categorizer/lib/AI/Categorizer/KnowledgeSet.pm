@@ -323,12 +323,12 @@ sub scan_features {
 
   if ($self->{feature_selection} eq 'document_frequency') {
     my $doc_freq   = $self->create_delayed_object('features', features => {});
-    my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
+    my $collection = $self->create_delayed_object('collection', %args);
     my $pb = $self->prog_bar($collection);
     
     while (my $doc = $collection->next) {
       $pb->();
-      $doc_freq->add( $doc->features );
+      $doc_freq->add( $doc->features->as_boolean_hash );
     }
     print "\n" if $self->verbose;
     
@@ -420,3 +420,15 @@ sub add_document {
 }
 
 1;
+
+__END__
+
+=item term_weighting
+
+Specifies how word counts should be converted to feature vector
+values.  If C<term_weighting> is set to C<natural>, the word counts
+themselves will be used as the values.  C<boolean> indicates that each
+positive word count will be converted to 1 (or whatever the
+C<content_weight> for this section is).  C<log> indicates that the
+values will be set to C<1+log(count)>.
+

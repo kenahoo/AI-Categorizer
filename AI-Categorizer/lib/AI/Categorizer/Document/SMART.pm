@@ -42,8 +42,9 @@ sub parse {
   my ($id, $categories, $title) = ($1, $2, $3);
   s/\.I$//;
 
-  my @categories = $categories =~ m/(.*?)\s+1[\s;]*/g;
+  my @categories = $categories =~ m/(.*?)\s+\d+[\s;]*/g;
   #print "found $id => (@categories)\n";
+  @categories = map AI::Categorizer::Category->by_name(name => $_), @categories;
 
   return { name => $id, title => $title, body => $args{content} }, \@categories;
 }

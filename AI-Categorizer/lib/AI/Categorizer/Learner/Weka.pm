@@ -266,7 +266,6 @@ AI::Categorizer::Learner::Weka - Pass-through wrapper to Weka system
   while (my $document = $c->next) {
     my $hypothesis = $nb->categorize($document);
     print "Best assigned category: ", $hypothesis->best_category, "\n";
-    print "All assigned categories: ", join(', ', $hypothesis->categories), "\n";
   }
 
 =head1 DESCRIPTION
@@ -284,6 +283,13 @@ times).  However, if you're looking for really great performance,
 you're probably looking in the wrong place - this Weka wrapper is
 intended more as a way to try lots of different machine learning
 methods.
+
+One important caveat: at the moment, this learner can only handle one
+category per document, in both training and runtime assignment.  This
+is because it's difficult to get Weka to do otherwise.  Also, some
+classifiers (like SMO, the Support Vector Machine implementation) can
+only handle a single I<binary> classification, so you might want to
+check out Weka's MultipleClassClassifier to help with this situation.
 
 =head1 METHODS
 

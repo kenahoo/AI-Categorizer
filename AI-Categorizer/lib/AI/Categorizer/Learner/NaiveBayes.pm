@@ -27,6 +27,9 @@ sub create_model {
     # Count the number of tokens in this cat
     $m->{cat_tokens}{$cat->name} = $cat->features->sum;
 
+    # Compute a smoothing term so P(word|cat)==0 can be avoided
+    $m->{smoothing}{$cat->name} = -log($m->{cat_tokens}{$cat->name} + $m->{vocab_size});
+
     my $denominator = log($m->{cat_tokens}{$cat->name} + $m->{vocab_size});
 
     my $features = $cat->features->as_hash;
@@ -56,14 +59,12 @@ sub get_scores {
 
   my %scores;
   while (my ($cat, $cat_features) = each %{$m->{probs}}) {
-    my $fake_prob = -log($m->{cat_tokens}{$cat} + $m->{vocab_size}); # Like a very infrequent word
-
     $scores{$cat} = $m->{cat_prob}{$cat}; # P($cat)
     
     my $doc_hash = $newdoc->features->as_hash;
     while (my ($feature, $value) = each %$doc_hash) {
       next unless exists $all_features->{$feature};
-      $scores{$cat} += ($cat_features->{$feature} || $fake_prob)*$value;   # P($feature|$cat)**$value
+      $scores{$cat} += ($cat_features->{$feature} || $m->{smoothing}{$cat})*$value;   # P($feature|$cat)**$value
     }
   }
 
@@ -77,13 +78,13 @@ sub _rescale {
   # Scale everything back to a reasonable area in logspace (near zero), un-loggify, and normalize
   my $total = 0;
   my $max = max(values %$scores);
-  foreach (keys %$scores) {
-    $scores->{$_} = exp($scores->{$_} - $max);
-    $total += $scores->{$_}**2;
+  foreach (values %$scores) {
+    $_ = exp($_ - $max);
+    $total += $_**2;
   }
   $total = sqrt($total);
-  foreach (keys %$scores) {
-    $scores->{$_} /= $total;
+  foreach (values %$scores) {
+    $_ /= $total;
   }
 }
 

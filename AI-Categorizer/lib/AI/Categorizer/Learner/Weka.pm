@@ -13,7 +13,7 @@ __PACKAGE__->valid_params
   (
    java_path => {type => SCALAR, default => 'java'},
    java_args => {type => SCALAR|ARRAYREF, optional => 1},
-   weka_path => {type => SCALAR, default => 'weka.jar'},
+   weka_path => {type => SCALAR, optional => 1},
    weka_classifier => {type => SCALAR, default => 'weka.classifiers.NaiveBayes'},
    tmpdir => {type => SCALAR, default => '/tmp'},
   );
@@ -28,6 +28,11 @@ sub new {
   my $self = $class->SUPER::new(@_);
   $self->{java_args} = [] unless defined $self->{java_args};
   $self->{java_args} = [$self->{java_args}] unless UNIVERSAL::isa($self->{java_args}, 'ARRAY');
+
+  if (defined $self->{weka_path}) {
+    push @{$self->{java_args}}, '-classpath', $self->{weka_path};
+    delete $self->{weka_path};
+  }
   return $self;
 }
 
@@ -56,7 +61,6 @@ sub create_model {
 
   my @args = ($self->{java_path},
 	      @{$self->{java_args}},
-	      '-classpath', $self->{weka_path},
 	      $self->{weka_classifier}, 
 	      '-t', $train_file,
 	      '-T', $dummy_file,
@@ -77,11 +81,11 @@ sub categorize {
 
   # XXX Create document file
   my $doc_file = File::Spec->catfile( $self->{tmpdir}, "doc_$$" );
-  $self->create_arff_file($doc_file, [[$doc->features, ($doc->categories)[0]->name]]);
+  my $cat = $doc->categories ? ($doc->categories)[0]->name : 'unknown';
+  $self->create_arff_file($doc_file, [[$doc->features, $cat]]);
 
   my @args = ($self->{java_path},
 	      @{$self->{java_args}},
-	      '-classpath', $self->{weka_path},
 	      $self->{weka_classifier},
 	      '-l', $self->{model}{machine_file},
 	      '-T', $doc_file,
@@ -127,7 +131,6 @@ sub categorize_collection {
   
   my @args = ($self->{java_path},
               @{$self->{java_args}},
-              '-classpath', $self->{weka_path},
               $self->{weka_classifier},
               '-l', $self->{model}{machine_file},
               '-T', $doc_file,

@@ -65,14 +65,18 @@ sub next {
 			   );
 }
 
+sub rewind {
+  my $self = shift;
+  push @{$self->{path}}, @{$self->{used}};
+  @{$self->{used}} = ();
+}
+
 # This should share an iterator with next()
 sub count_documents {
     my $self = shift;
     return $self->{document_count} if defined $self->{document_count};
     
-    # Rewind
-    push @{$self->{path}}, @{$self->{used}};
-    @{$self->{used}} = ();
+    $self->rewind;
     
     my $count = 0;
     while (@{$self->{path}}) {
@@ -84,10 +88,7 @@ sub count_documents {
 	}
     }
 
-    # Rewind
-    push @{$self->{path}}, @{$self->{used}};
-    @{$self->{used}} = ();
-    
+    $self->rewind;
     return $self->{document_count} = $count;
 }
 

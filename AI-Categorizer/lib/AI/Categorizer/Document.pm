@@ -23,7 +23,7 @@ __PACKAGE__->valid_params
 		 },
    stopwords => {
 		 type => ARRAYREF|HASHREF,
-		 default => []
+		 default => {},
 		},
    content   => {
 		 type => HASHREF|SCALAR,
@@ -57,6 +57,10 @@ __PACKAGE__->valid_params
 		type => SCALAR|UNDEF,
 		optional => 1,
 	       },
+   stem_stopwords => {
+		      type => BOOLEAN,
+		      default => 0,
+		     },
   );
 
 __PACKAGE__->contained_objects
@@ -185,7 +189,7 @@ sub _filter_tokens {
   if ($self->{use_features}) {
     my $f = $self->{use_features}->as_hash;
     return [ grep  exists($f->{$_}), @$tokens_in ];
-  } elsif ($self->{stopwords}) {
+  } elsif ($self->{stopwords} and keys %{$self->{stopwords}}) {
     my $s = $self->{stopwords};
     return [ grep !exists($s->{$_}), @$tokens_in ];
   }
@@ -221,8 +225,12 @@ sub _weigh_tokens {
 
 sub vectorize {
   my ($self, %args) = @_;
-  my $tokens = $self->_filter_tokens($args{tokens});
-  return $self->_weigh_tokens($tokens, $args{weight});
+  if ($self->{stem_stopwords}) {
+    my $s = $self->stem_tokens([keys %{$self->{stopwords}}]);
+    $self->{stopwords} = { map {+$_, 1} @$s };
+    $args{tokens} = $self->_filter_tokens($args{tokens});
+  }
+  return $self->_weigh_tokens($args{tokens}, $args{weight});
 }
 
 sub read {

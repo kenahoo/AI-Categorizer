@@ -219,3 +219,54 @@ sub read {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+AI::Categorizer::Document - Embodies a document
+
+=head1 SYNOPSIS
+
+ use AI::Categorizer::Document;
+ 
+ # Simplest way to create a document:
+ my $d = new AI::Categorizer::Document(name => $string,
+                                       content => $string);
+ 
+ # More arguments are accepted:
+ my $d = new AI::Categorizer::Document(name => $string,
+                                       categories => \@category_objects,
+                                       content => { subject => $string,
+                                                    body => $string2, ... },
+                                       content_weights => { subject => 3,
+                                                            body => 1, ... },
+                                       stopwords => \%skip_these_words,
+                                       stemming => $string,
+                                       term_weighting => $string,
+                                       front_bias => $float,
+                                       use_features => $feature_vector,
+                                      );
+ 
+ # Pass the document to a categorization algorithm:
+ my $learner = AI::Categorizer::Learner::NaiveBayes->restore_state($path);
+ my $hypothesis = $learner->categorize($document);
+
+=head1 DESCRIPTION
+
+The Document class embodies the data in a single document.  
+
+(more documentation to follow)
+
+=head1 AUTHOR
+
+Ken Williams <kenw@ee.usyd.edu.au>
+
+=head1 COPYRIGHT
+
+This distribution is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.  These terms apply to
+every file in the distribution - if you have questions, please contact
+the author.
+
+=cut

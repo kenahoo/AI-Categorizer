@@ -15,6 +15,7 @@ __PACKAGE__->valid_params
    java_args => {type => SCALAR|ARRAYREF, optional => 1},
    weka_path => {type => SCALAR, optional => 1},
    weka_classifier => {type => SCALAR, default => 'weka.classifiers.NaiveBayes'},
+   weka_args => {type => SCALAR|ARRAYREF, optional => 1},
    tmpdir => {type => SCALAR, default => '/tmp'},
   );
 
@@ -26,9 +27,12 @@ __PACKAGE__->contained_objects
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new(@_);
-  $self->{java_args} = [] unless defined $self->{java_args};
-  $self->{java_args} = [$self->{java_args}] unless UNIVERSAL::isa($self->{java_args}, 'ARRAY');
 
+  for ('java_args', 'weka_args') {
+    $self->{$_} = [] unless defined $self->{$_};
+    $self->{$_} = [$self->{$_}] unless UNIVERSAL::isa($self->{$_}, 'ARRAY');
+  }
+  
   if (defined $self->{weka_path}) {
     push @{$self->{java_args}}, '-classpath', $self->{weka_path};
     delete $self->{weka_path};
@@ -62,6 +66,7 @@ sub create_model {
   my @args = ($self->{java_path},
 	      @{$self->{java_args}},
 	      $self->{weka_classifier}, 
+	      @{$self->{weka_args}},
 	      '-t', $train_file,
 	      '-T', $dummy_file,
 	      '-d', $outfile,
@@ -293,31 +298,36 @@ Weka subclass accepts the following parameters:
 
 =over 4
 
-=item * java_path
+=item java_path
 
 Specifies where the C<java> executable can be found on this system.
 The default is simply C<java>, meaning that it will search your
 C<PATH> to find java.
 
-=item * weka_path
+=item weka_path
 
 Specifies the path to the C<weka.jar> file containing the Weka
 bytecode.  If Weka has been installed somewhere in your java
 C<CLASSPATH>, you needn't specify a C<weka_path>.
 
-=item * java_args
+=item java_args
 
 Specifies a list of any additional arguments to give to the java
 process.  Commonly it's necessary to allocate more memory than the
 default, using an argument like C<-Xmx130MB>.
 
-=item * weka_classifier
+=item weka_args
+
+Specifies a list of any additional arguments to pass to the Weka
+classifier class when building the categorizer.
+
+=item weka_classifier
 
 Specifies the Weka class to use for a categorizer.  The default is
 C<weka.classifiers.NaiveBayes>.  Consult your Weka documentation for a
 list of other classifiers available.
 
-=item * tmpdir
+=item tmpdir
 
 A directory in which temporary files will be written when training the
 categorizer and categorizing new documents.  The default is C</tmp>.

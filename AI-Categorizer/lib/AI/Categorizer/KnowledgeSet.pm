@@ -29,14 +29,9 @@ __PACKAGE__->valid_params
 				 sub { ! grep !UNIVERSAL::isa($_, 'AI::Categorizer::Document'), @_ },
 			       },
 		 },
-   features_kept => {
-		     type => SCALAR,
-		     default => 0.2,
-		    },
-   feature_selection => {
-			 type => SCALAR,
-			 default => 'document_frequency',
-			},
+   feature_selector => {
+			isa => 'AI::Categorizer::FeatureSelector',
+		       },
    tfidf_weighting  => {
 			type => SCALAR,
 			optional => 1,
@@ -69,6 +64,7 @@ __PACKAGE__->contained_objects
 		   class => 'AI::Categorizer::Collection::Files' },
    features => { delayed => 1,
 		 class => 'AI::Categorizer::FeatureVector' },
+   feature_selector => 'AI::Categorizer::FeatureSelector::DocFrequency',
   );
 
 sub new {
@@ -125,6 +121,8 @@ sub document {
   my ($self, $name) = @_;
   return $self->{documents}->retrieve($name);
 }
+
+sub feature_selector { $_[0]->{feature_selector} }
 
 sub verbose {
   my $self = shift;
@@ -380,17 +378,10 @@ sub _reduce_features {
   return $result;
 }
 
-
 sub select_features {
-  # This just uses a simple document-frequency criterion, controlled
-  # by 'features_kept'.  Other algorithms may follow later, controlled
-  # by other parameters.
-
-# XXX this is doing word-frequency right now, not document-frequency
-
-  my ($self, %args) = @_;
+  my $self = shift;
   
-  my $f = $self->_reduce_features($self->features, $args{features_kept});
+  my $f = $self->feature_selector->select_features(knowledge_set => $self);
   $self->features($f);
 }
 

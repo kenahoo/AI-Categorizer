@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 
+# This script can be helpful for getting a set of baseline scores for
+# a categorization task.  It simulates using the "Guesser" learner,
+# but is much faster.  Because it doesn't leverage using the whole
+# framework, though, it expects everything to be in a very strict
+# format.  <cats-file> is in the same format as the 'category_file'
+# parameter to the Collection class.  <training-dir> and <test-dir>
+# give paths to directories of documents, named as in <cats-file>.
+
 use strict;
 use Statistics::Contingency;
 

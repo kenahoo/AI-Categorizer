@@ -8,6 +8,7 @@ README
 doc/classes-overview.png
 doc/classes.png
 eg/categorizer
+eg/demo.pl
 eg/easy_guesser.pl
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Category.pm
@@ -51,6 +52,7 @@ t/11-feature_vector.t
 t/12-hypothesis.t
 t/13-document.t
 t/14-collection.t
+t/15-knowledge_set.t
 t/common.pl
 t/traindocs/doc1
 t/traindocs/doc2

@@ -28,6 +28,20 @@ sub new {
   return $self;
 }
 
+# This should usually be replaced with a faster version that doesn't
+# need to create actual documents each time through
+sub count_documents {
+  my $self = shift;
+  return $self->{document_count} if exists $self->{document_count};
+
+  $self->rewind;
+  my $count = 0;
+  $count++ while $self->next;
+  $self->rewind;
+
+  return $self->{document_count} = $count;
+}
+
 # Abstract methods
 sub next;
 

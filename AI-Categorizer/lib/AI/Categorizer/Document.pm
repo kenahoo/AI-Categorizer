@@ -57,10 +57,10 @@ __PACKAGE__->valid_params
 		type => SCALAR|UNDEF,
 		optional => 1,
 	       },
-   stem_stopwords => {
-		      type => BOOLEAN,
-		      default => 0,
-		     },
+   stopword_behavior => {
+			 type => SCALAR,
+			 default => "stem",
+			},
   );
 
 __PACKAGE__->contained_objects
@@ -80,9 +80,9 @@ sub new {
 
   # Get efficient internal data structures
   $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
-  $self->{stopwords} = { map {($_ => 1)} @{ $self->{stopwords} } }
-    if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
 
+  $self->_fix_stopwords;
+  
   # A few different ways for the caller to initialize the content
   if (exists $self->{parse}) {
     $self->parse(content => delete $self->{parse});
@@ -97,6 +97,31 @@ sub new {
   
   $self->finish if $self->{content};
   return $self;
+}
+
+sub _fix_stopwords {
+  my $self = shift;
+  
+  # Convert to hash
+  $self->{stopwords} = { map {($_ => 1)} @{ $self->{stopwords} } }
+    if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
+  
+  my $s = $self->{stopwords};
+
+  # May need to perform stemming on the stopwords
+  return unless keys %$s; # No point in doing anything if there are no stopwords
+  return unless $self->{stopword_behavior} eq 'stem';
+  return if !defined($self->{stemming}) or $self->{stemming} eq 'none';
+  return if $s->{___stemmed};
+  
+  my @keys = keys %$s;
+  %$s = ();
+  $self->stem_words(\@keys);
+  $s->{$_} = 1 foreach @keys;
+  
+  # This flag is attached to the stopword structure itself so that
+  # other documents will notice it.
+  $s->{___stemmed} = 1;
 }
 
 sub finish {
@@ -120,6 +145,7 @@ sub parse_handle {
 ### Accessors
 
 sub name { $_[0]->{name} }
+sub stopword_behavior { $_[0]->{stopword_behavior} }
 
 sub features {
   my $self = shift;
@@ -142,10 +168,15 @@ sub create_feature_vector {
   my $content = $self->{content};
   my $weights = $self->{content_weights};
 
+  die "'stopword_behavior' must be one of 'stem', 'no_stem', or 'pre_stemmed'"
+    unless $self->{stopword_behavior} =~ /^stem|no_stem|pre_stemmed$/;
+
   $self->{features} = $self->create_delayed_object('features');
   while (my ($name, $data) = each %$content) {
     my $t = $self->tokenize($data);
+    $t = $self->_filter_tokens($t) if $self->{stopword_behavior} eq 'no_stem';
     $self->stem_words($t);
+    $t = $self->_filter_tokens($t) if $self->{stopword_behavior} =~ /^stem|pre_stemmed$/;
     my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{$name} : 1 );
     $self->{features}->add($h);
   }
@@ -375,6 +406,44 @@ which indicates that the tokens should be used without change, or
 C<porter>, indicating that the Porter stemming algorithm should be
 applied to each token.  This requires the C<Lingua::Stem> module from
 CPAN.
+
+=item stopword_behavior
+
+There are a few ways you might want the stopword list (specified with
+the C<stopwords> parameter) to interact with the stemming algorithm
+(specified with the C<stemming> parameter).  These options can be
+controlled with the C<stopword_behavior> parameter, which can take the
+following values:
+
+=over 4
+
+=item no_stem
+
+Match stopwords against non-stemmed document words.  
+
+=item stem
+
+Stem stopwords according to 'stemming' parameter, then match them
+against stemmed document words.
+
+=item pre_stemmed
+
+Stopwords are already stemmed, match them against stemmed document
+words.
+
+=back
+
+The default value is C<stem>, which seems to produce the best results
+in most cases I've tried.  I'm not aware of any studies comparing the
+C<no_stem> behavior to the C<stem> behavior in the general case.
+
+This parameter has no effect if there are no stopwords being used, or
+if stemming is not being used.  In the latter case, the list of
+stopwords will always be matched as-is against the document words.
+
+Note that if the C<stem> option is used, the data structure passed as
+the C<stopwords> parameter will be modified in-place to contain the
+stemmed versions of the stopwords supplied.
 
 =back
 

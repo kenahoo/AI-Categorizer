@@ -1,6 +1,10 @@
 Revision history for Perl extension AI::Categorizer.
 
+0.03  Wed Jul 24 01:57:00 AEST 2002
+
+ - First version released to CPAN
+
 0.01  Wed Apr 17 10:47:21 2002
-	- original version; created by h2xs 1.21 with options
-		-XA -n AI::Categorizer
+ - original version; created by h2xs 1.21 with options
+   -XA -n AI::Categorizer
 

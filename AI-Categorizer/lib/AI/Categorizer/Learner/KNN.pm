@@ -4,12 +4,12 @@ use strict;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
 use Params::Validate qw(:types);
-use AI::Categorizer::Util qw(max average);
+use AI::Categorizer::Util qw(max average binary_search);
 
 __PACKAGE__->valid_params
   (
    threshold => {type => SCALAR, default => 0.1},
-   k_value => {type => SCALAR, default =>5},
+   k_value => {type => SCALAR, default => 5},
   );
 
 sub create_model {
@@ -30,15 +30,10 @@ sub subIn{
     my($value, $arr)=@_;
     return -1 if $arr->[-1] >= $value;
 
-    for (my $i=0; $i<@$arr; $i++){
-	if ($arr->[$i] < $value) {
-	  splice @$arr, $i, 0, $value;
-	  pop @$arr;
-	  return $i;
-	}
-    }
-    
-    die "Insertion error";
+    my $i = binary_search($arr, $value);
+    splice @$arr, $i, 0, $value;
+    pop @$arr;
+    return $i;
 }
 
 sub get_scores {

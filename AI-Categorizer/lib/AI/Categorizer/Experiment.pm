@@ -11,6 +11,7 @@ use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
    categories => { type => ARRAYREF|HASHREF },
+   sig_figs   => { type => SCALAR, default => 3 },
   );
 
 sub new {
@@ -31,6 +32,11 @@ sub add_hypothesis {
   $name = $h->document_name unless defined $name;
   
   $self->add_result([$h->categories], $correct, $name);
+}
+
+sub stats_table {
+  my $self = shift;
+  $self->SUPER::stats_table($self->{sig_figs});
 }
 
 1;

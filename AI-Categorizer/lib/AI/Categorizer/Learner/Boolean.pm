@@ -54,8 +54,9 @@ AI::Categorizer::Learner::Boolean - Abstract class for boolean categorizers
 =head1 DESCRIPTION
 
 This class isn't useful as a categorizer on its own, but it provides a
-framework for other categorizers that can only make boolean (yes/no)
-decisions on each category.  For instance, the decision tree
+framework for turning boolean categorizers (categorizers based on
+algorithms that can just provide yes/no categorization decisions) into
+multi-valued categorizers.  For instance, the decision tree
 categorizer C<AI::Categorizer::Learner::DecisionTree> maintains a
 decision tree for each category, then makes a separate decision for
 each category.

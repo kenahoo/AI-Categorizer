@@ -28,7 +28,7 @@ sub threshold {
 #--- returns scores of this document with k closest neighbours
 sub subIn{
     my($value, $arr)=@_;
-    return -1 if $arr->[-1] >= $value;
+    return -1 if $arr->[0] > $value;
 
     my $i = binary_search($arr, $value);
     splice @$arr, $i, 0, $value;
@@ -47,8 +47,8 @@ sub get_scores {
   my (%scores, @dscores, @kdocs);
   my $k = $self->{k_value};
 
-  $dscores[$k-1] = 0;
-  $kdocs[$k-1] = undef;
+  @dscores = (0) x $k;
+  @kdocs = (undef) x $k;
   
   foreach my $doc (@docs) { # each doc in corpus 
     my $score = $doc->features->dot( $features );
@@ -63,7 +63,7 @@ sub get_scores {
   }
   
   my $no_of_cats =0;
-  for (my $e=0; $e<@kdocs; $e++) { #for 0 - k
+  foreach my $e (0..$k) {
     next unless defined $kdocs[$e];
     
     if($dscores[$e]){
@@ -187,7 +187,7 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-AI::Categorize(3)
+AI::Categorizer(3)
 
 "A re-examination of text categorization methods" by Yiming Yang
 L<http://www.cs.cmu.edu/~yiming/publications.html>

@@ -1,5 +1,6 @@
 
 use ExtUtils::MakeMaker;
+use Config;
 
 my $module = 'AI::Categorizer';
 my ($file, $dir);
@@ -25,6 +26,14 @@ $file = "lib/$file.pm";
   }
 }
 
+my %options;
+{
+  if (prompt("Do you want to install the command-line script 'categorizer' to $Config::Config{installscript}?", 'n') =~ /^y/i) {
+    $options{EXE_FILES} = [qw(eg/categorizer)];
+  }
+}
+
+
 WriteMakefile
   (
    'NAME'       => $module,
@@ -44,6 +53,7 @@ WriteMakefile
 		   Statistics::Contingency => 0.04,
 		   Lingua::Stem => 0.50,
 		  },
+   %options,
 
    # Recommended: Scalar::Util
 

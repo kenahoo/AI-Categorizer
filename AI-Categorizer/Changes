@@ -16,6 +16,9 @@ Revision history for Perl extension AI::Categorizer.
    regression test to exercise the Hypothesis class.  [Spotted by
    Xiaobo Li]
 
+ - For some Learner classes, the generated Hypothesis objects had
+   non-functioning all_categories() methods.
+
  - Added the 'stopword_behavior' parameter for controlling how
    stopword lists and stemming interact.  Previously, if stopwords &
    stemming were both used, stopwords were assumed to be pre-stemmed,

@@ -41,7 +41,7 @@ WriteMakefile
 		   Class::Container => 0.07,
 		   Storable => 0,
 		   Params::Validate => 0.18,
-		   Statistics::Contingency => 0.01,
+		   Statistics::Contingency => 0.04,
 		   Lingua::Stem => 0.50,
 		  },
 

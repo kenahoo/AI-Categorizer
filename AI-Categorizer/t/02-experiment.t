@@ -43,6 +43,6 @@ my $all_categories = [qw(sports politics finance world)];
   ok $e->micro_F1, 1/3, "micro F1";
 
   ok $e->macro_recall, 0.75, "macro recall";
-  ok $e->macro_precision, 0.625, "macro precision";
+  ok $e->macro_precision, 0.375, "macro precision";
   ok $e->macro_F1, 5/12, "macro F1";
 }

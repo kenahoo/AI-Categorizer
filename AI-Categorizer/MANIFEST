@@ -23,6 +23,7 @@ lib/AI/Categorizer/Learner/Boolean.pm
 lib/AI/Categorizer/Learner/DecisionTree.pm
 lib/AI/Categorizer/Learner/NNetTC.pm
 lib/AI/Categorizer/Learner/NaiveBayes.pm
+lib/AI/Categorizer/Learner/SVM.pm
 lib/AI/Categorizer/Learner/Weka.pm
 lib/AI/Categorizer/ObjectSet.pm
 lib/AI/Categorizer/Storable.pm
@@ -31,4 +32,5 @@ t/01-naive_bayes.t
 t/02-experiment.t
 t/03-weka.t
 t/04-decision_tree.t
+t/05-svm.t
 t/common.pl

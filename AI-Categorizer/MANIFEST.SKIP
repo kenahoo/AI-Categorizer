@@ -4,6 +4,7 @@ CVS
 \.cvsignore$
 ~$
 ^\.
+\.\#
 
 MANIFEST\.SKIP
 ^Makefile$

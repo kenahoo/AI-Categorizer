@@ -7,7 +7,7 @@ use strict;
 use Test;
 BEGIN {
   require 't/common.pl';
-  need_module('AI::DecisionTree 0.05');
+  need_module('AI::DecisionTree 0.06');
   plan tests => 5;
 }
 

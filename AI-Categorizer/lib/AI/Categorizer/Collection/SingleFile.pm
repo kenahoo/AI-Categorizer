@@ -53,6 +53,8 @@ sub next {
   } elsif ($content =~ /^\s*$self->{delimiter}$/) { # Skip empty docs
     return $self->next;
   }
+#warn "doc is $content";
+#warn "creating document=>@{[ %{$self->{container}{delayed}{document}} ]}";
 
   my ($doc, $categories) = $self->call_method('document', 'parse', 
 					      content => $content,

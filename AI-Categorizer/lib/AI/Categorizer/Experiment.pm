@@ -29,46 +29,43 @@ use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
    verbose => { type => SCALAR, default => 0 },
+   categories => { type => ARRAYREF|HASHREF },
   );
 
 sub new {
   my $package = shift;
   my $self = $package->SUPER::new(@_);
+  
   $self->{$_} = 0 foreach qw(a b c d);
+  my $c = delete $self->{categories};
+  $self->{categories} = { map {($_ => {a=>0, b=>0, c=>0, d=>0})} 
+			  UNIVERSAL::isa($c, 'HASH') ? keys(%$c) : @$c
+			};
   return $self;
 }
 
-sub add_hypothesis {
-  my ($self, $hypothesis, $correct) = @_;
-  my %assigned = map {($_, 1)} $hypothesis->categories;
-
-  unless ($self->{categories}) {
-    my @all_cats = $hypothesis->all_categories;
-    $self->{categories} = { map {$_, {a=>0, b=>0, c=>0, d=>0}} @all_cats };
-  }
+sub add_result {
+  my ($self, $assigned, $correct, $name) = @_;
   my $cats_table = $self->{categories};
 
   # Hashify
-  if (!ref($correct)) {
-    $correct = [$correct];  # $correct is a string
-  } elsif (UNIVERSAL::isa($correct, 'ARRAY')) {
-    $correct = { map {(ref($_) ? $_->name : $_) => 1} @$correct };
-  } elsif (UNIVERSAL::isa($correct, 'HASH')) {
-    # Leave it alone
-  } else {
-    die "Unknown type '$correct' for correct categories";
+  foreach ($assigned, $correct) {
+    $_ = {$_ => 1}, next               unless ref $_;
+    next                               if UNIVERSAL::isa($_, 'HASH');  # Leave alone
+    $_ = { map {($_ => 1)} @$_ }, next if UNIVERSAL::isa($_, 'ARRAY');
+    die "Unknown type '$_' for category list";
   }
 
   # Add to the micro/macro tables
   foreach my $cat (keys %$cats_table) {
-    $cats_table->{$cat}{a}++, $self->{a}++ if  $assigned{$cat} and  $correct->{$cat};
-    $cats_table->{$cat}{b}++, $self->{b}++ if  $assigned{$cat} and !$correct->{$cat};
-    $cats_table->{$cat}{c}++, $self->{c}++ if !$assigned{$cat} and  $correct->{$cat};
-    $cats_table->{$cat}{d}++, $self->{d}++ if !$assigned{$cat} and !$correct->{$cat};
+    $cats_table->{$cat}{a}++, $self->{a}++ if  $assigned->{$cat} and  $correct->{$cat};
+    $cats_table->{$cat}{b}++, $self->{b}++ if  $assigned->{$cat} and !$correct->{$cat};
+    $cats_table->{$cat}{c}++, $self->{c}++ if !$assigned->{$cat} and  $correct->{$cat};
+    $cats_table->{$cat}{d}++, $self->{d}++ if !$assigned->{$cat} and !$correct->{$cat};
   }
 
   if ($self->{verbose}) {
-    print $hypothesis->document_name, ": assigned=(@{[ keys %assigned ]}) correct=(@{[ keys %$correct ]})\n";
+    print "$name: assigned=(@{[ keys %$assigned ]}) correct=(@{[ keys %$correct ]})\n";
   }
 
   $self->{hypotheses}++;
@@ -293,18 +290,20 @@ the results.
 
 Returns a new Experiment object.  No parameters are accepted at the moment.
 
-=item * $e->add_hypothesis($hypothesis, \@correct_categories)
+=item * $e->add_result($assigned_categories, $correct_categories, $name)
 
-Adds a new hypothesis to the Experiment.  The hypothesis should be an
-object of type C<AI::Categorizer::Hypothesis> (or one of its
-subclasses), as returned by the C<categorize()> method of a Learner.
-The list of correct categories can be given as an array of category
-names (strings), an array of Category objects, a hash whose keys are
-the category names (this is the fastest), or as a single string if
-there is only one category.
+Adds a new result to the experiment.  The lists of assigned and
+correct categories can be given as an array of category names
+(strings), as a hash whose keys are the category names and whose
+values are anything logically true, or as a single string if there is
+only one category.
 
-As of the current implementation, the Hypothesis itself is not stored,
-it is only used to generate the counts for the contingency table.
+If you've already got the lists in hash form, this will be the fastest
+way to pass them.  Otherwise, the current implementation will convert
+them to hash form internally.
+
+The C<$name> parameter is a name for this result, it will only be used
+in error messages or debugging/progress output.
 
 =item * $e->micro_accuracy
 
@@ -348,18 +347,21 @@ Returns the macro-averaged F1 for the Experiment.
 
 =item * $e->stats_table
 
-Returns a string combining several statistics in one graphic.  Since
-accuracy is 1 minus error, we only report error since it takes less
-space to print.
+Returns a string combining several statistics in one graphic table.
+Since accuracy is 1 minus error, we only report error since it takes
+less space to print.
 
 =item * $e->category_stats
 
 Returns a hash reference whose keys are the names of each category.
 The values are hash references whose keys are the names of various
 statistics (accuracy, error, precision, recall, or F1) and whose
-values are the measures themselves.  For example:
+values are the measures themselves.  For example, to print a single
+statistic:
 
  print $e->category_stats->{sports}{recall}, "\n";
+
+Or to print certain statistics for all categtories:
  
  my $stats = $e->category_stats;
  while (my ($cat, $value) = each %$stats) {

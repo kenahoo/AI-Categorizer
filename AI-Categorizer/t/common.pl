@@ -55,7 +55,7 @@ sub run_test_docs {
 
 }
 
-sub perform_standard_tests {
+sub set_up_tests {
   my %params = @_;
   my $c = new AI::Categorizer(
 			      knowledge_set => AI::Categorizer::KnowledgeSet->new
@@ -82,6 +82,11 @@ sub perform_standard_tests {
   }
 
   $l->train;
+  return ($l, \%docs);
+}
+
+sub perform_standard_tests {
+  my ($l, $docs) = set_up_tests(@_);
   
   run_test_docs($l);
 
@@ -92,7 +97,7 @@ sub perform_standard_tests {
 
   run_test_docs($l);
 
-  my $train_collection = AI::Categorizer::Collection::InMemory->new(data => \%docs);
+  my $train_collection = AI::Categorizer::Collection::InMemory->new(data => $docs);
   ok $train_collection;
   
   my $h = $l->categorize_collection(collection => $train_collection);

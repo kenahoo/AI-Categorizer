@@ -216,7 +216,7 @@ sub _reduce_features {
   # This is algorithmic overkill, but the sort seems fast enough.  Will revisit later.
   my $features = $f->as_hash;
   my @new_features = (sort {$features->{$b} <=> $features->{$a}} keys %$features)
-                      [0 .. $kept];
+                      [0 .. $kept-1];
 
   my $result = $f->intersection( \@new_features );
   print "Finished trimming features - # features = " . $result->length . "\n" if $self->{verbose};

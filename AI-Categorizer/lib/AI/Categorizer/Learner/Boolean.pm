@@ -12,7 +12,11 @@ sub create_model {
   foreach my $cat ($self->knowledge_set->categories) {
     my (@p, @n);
     foreach my $doc ($self->knowledge_set->documents) {
-      push( ($doc->is_in_category($cat) ? @p : @n), $doc );
+      if ($doc->is_in_category($cat)) {
+	push @p, $doc;
+      } else {
+	push @n, $doc;
+      }
     }
     $m->{learners}{ $cat->name } = $self->create_boolean_model(\@p, \@n, $cat);
   }

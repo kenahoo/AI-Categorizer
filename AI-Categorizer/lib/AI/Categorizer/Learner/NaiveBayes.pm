@@ -68,7 +68,7 @@ sub get_scores {
   }
 
   $self->_rescale(\%scores);
-  return \%scores;
+  return (\%scores, $self->{threshold});
 }
 
 sub _rescale {
@@ -91,26 +91,6 @@ sub threshold {
   my $self = shift;
   $self->{threshold} = shift if @_;
   return $self->{threshold};
-}
-
-sub categorize {
-  my ($self, $doc) = @_;
-
-  my $scores = $self->get_scores($doc);
-  
-  if ($self->verbose > 2) {
-    warn "scores: @{[ %$scores ]}" if $self->verbose > 3;
-
-    foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
-      print "$key: $scores->{$key}\n";
-    }
-  }
-
-  return $self->create_delayed_object('hypothesis',
-				      scores => $scores,
-				      threshold => $self->{threshold},
-				      document_name => $doc->name,
-				     );
 }
 
 sub save_state {

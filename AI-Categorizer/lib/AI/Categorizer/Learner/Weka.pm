@@ -81,7 +81,7 @@ sub create_model {
 
 # java -classpath /Applications/Science/weka-3-2-3/weka.jar weka.classifiers.NaiveBayes -l out -T test.arff -p 0
 
-sub categorize {
+sub get_scores {
   my ($self, $doc) = @_;
 
   # XXX Create document file
@@ -106,19 +106,7 @@ sub categorize {
     $scores->{$predicted} = 1;
   }
 
-  if ($self->verbose > 1) {
-    warn "scores: @{[ %$scores ]}" if $self->verbose > 2;
-
-    foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
-      print "$key: $scores->{$key}\n";
-    }
-  }
-
-  return $self->create_delayed_object('hypothesis',
-				      scores => $scores,
-				      threshold => 0.5,
-				      document_name => $doc->name,
-				     );
+  return ($scores, 0.5);
 }
 
 sub categorize_collection {

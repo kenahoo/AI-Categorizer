@@ -66,7 +66,7 @@ sub intersection {
 sub add {
   my ($self, $other) = @_;
 
-  $other = $other->as_hash;
+  $other = $other->as_hash if UNIVERSAL::isa($other, __PACKAGE__);
   while (my ($k,$v) = each %$other) {
     $self->{features}{$k} += $v;
   }

@@ -7,22 +7,23 @@
 
 use strict;
 use Test;
-BEGIN {
-  require 't/common.pl';
-  skip_test("Weka is not installed") unless -e "classpath";
-  plan tests => 1 + num_standard_tests();
-}
+use Module::Build;
+
+my $classpath = Module::Build->current->notes('classpath');
+
+require 't/common.pl';
+skip_test("Weka is not installed") unless defined $classpath;
+
+plan tests => 1 + num_standard_tests();
+
 
 ok(1);
 
 #########################
 
 my @args;
-local *FH;
-open FH, "classpath" or die "Can't open classpath: $!";
-my $line = <FH>;
-push @args, weka_path => $line
-  unless $line eq '-';
+push @args, weka_path => $classpath
+  unless $classpath eq '-';
 
 perform_standard_tests(
 		       learner_class => 'AI::Categorizer::Learner::Weka',

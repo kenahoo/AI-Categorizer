@@ -8,7 +8,7 @@ use Params::Validate qw(:types);
 
 __PACKAGE__->valid_params
   (
-   save_progress => { type => SCALAR, default => 'save' },
+   progress_file => { type => SCALAR, default => 'save' },
    knowledge_set => { isa => 'AI::Categorizer::KnowledgeSet' },
    learner       => { isa => 'AI::Categorizer::Learner' },
    verbose       => { type => BOOLEAN, default => 0 },
@@ -99,18 +99,22 @@ sub stats_table {
   return $self->{experiment}->stats_table;
 }
 
+sub progress_file {
+  shift->{progress_file};
+}
+
 sub _save_progress {
   my ($self, $stage, $node) = @_;
-  return unless $self->{save_progress};
-  my $file = "$self->{save_progress}-$stage-$node";
+  return unless $self->{progress_file};
+  my $file = "$self->{progress_file}-$stage-$node";
   warn "Saving to $file\n" if $self->{verbose};
   $self->{$node}->save_state($file);
 }
 
 sub _load_progress {
   my ($self, $stage, $node) = @_;
-  return unless $self->{save_progress};
-  my $file = "$self->{save_progress}-$stage-$node";
+  return unless $self->{progress_file};
+  my $file = "$self->{progress_file}-$stage-$node";
   warn "Loading $file\n" if $self->{verbose};
   $self->{$node} = $self->contained_class($node)->restore_state($file);
 }

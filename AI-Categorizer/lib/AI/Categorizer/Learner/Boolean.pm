@@ -3,10 +3,18 @@ package AI::Categorizer::Learner::Boolean;
 use strict;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
+use Params::Validate qw(:types);
+use AI::Categorizer::Util qw(random_elements);
+
+__PACKAGE__->valid_params
+  (
+   max_instances => {type => SCALAR, default => 0},
+  );
 
 sub create_model {
   my $self = shift;
   my $m = $self->{model} ||= {};
+  my $mi = $self->{max_instances};
 
   foreach my $cat ($self->knowledge_set->categories) {
     my (@p, @n);
@@ -17,6 +25,16 @@ sub create_model {
 	push @n, $doc;
       }
     }
+    if ($mi and @p + @n > $mi) {
+      # Get rid of random instances from training set, preserving
+      # current positive/negative ratio
+      my $ratio = $mi / (@p + @n);
+      @p = random_elements(\@p, @p * $ratio);
+      @n = random_elements(\@n, @n * $ratio);
+      
+      warn "Limiting to ". @p ." positives and ". @n ." negatives\n" if $self->verbose;
+    }
+
     $m->{learners}{ $cat->name } = $self->create_boolean_model(\@p, \@n, $cat);
   }
 }

@@ -27,7 +27,7 @@ __PACKAGE__->valid_params
 		},
    content   => {
 		 type => HASHREF|SCALAR,
-		 default => '',
+		 default => undef,
 		},
    content_weights => {
 		       type => HASHREF,
@@ -63,19 +63,28 @@ sub new {
   $self->{stopwords} = { map {($_ => 1)} @{ $self->{stopwords} } }
     if UNIVERSAL::isa($self->{stopwords}, 'ARRAY');
 
-  # Allow a simple string as the content
-  $self->{content} = { body => $self->{content} } unless ref($self->{content});
+  if (defined $self->{content}) {
+    # Allow a simple string as the content
+    $self->{content} = { body => $self->{content} } unless ref $self->{content};
+    
+    $self->create_feature_vector;
+    
+    # Now we're done with all the content stuff
+    delete @{$self}{'content', 'content_weights', 'stopwords', 'use_features'};
+  }
 
-  $self->create_feature_vector;
-
-  # Now we're done with all the content stuff
-  delete @{$self}{'content', 'content_weights', 'stopwords', 'use_features'};
-  
   return $self;
 }
 
+
 # Parse a document format - a virtual method
 sub parse;
+
+sub parse_handle {
+  my ($self, %args) = @_;
+  my $fh = $args{handle} or die "No 'handle' argument given to parse_handle()";
+  return { body => join '', <$fh> };
+}
 
 ### Accessors
 
@@ -105,6 +114,7 @@ sub create_feature_vector {
   $self->{features} = $self->create_delayed_object('features');
   while (my ($name, $data) = each %$content) {
     my $t = $self->tokenize($data);
+    $t = $self->_filter_tokens($t);
     $self->stem_words($t);
     my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{$name} : 1 );
     $self->{features}->add($h);
@@ -185,8 +195,7 @@ sub _weigh_tokens {
 
 sub vectorize {
   my ($self, %args) = @_;
-  my $tokens = $self->_filter_tokens($args{tokens});
-  return $self->_weigh_tokens($tokens, $args{weight});
+  return $self->_weigh_tokens($args{tokens}, $args{weight});
 }
 
 sub read {
@@ -196,11 +205,20 @@ sub read {
 
   local *FH;
   open FH, "< $path" or die "$path: $!";
-  my $body = do {local $/; <FH>};
+  my $hash = $class->parse_handle(handle => *FH);
   close FH;
+  
+  return $class->new(%args, content => $hash);
+}
 
-  my $doc = $class->parse(content => $body);
-  return $class->new(%args, content => $doc);
+sub dump_features {
+  my ($self, %args) = @_;
+  my $path = $args{path} or die "No 'path' argument given to dump_features()";
+  open my($fh), "> $path" or die "Can't create $path: $!";
+  my $f = $self->features->as_hash;
+  while (my ($k, $v) = each %$f) {
+    print $fh "$k\t$v\n";
+  }
 }
 
 1;

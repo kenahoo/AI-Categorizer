@@ -40,6 +40,7 @@ my $experiment = 'signalg';
   local *FH;
   my $vec_file = File::Spec->catfile($self->{tmpdir}, "$experiment.net");
   open FH, "> $vec_file" or die "> $vec_file: $!";
+  local $| = 1;
   foreach my $doc ($k->documents) {
     print "." if $self->{verbose};
     printf FH ".%s  %s\n", $doc->name, join(" ", map $cat2int{$_->name}, $doc->categories);

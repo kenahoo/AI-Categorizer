@@ -53,6 +53,7 @@ WriteMakefile
 		   Statistics::Contingency => 0.05,
 		   Lingua::Stem => 0.50,
 		  },
+   'PL_FILES' => {},
    %options,
 
    # Recommended: Scalar::Util

@@ -16,6 +16,9 @@ Revision history for Perl extension AI::Categorizer.
    failed the "All are Document objects" or "All are Category objects"
    callbacks. [Spotted by rob@phraud.org]
 
+ - Moved the 'stopword_file' parameter from Categorizer.pm to the
+   Collection class.
+
 0.05  Sat Mar 29 00:38:21 CST 2003
 
  - Feature selection is now handled by an abstract FeatureSelector

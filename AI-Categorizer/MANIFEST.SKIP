@@ -6,3 +6,4 @@ CVS
 MANIFEST\.SKIP
 ^Makefile$
 ^blib
+^test-

@@ -36,7 +36,7 @@ WriteMakefile
                        "cp -f README $dir-\$(VERSION); "
                       ),
              },
-   # 'clean' => {FILES => "t/httpd.conf t/error_log t/httpd"},
+   'clean' => {FILES => "t/state"},
    'PREREQ_PM' => {
 		   Class::Container => 0.07,
 		   Storable => 0,

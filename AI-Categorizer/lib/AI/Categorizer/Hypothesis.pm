@@ -1,7 +1,6 @@
 package AI::Categorizer::Hypothesis;
 
 use strict;
-use AI::Categorizer::Util;
 
 use Class::Container;
 use base qw(Class::Container);
@@ -55,21 +54,5 @@ sub scores {
   my $self = shift;
   return @{$self->{scores}}{@_};
 }
-
-sub precision {
-  my ($self, $correct) = @_;
-  return AI::Categorizer::Util::precision([$self->categories], $correct);
-}
-
-sub recall {
-  my ($self, $correct) = @_;
-  return AI::Categorizer::Util::recall([$self->categories], $correct);
-}
-
-sub F1 {
-  my ($self, $correct) = @_;
-  return AI::Categorizer::Util::F1([$self->categories], $correct);
-}
-
 
 1;

@@ -152,8 +152,9 @@ about the scores, except that a good score is higher than a bad
 score.  Individual Learners will have their own procedures for
 determining scores, so you cannot compare one Learner's score with
 another Learner's.  You often cannot compare scores from a single
-Learner on two different categorization tasks either (for instance, if
-the Learner always normalizes the top score to 1 or something).
+Learner on two different categorization tasks either (for instance,
+one Learner might always give scores between 0 and 1, and another
+Learner might always return scores less than 0).
 
 =item all_categories()
 

@@ -7,7 +7,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 1 };
+BEGIN { plan tests => 5 };
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
 use AI::Categorizer::Categorizer::NaiveBayes;

@@ -114,7 +114,6 @@ sub create_feature_vector {
   $self->{features} = $self->create_delayed_object('features');
   while (my ($name, $data) = each %$content) {
     my $t = $self->tokenize($data);
-    $t = $self->_filter_tokens($t);
     $self->stem_words($t);
     my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{$name} : 1 );
     $self->{features}->add($h);
@@ -195,7 +194,8 @@ sub _weigh_tokens {
 
 sub vectorize {
   my ($self, %args) = @_;
-  return $self->_weigh_tokens($args{tokens}, $args{weight});
+  my $tokens = $self->_filter_tokens($args{tokens});
+  return $self->_weigh_tokens($tokens, $args{weight});
 }
 
 sub read {

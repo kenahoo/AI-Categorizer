@@ -9,6 +9,7 @@
 
 use strict;
 use AI::Categorizer;
+use Benchmark;
 my $HAVE_YAML = eval "use YAML; 1";
 
 my ($opt, $do_stage, $outfile) = parse_command_line(@ARGV);
@@ -22,6 +23,20 @@ die $@ if $@;
 
 %$do_stage = map {$_, 1} 1..5 unless keys %$do_stage;
 
+my $out_fh;
+if ($outfile) {
+  open $out_fh, ">> $outfile" or die "Can't create $outfile: $!";
+  if (keys(%$do_stage) > 1) {
+    print $out_fh "~~~~~~~~~~~~~~~~", scalar(localtime), "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    if ($HAVE_YAML) {
+      print {$out_fh} YAML::Dump($c->dump_parameters);
+    } else {
+      warn "More detailed parameter dumping is available if you install the YAML module from CPAN.\n";
+    }
+  }
+}
+  
+
 run_section('scan_features',     1, $do_stage);
 run_section('read_training_set', 2, $do_stage);
 run_section('train',             3, $do_stage);
@@ -29,18 +44,7 @@ run_section('evaluate_test_set', 4, $do_stage);
 if ($do_stage->{5}) {
   my $result = $c->stats_table;
   print $result;
-  if ( $outfile ) {
-    local *FH;
-    open  FH, "> $outfile" or die "Can't create $outfile: $!";
-    print FH "# ", scalar(localtime), "\n";
-    if ($HAVE_YAML) {
-      print FH YAML::Dump($c->dump_parameters);
-    } else {
-      warn "More detailed parameter dumping is available if you install the YAML module from CPAN.\n";
-    }
-    print FH $result;
-    close FH;
-  }
+  print $out_fh $result if $out_fh;
 }
 
 sub run_section {
@@ -54,7 +58,12 @@ sub run_section {
       or die "$0 returned nonzero status, \$?=$?";
     return;
   }
-  return $c->$section();
+  my $start = new Benchmark;
+  $c->$section();
+  my $end = new Benchmark;
+  my $summary = timestr(timediff($end, $start));
+  print "$summary\n";
+  print $out_fh "Stage $stage: $summary\n" if $out_fh;
 }
 
 sub parse_command_line {

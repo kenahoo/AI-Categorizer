@@ -98,8 +98,8 @@ sub categorize {
 
   my $scores = $self->get_scores($doc);
   
-  if ($self->verbose > 1) {
-    warn "scores: @{[ %$scores ]}" if $self->verbose > 2;
+  if ($self->verbose > 2) {
+    warn "scores: @{[ %$scores ]}" if $self->verbose > 3;
 
     foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
       print "$key: $scores->{$key}\n";

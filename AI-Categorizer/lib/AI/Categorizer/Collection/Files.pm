@@ -12,12 +12,6 @@ __PACKAGE__->valid_params
    verbose => { type => BOOLEAN, default => 0 },
   );
 
-__PACKAGE__->contained_objects
-  (
-   document => { class => 'AI::Categorizer::Document::Text',
-		 delayed => 1 },
-  );
-
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new(@_);

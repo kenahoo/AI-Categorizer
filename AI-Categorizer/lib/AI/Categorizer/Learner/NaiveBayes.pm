@@ -20,7 +20,7 @@ sub create_model {
   $m->{vocab_size} = $self->knowledge_set->features->length;
   $m->{total_tokens} = $self->knowledge_set->features->sum;
 
-  # Calculate the probabilities for each category
+  # Calculate the log-probabilities for each category
   foreach my $cat ($self->knowledge_set->categories) {
     $m->{cat_prob}{$cat->name} = log($cat->documents / $totaldocs);
 

@@ -8,7 +8,7 @@
 use strict;
 use Test;
 BEGIN { 
-  plan tests => 10;
+  plan tests => 17;
 }
 
 use AI::Categorizer::FeatureVector;
@@ -32,3 +32,26 @@ ok keys(%$h), 2;
 
 ok $f1->dot($f2), 10;
 ok $f2->dot($f1), 10;
+
+{
+  use AI::Categorizer::FeatureVector::FastDot;
+  my $pkg = 'AI::Categorizer::FeatureVector::FastDot';
+  my $f1 = $pkg->new(features => {sports => 2, finance => 3});
+  my $f2 = $pkg->new(features => {sports => 5, hockey  => 7});
+  ok $f1;
+  ok $f2;
+
+  $pkg->all_features([qw(sports finance hockey)]);
+  ok keys(%{$pkg->all_features}), 3;
+
+  ok $f1->dot($f2), 10;
+  ok $f2->dot($f1), 10;
+}
+
+{
+  # Call normalize() on an empty vector
+  my $f = AI::Categorizer::FeatureVector->new(features => {});
+  ok $f->euclidean_length, 0;
+  eval {$f->normalize};
+  ok $@, '';
+}

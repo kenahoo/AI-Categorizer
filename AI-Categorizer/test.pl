@@ -44,7 +44,6 @@ $k->make_document( name => 'doc4',
 
 my $nb = new AI::Categorizer::Categorizer::NaiveBayes
   (
-   features_kept => 0,
    verbose => 0,
   );
 ok($nb);

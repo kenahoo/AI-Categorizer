@@ -149,8 +149,10 @@ sub vectorize {
     return \%counts;
   } elsif ($self->{term_weighting} eq 'boolean') {
     return { map {( $_ => $args{weight})} keys %counts };
+  } elsif ($self->{term_weighting} eq 'log') {
+    return { map {( $_ => 1 + log($counts{$_}))} keys %counts };
   } else {
-    die "term_weighting can only be 'natural' or 'boolean' (so far)";
+    die "term_weighting can only be 'natural', 'log', or 'boolean' (so far)";
   }
   return \%counts;
 }

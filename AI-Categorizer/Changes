@@ -13,6 +13,8 @@ Revision history for Perl extension AI::Categorizer.
    regression test to exercise the Hypothesis class.  [Spotted by
    Xiaobo Li]
 
+ - Added documentation for the AI::Categorizer::Collection::Files
+   class.
 
 0.04  Thu Nov  7 19:27:15 AEST 2002
 

@@ -77,7 +77,7 @@ sub prog_bar {
     my $string = '';
     if (@_) {
       my $e = shift;
-      $string = sprintf " (miF1=%.03f, maF1=%.03f)", $e->micro_F1, $e->macro_F1;
+      $string = sprintf " (maF1=%.03f, miF1=%.03f)", $e->macro_F1, $e->micro_F1;
     }
     print STDERR $pb->report("%50b %p ($i/$count)$string\r", $i);
     return $i;
@@ -87,16 +87,19 @@ sub prog_bar {
 sub categorize_collection {
   my ($self, %args) = @_;
   my $c = $args{collection} or die "No collection provided";
-  
+
   my @all_cats = map $_->name, $self->categories;
   my $experiment = $self->create_delayed_object('experiment', categories => \@all_cats);
-  my $pb = $self->verbose == 1 ? $self->prog_bar($c->count_documents) : sub {};
+  my $pb = $self->verbose ? $self->prog_bar($c->count_documents) : sub {};
   while (my $d = $c->next) {
     my $h = $self->categorize($d);
     $experiment->add_result([$h->categories], [map $_->name, $d->categories], $d->name);
     $pb->($experiment);
     if ($self->verbose > 1) {
-      printf STDERR "%s: assigned=(%s) correct=(%s)\n", $d->name, join(', ', $h->categories), join(', ', map $_->name, $d->categories);
+      printf STDERR ("%s: assigned=(%s) correct=(%s)\n",
+		     $d->name,
+		     join(', ', $h->categories),
+		     join(', ', map $_->name, $d->categories));
     }
   }
   print STDERR "\n" if $self->verbose;

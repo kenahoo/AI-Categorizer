@@ -10,6 +10,7 @@ __PACKAGE__->valid_params
    threshold => {type => SCALAR, default => 0.4},
    k_value => {type => SCALAR, default => 20},
    knn_weighting => {type => SCALAR, default => 'score'},
+   max_instances => {type => SCALAR, default => 0},
   );
 
 sub create_model {
@@ -43,8 +44,18 @@ sub get_scores {
 
   my $features = $newdoc->features->intersection($self->knowledge_set->features)->normalize;
   my $q = AI::Categorizer::Learner::KNN::Queue->new(size => $self->{k_value});
+
+  my @docset;
+  if ($self->{max_instances}) {
+    # Use (approximately) max_instances documents, chosen randomly from corpus
+    my $probability = $self->{max_instances} / $self->knowledge_set->documents;
+    @docset = grep {rand() < $probability} $self->knowledge_set->documents;
+  } else {
+    # Use the whole corpus
+    @docset = $self->knowledge_set->documents;
+  }
   
-  foreach my $doc ($self->knowledge_set->documents) { # each doc in corpus 
+  foreach my $doc (@docset) {
     my $score = $doc->features->dot( $features );
     warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, "): $score" if $self->verbose > 1;
     $q->add($doc, $score);

@@ -27,5 +27,6 @@ sub insert {
 sub retrieve { $_[0]->{$_[1]} }
 
 sub includes { exists $_[0]->{ $_[1]->name } }
+sub includes_name  { exists $_[0]->{ $_[1] } }
 
 1;

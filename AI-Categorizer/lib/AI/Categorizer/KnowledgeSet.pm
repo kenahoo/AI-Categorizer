@@ -127,6 +127,7 @@ sub document {
 }
 
 sub feature_selector { $_[0]->{feature_selector} }
+sub scan_first       { $_[0]->{scan_first} }
 
 sub verbose {
   my $self = shift;

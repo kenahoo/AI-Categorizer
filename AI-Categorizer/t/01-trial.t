@@ -3,8 +3,6 @@
 
 #########################
 
-# change 'tests => 1' to 'tests => last_test_to_print';
-
 use strict;
 use Test;
 BEGIN { plan tests => 5 };
@@ -56,7 +54,7 @@ my $doc = new AI::Categorizer::Document
 my $r = $nb->categorize($doc);
 
 print "Categories: ", join(', ', $r->categories), "\n";
-ok(($r->categories)[0], 'farming');
+ok($r->best_category, 'farming');
 
 $doc = new AI::Categorizer::Document
   ( name => 'test2',
@@ -64,5 +62,5 @@ $doc = new AI::Categorizer::Document
 $r = $nb->categorize($doc);
 
 print "Categories: ", join(', ', $r->categories), "\n";
-ok(($r->categories)[0], 'vampire');
+ok($r->best_category, 'vampire');
 

@@ -253,7 +253,15 @@ handle any kind of data.
 
 =item new(%parameters)
 
-Creates a new Document object.  Accepts the following parameters:
+Creates a new Document object.  Document objects are used during
+training (for the training documents), testing (for the test
+documents), and when categorizing new unseen documents in an
+application (for the unseen documents).  However, you'll typically
+only call C<new()> in the latter case, since the KnowledgeSet or
+Collection classes will create Document objects for you in the former
+cases.
+
+The C<new()> method accepts the following parameters:
 
 =over 4
 

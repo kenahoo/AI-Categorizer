@@ -2,7 +2,8 @@ package AI::Categorizer::Experiment;
 
 use strict;
 use Class::Container;
-use base qw(Class::Container);
+use AI::Categorizer::Storable;
+use base qw(Class::Container AI::Categorizer::Storable);
 
 #              Correct=Y   Correct=N
 #            +-----------+-----------+
@@ -27,6 +28,7 @@ use base qw(Class::Container);
 use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
+   verbose => { type => SCALAR, default => 0 },
   );
 
 sub new {
@@ -63,6 +65,10 @@ sub add_hypothesis {
     $cats_table->{$cat}{b}++, $self->{b}++ if  $assigned{$cat} and !$correct->{$cat};
     $cats_table->{$cat}{c}++, $self->{c}++ if !$assigned{$cat} and  $correct->{$cat};
     $cats_table->{$cat}{d}++, $self->{d}++ if !$assigned{$cat} and !$correct->{$cat};
+  }
+
+  if ($self->{verbose}) {
+    print $hypothesis->document_name, ": assigned=(@{[ keys %assigned ]}) correct=(@{[ keys %$correct ]})\n";
   }
 
   $self->{hypotheses}++;
@@ -108,6 +114,9 @@ sub _micro_stats {
   my @metrics = qw(precision recall F1 accuracy error);
 
   my $cats = $self->{categories};
+  die "No category information has been recorded"
+    unless keys %$cats;
+
   my %results;
   while (my ($cat, $scores) = each %$cats) {
     foreach my $metric (@metrics) {

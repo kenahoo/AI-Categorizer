@@ -1,11 +1,22 @@
 package AI::Categorizer::Hypothesis;
 
+use strict;
 use AI::Categorizer::Util;
 
-sub new {
-  my $package = shift;
-  my $self = bless {@_}, $package;
-  return $self;
+use Class::Container;
+use base qw(Class::Container);
+use Params::Validate qw(:types);
+
+__PACKAGE__->valid_params
+  (
+   all_categories => {type => ARRAYREF},
+   scores => {type => HASHREF},
+   threshold => {type => SCALAR},
+  );
+
+sub all_categories {
+  my $self = shift;
+  return @{$self->{all_categories}};
 }
 
 sub best_category {

@@ -164,32 +164,15 @@ sub scan {
 sub scan_features {
   my ($self, %args) = @_;
 
-  my $features = $self->create_delayed_object('features', features => {});
-  
-  if (my $dir = $args{directory}) {
-    
-    local (*DIRH, *FH);
-    opendir DIRH, $dir or die "$dir: $!";
-    while (defined (my $file = readdir DIRH)) {
-      next if $file =~ /^\./;
-      print "$file\n" if $self->{verbose};
+  my $features   = $self->create_delayed_object('features', features => {});
+  my $collection = $self->create_delayed_object('collection', term_weighting => 'boolean', %args);
 
-      open FH, "< $dir/$file" or die "$dir/$file: $!";
-      my $body = do {local $/; <FH>};
-      close FH;
-
-      my $doc = $self->create_delayed_object('document', 
-					     name => $file,
-					     content => $body,
-					     term_weighting => 'boolean',
-					    );
-      $features->add( $doc->features );
-    }
-    closedir DIRH;
-
-  } else {
-    die "Must specify 'directory' argument to scan_features()";
+  local $| = 1;
+  while (my $doc = $collection->next) {
+    print "." if $self->{verbose};
+    $features->add( $doc->features );
   }
+  print "\n" if $self->{verbose};
 
   $features = $self->_reduce_features($features);
   

@@ -5,7 +5,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 17, todo => [15, 16, 17] };
+BEGIN { plan tests => 17 };
 
 use AI::Categorizer;
 use AI::Categorizer::Experiment;
@@ -21,6 +21,7 @@ my $h = new AI::Categorizer::Hypothesis
 	      finance => 5,
 	     },
    threshold => 4,
+   all_categories => [qw(sports politics finance world)],
   );
 
 ok $h->best_category, 'sports';
@@ -55,7 +56,7 @@ ok $h->scores('finance'), 5;
   ok $e->macro_precision, 0.25, "macro precision";
   ok $e->macro_F1, 1/3, "macro F1";
 
-  ok $e->micro_recall, 0.5, "macro recall";
-  ok $e->micro_precision, 0.25, "macro precision";
-  ok $e->micro_F1, 1/3, "macro F1";
+  ok $e->micro_recall, 0.75, "micro recall";
+  ok $e->micro_precision, 0.625, "micro precision";
+  ok $e->micro_F1, 5/12, "micro F1";
 }

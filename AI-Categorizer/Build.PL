@@ -1,5 +1,6 @@
 use Module::Build;
 use Config;
+use File::Spec;
 
 my $build = new Module::Build
   (
@@ -12,18 +13,22 @@ my $build = new Module::Build
 		Params::Validate        => 0.18,
 		Statistics::Contingency => 0.06,
 		Lingua::Stem            => 0.50,
+		File::Spec              => 0,
 	       },
    recommends => {
 		  Scalar::Util          => 0,
 		  Time::Progress        => 1.1,
+		  Algorithm::SVM        => 0.06,
+		  AI::DecisionTree      => 0.06,
 		 },
    build_requires => {
-		      Module::Build     => 0.12,
+		      Module::Build     => 0.15,
 		     },
   );
 
-if ($build->y_n("Do you want to install the 'categorizer' script to $Config{installscript}?", 'n')) {
-  # ???
+my $categorizer = File::Spec->catfile('eg', 'categorizer');
+if ($build->y_n("Do you want to install the $categorizer script to $Config{installscript}?", 'n')) {
+  $build->scripts($categorizer);
 }
 
 

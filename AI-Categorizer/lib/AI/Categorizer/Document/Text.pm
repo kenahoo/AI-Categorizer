@@ -10,17 +10,9 @@ use base qw(AI::Categorizer::Document);
 
 ### Constructors
 
-sub read {
-  my ($class, %args) = @_;
-  my $path = delete $args{path} or die "Must specify 'path' argument to read()";
-  $args{name} ||= $path;
-
-  local *FH;
-  open FH, "< $path" or die "$path: $!";
-  my $body = do {local $/; <FH>};
-  close FH;
-  
-  return $class->SUPER::new(%args, content => $body);
+sub parse {
+  my ($self, %args) = @_;
+  return { body => $args{content} };
 }
 
 1;

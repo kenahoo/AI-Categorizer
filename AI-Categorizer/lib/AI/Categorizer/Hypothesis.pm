@@ -12,11 +12,16 @@ __PACKAGE__->valid_params
    all_categories => {type => ARRAYREF},
    scores => {type => HASHREF},
    threshold => {type => SCALAR},
+   document_name => {type => SCALAR, optional => 1},
   );
 
 sub all_categories {
   my $self = shift;
   return @{$self->{all_categories}};
+}
+
+sub document_name {
+  return shift->{document_name};
 }
 
 sub best_category {

@@ -115,7 +115,7 @@ sub create_feature_vector {
   while (my ($name, $data) = each %$content) {
     my $t = $self->tokenize($data);
     $self->stem_words($t);
-    my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{name} : 1 );
+    my $h = $self->vectorize(tokens => $t, weight => exists($weights->{$name}) ? $weights->{$name} : 1 );
     @features{keys %$h} = values %$h;
   }
   $self->{feature_vector} = $self->create_delayed_object('feature_vector', features => \%features);
@@ -127,7 +127,7 @@ sub is_in_category {
 
 sub tokenize {
   my $self = shift;
-  my @tokens = [];
+  my @tokens;
   while ($_[0] =~ /([-\w]+)/g) {
     push @tokens, lc $1;
   }

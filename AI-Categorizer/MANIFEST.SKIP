@@ -9,3 +9,5 @@ MANIFEST\.SKIP
 ^blib
 ^test-
 ^pm_to_blib$
+
+^t/classpath$

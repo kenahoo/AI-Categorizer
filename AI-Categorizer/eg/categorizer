@@ -133,7 +133,7 @@ sub memory_usage {
   } elsif ($^O eq 'solaris') {
     ($rss, $vsz) = `ps -o rss,vsz -p $$` =~ /(\d+)\s+(\d+)/;
   } else {
-    die "Unknown system";
+    warn "Unknown system, can't get memory usage";
   }
   return ($rss, $vsz);
 }

@@ -20,7 +20,7 @@ AI::Categorizer - Automatic Text Categorization
  # An example...
  
  use AI::Categorizer;
- use AI::Categorizer::Categorizer::NaiveBayes;
+ use AI::Categorizer::Learner::NaiveBayes;
   
  # Read a collection of categorized documents
  my $k = new AI::Categorizer::KnowledgeSet
@@ -33,7 +33,7 @@ AI::Categorizer - Automatic Text Categorization
    );
  
  # Train a categorizer
- my $c = new AI::Categorizer::Categorizer::NaiveBayes;
+ my $c = new AI::Categorizer::Learner::NaiveBayes;
  $c->train($k);
  $c->save_state('filename');
  
@@ -44,7 +44,7 @@ AI::Categorizer - Automatic Text Categorization
  my $doc = AI::Categorizer::Document::Text->read( path => '/path/to/doc' );
  
  # Categorize it
- $c = AI::Categorizer::Categorizer::NaiveBayes->restore_state('filename');
+ $c = AI::Categorizer::Learner::NaiveBayes->restore_state('filename');
  my $result = $c->categorize($doc);
  
  # Check the result
@@ -101,19 +101,19 @@ information on its interface.
 Currently two different algorithms are implemented in this bundle,
 with more to come:
 
-  AI::Categorizer::Categorizer::NaiveBayes
-  AI::Categorizer::Categorizer::NNetTC
+  AI::Categorizer::Learner::NaiveBayes
+  AI::Categorizer::Learner::NNetTC
 
-These are subclasses of C<AI::Categorizer::Categorizer>.  The NNetTC
+These are subclasses of C<AI::Categorizer::Learner>.  The NNetTC
 module is currently just a wrapper around a proprietary Neural Net
 implementation.  A separate NNet categorizer is planned, and when it
 is implemented we will drop the NNetTC package from the distribution
-(since nobody else has it, and they couldn't use it even if they did).
+(since nobody else has the libraries it depends on, and for licensing
+reasons they couldn't use them even if they had them).
 
 Please see the documentation of these individual modules for more
-details on their guts and quirks.  See the
-C<AI::Categorizer::Categorizer> documentation for a description of the
-general categorizer interface.
+details on their guts and quirks.  See the C<AI::Categorizer::Learner>
+documentation for a description of the general categorizer interface.
 
 =head2 Feature Vectors
 
@@ -157,7 +157,14 @@ class documentation for the details.
 
 =head2 Experiments
 
-...XXX... to do...
+The C<AI::Categorizer::Experiment> class helps you organize the
+results of categorization experiments.  As you get lots of
+categorization results (Hypotheses) back from the Learner, you can
+feed these results to the Experiment class, along with the correct
+answers.  When all results have been collected, you can get a report
+on accuracy, precision, recall, F1, and so on, with both
+micro-averaging and macro-averaging over categories.  See the docs for
+C<AI::Categorizer::Experiment> for more details.
 
 =head1 HISTORY
 
@@ -168,7 +175,8 @@ attempt at backward compatibility has been made - that's why I changed
 the name.
 
 You can have both C<AI::Categorize> and C<AI::Categorizer> installed
-at the same time on the same machine, if you want.
+at the same time on the same machine, if you want.  They don't know
+about each other or use conflicting namespaces.
 
 =head1 AUTHOR
 

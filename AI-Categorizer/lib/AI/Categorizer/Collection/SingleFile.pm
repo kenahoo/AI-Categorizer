@@ -72,7 +72,7 @@ sub count_documents {
   my ($self) = @_;
   return $self->{document_count} if defined $self->{document_count};
   
-  $self->_rewind;
+  $self->rewind;
 
   my $count = 0;
   local $/ = $self->{delimiter};
@@ -83,12 +83,12 @@ sub count_documents {
     $self->_next_path;
   }
   
-  $self->_rewind;
+  $self->rewind;
 
   return $self->{document_count} = $count;
 }
 
-sub _rewind {
+sub rewind {
   my ($self) = @_;
 
   close $self->{fh} if $self->{cur_file};

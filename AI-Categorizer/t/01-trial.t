@@ -5,7 +5,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 11 };
+BEGIN { plan tests => 19 };
 use AI::Categorizer;
 use AI::Categorizer::KnowledgeSet;
 use AI::Categorizer::Learner::NaiveBayes;
@@ -25,7 +25,7 @@ my %docs = (
 	    doc2 => {categories => ['farming'],
 		     content => 'Farming requires many kinds of animals.' },
 	    doc3 => {categories => ['vampire'],
-		     content => 'Vampires drink blood and may be staked.' },
+		     content => 'Vampires drink blood and vampires may be staked.' },
 	    doc4 => {categories => ['vampire'],
 		     content => 'Vampires cannot see their images in mirrors.'},
 	   );
@@ -68,10 +68,7 @@ my %docs = (
 }
 
 {
-  my $c = new AI::Categorizer(collection_weighting => 'f',
-			      stopwords => [qw(are be in of and)],
-			     );
-  ok $c;
+  ok my $c = new AI::Categorizer(collection_weighting => 'f');
   
   while (my ($name, $data) = each %docs) {
     $c->knowledge_set->make_document(name => $name, %$data);
@@ -81,18 +78,58 @@ my %docs = (
 
   # Make sure collection_weighting is working
   ok $c->knowledge_set->document_frequency('vampires'), 2;
-  for ('vampires', 'drink') {
-    ok ($c->knowledge_set->document('doc3')->features->as_hash->{$_},
+  for ('vampires', 'mirrors') {
+    ok ($c->knowledge_set->document('doc4')->features->as_hash->{$_},
 	log( keys(%docs) / $c->knowledge_set->document_frequency($_) )
        );
   }
 
   $c->learner->train( knowledge_set => $c->knowledge_set );
   ok $c->learner;
-
+  
   my $doc = new AI::Categorizer::Document
     ( name => 'test1',
       content => 'I would like to begin farming sheep.' );
   ok $c->learner->categorize($doc)->best_category, 'farming';
 }
 
+{
+  ok my $c = new AI::Categorizer(term_weighting => 'b');
+  
+  while (my ($name, $data) = each %docs) {
+    $c->knowledge_set->make_document(name => $name, %$data);
+  }
+  
+  $c->knowledge_set->finish;
+  
+  # Make sure term_weighting is working
+  ok $c->knowledge_set->document('doc3')->features->as_hash->{vampires}, 1;
+}
+
+{
+  ok my $c = new AI::Categorizer(term_weighting => 'n');
+  
+  while (my ($name, $data) = each %docs) {
+    $c->knowledge_set->make_document(name => $name, %$data);
+  }
+  
+  $c->knowledge_set->finish;
+  
+  # Make sure term_weighting is working
+  ok $c->knowledge_set->document('doc3')->features->as_hash->{vampires}, 1;
+  ok $c->knowledge_set->document('doc3')->features->as_hash->{blood}, 0.75;
+  ok $c->knowledge_set->document('doc4')->features->as_hash->{mirrors}, 1;
+}
+
+{
+  ok my $c = new AI::Categorizer(tfidf_weighting => 'txx');
+  
+  while (my ($name, $data) = each %docs) {
+    $c->knowledge_set->make_document(name => $name, %$data);
+  }
+  
+  $c->knowledge_set->finish;
+  
+  # Make sure term_weighting is working
+  ok $c->knowledge_set->document('doc3')->features->as_hash->{vampires}, 2;
+}

@@ -36,10 +36,22 @@ __PACKAGE__->valid_params
 			 type => SCALAR,
 			 default => 'document_frequency',
 			},
+   tfidf_weighting  => {
+			type => SCALAR,
+			optional => 1,
+		       },
+   term_weighting  => {
+		       type => SCALAR,
+		       default => 'x',
+		      },
    collection_weighting => {
 			    type => SCALAR,
 			    default => 'x',
 			   },
+   normalize_weighting => {
+			   type => SCALAR,
+			   default => 'x',
+			  },
    verbose => {
 	       type => SCALAR,
 	       default => 0,
@@ -59,7 +71,15 @@ __PACKAGE__->contained_objects
   );
 
 sub new {
-  my $self = shift()->SUPER::new(@_);
+  my ($pkg, %args) = @_;
+  
+  # Shortcuts
+  if ($args{tfidf_weighting}) {
+    @args{'term_weighting', 'collection_weighting', 'normalize_weighting'} = split '', $args{tfidf_weighting};
+    delete $args{tfidf_weighting};
+  }
+
+  my $self = $pkg->SUPER::new(%args);
 
   # Convert to AI::Categorizer::ObjectSet sets
   $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
@@ -229,11 +249,36 @@ sub read {
 }
 
 sub finish {
+  # This could be made more efficient by figuring out an execution
+  # plan in advance
+
   my $self = shift;
   return if $self->{finished}++;
   
+  if ( $self->{term_weighting} =~ /^(t|x)$/ ) {
+    # Nothing to do
+  } elsif ( $self->{term_weighting} eq 'l' ) {
+    foreach my $doc ($self->documents) {
+      my $f = $doc->features->as_hash;
+      $_ = 1 + log($_) foreach values %$f;
+    }
+  } elsif ( $self->{term_weighting} eq 'n' ) {
+    foreach my $doc ($self->documents) {
+      my $f = $doc->features->as_hash;
+      my $max_tf = AI::Categorizer::Util::max values %$f;
+      $_ = 0.5 + 0.5 * $_ / $max_tf foreach values %$f;
+    }
+  } elsif ( $self->{term_weighting} eq 'b' ) {
+    foreach my $doc ($self->documents) {
+      my $f = $doc->features->as_hash;
+      $_ = $_ ? 1 : 0 foreach values %$f;
+    }
+  } else {
+    die "term_weighting must be one of 'x', 't', 'l', 'b', or 'n'";
+  }
+  
   if ($self->{collection_weighting} eq 'x') {
-    return;
+    # Nothing to do
   } elsif ($self->{collection_weighting} =~ /^(f|p)$/) {
     my $subtrahend = ($1 eq 'f' ? 0 : 1);
     my $num_docs = $self->documents;
@@ -243,7 +288,15 @@ sub finish {
       $f->{$_} *= log($num_docs / $self->{doc_freq_vector}{$_} - $subtrahend) foreach keys %$f;
     }
   } else {
-    die "Unknown vector_weighting type '$self->{collection_weighting}'";
+    die "collection_weighting must be one of 'x', 'f', or 'p'";
+  }
+
+  if ( $self->{normalize_weighting} eq 'x' ) {
+    # Nothing to do
+  } elsif ( $self->{normalize_weighting} eq 'c' ) {
+    $_->features->normalize foreach $self->documents;
+  } else {
+    die "normalize_weighting must be one of 'x' or 'c'";
   }
 }
 

@@ -57,6 +57,12 @@ sub new {
   $self->{categories} = new AI::Categorizer::ObjectSet( @{$self->{categories}} );
   $self->{documents}  = new AI::Categorizer::ObjectSet( @{$self->{documents}}  );
   $self->{category_names} = { map {($_->name => $_)} $self->{categories}->members };
+
+  if ($self->{load}) {
+    my $args = ref($self->{load}) ? $self->{load} : { path => $self->{load} };
+    $self->load(%$args);
+    delete $self->{load};
+  }
   return $self;
 }
 
@@ -70,9 +76,8 @@ sub features {
   return $self->{features} if $self->{features};
 
   # Create a feature vector encompassing the whole set of documents
-  my $v;
+  my $v = $self->create_delayed_object('features', features => {});
   foreach my $document ($self->documents) {
-    $v ||= ref($document->features)->new( features => {} );
     $v->add( $document->features );
   }
   return $self->{features} = $v;
@@ -114,7 +119,6 @@ sub scan {
 
   my ($self, %args) = @_;
   my $collection = $self->create_delayed_object('collection', %args);
-  #my $collection = $self->create_delayed_object('collection', path => $args{path});
 
   my %stats;
 
@@ -161,6 +165,41 @@ sub scan {
   return \%stats;
 }
 
+sub load {
+  my ($self, %args) = @_;
+  
+  if ($args{scan_features}) {
+    # Figure out the feature set first, then read data in
+    $self->scan_features( path => $args{path} );
+    $self->read( path => $args{path} );
+
+  } elsif (my $fk = exists($args{features_kept}) ? $args{features_kept} : $self->{features_kept}) {
+    # Read the whole thing in, then reduce
+    $self->read( path => $args{path} );
+    $self->select_features( features_kept => $fk );
+
+  } else {
+    # Don't do any feature reduction, just read the data
+    $self->read( path => $args{path} );
+  }
+}
+
+sub read {
+  my ($self, %args) = @_;
+
+  my $data_path = delete $args{path}
+    or die "read() requires a 'path' argument";
+
+  my $collection = $self->create_delayed_object('collection', %args);
+
+  local $| = 1;
+  while (my $doc = $collection->next) {
+    print "." if $self->{verbose};
+    $self->add_document($doc);
+  }
+  print "\n" if $self->{verbose};
+}
+
 sub scan_features {
   my ($self, %args) = @_;
 
@@ -187,19 +226,20 @@ sub _reduce_features {
   # features.  If it's greater than 1, we treat it as the number of
   # features to use.
 
-  my ($self, $f) = @_;
-  return $f unless $self->{features_kept};
+  my ($self, $f, $kept) = @_;
+  $kept ||= $self->{features_kept};
+  return $f unless $kept;
 
-  my $kept = ($self->{features_kept} < 1 ? 
-	      $f->length * $self->{features_kept} :
-	      $self->{features_kept});
+  my $num_kept = ($kept < 1 ? 
+		  $f->length * $kept :
+		  $kept);
 
   print "Trimming features - # features = " . $f->length . "\n" if $self->{verbose};
   
   # This is algorithmic overkill, but the sort seems fast enough.  Will revisit later.
   my $features = $f->as_hash;
   my @new_features = (sort {$features->{$b} <=> $features->{$a}} keys %$features)
-                      [0 .. $kept-1];
+                      [0 .. $num_kept-1];
 
   my $result = $f->intersection( \@new_features );
   print "Finished trimming features - # features = " . $result->length . "\n" if $self->{verbose};
@@ -215,10 +255,8 @@ sub select_features {
 # XXX this is doing word-frequency right now, not document-frequency
 
   my ($self, %args) = @_;
-  my $kept = exists($args{features_kept}) ? $args{features_kept} : $self->{features_kept};
-  return unless $kept;
   
-  my $f = $self->_reduce_features($self->features, $kept);
+  my $f = $self->_reduce_features($self->features, $args{features_kept});
   $self->features($f);
 }
 

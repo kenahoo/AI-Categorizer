@@ -62,7 +62,7 @@ sub train {
   $self->{knowledge_set}->finish;
   $self->create_model;    # Creates $self->{model}
   $self->delayed_object_params('hypothesis',
-			       all_categories => [keys %{$self->{model}{cat_prob}}]
+			       all_categories => [map $_->name, $self->categories],
 			      );
 }
 

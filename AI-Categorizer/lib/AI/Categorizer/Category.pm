@@ -21,7 +21,13 @@ __PACKAGE__->valid_params
 		 },
   );
 
-#__PACKAGE__->make_accessors(':all');
+__PACKAGE__->contained_objects
+  (
+   features => {
+		class => 'AI::Categorizer::FeatureVector',
+		delayed => 1,
+	       },
+  );
 
 sub new {
   my $self = shift()->SUPER::new(@_);
@@ -50,11 +56,8 @@ sub features {
   my $self = shift;
   return $self->{features} if exists $self->{features};
 
-  my @docs = $self->documents;
-  if (!@docs) {
-    # XXX shouldn't hard-code class name
-    return $self->{features} = AI::Categorize::FeatureVector->new(features => {});
-  }
+  my @docs = $self->documents
+    or return $self->{features} = $self->create_delayed_object('features', features => {});
 
   my $sum = (shift @docs)->features->clone;
   while (@docs) {

@@ -79,23 +79,19 @@ _dot(v1_r, v2_r)
       sparse_vec *v1 = (sparse_vec *)SvIV(v1_r);
       sparse_vec *v2 = (sparse_vec *)SvIV(v2_r);
 
-      while (1) {
+      while (i1 < v1->length && i2 < v2->length) {
 	if (debug) warn("Beginning dot-loop\n");
-	if (i1 == v1->length || i2 == v2->length) break;
-	
-	if (v1->indices[i1] < v2->indices[i2]) {
+
+	if (v1->indices[i1] == v2->indices[i2]) {
+	  /* Indices here are equal, so add to sum */
+	  sum += v1->values[i1] * v2->values[i2];
 	  i1++;
-	  continue;
-	}
-	if (v1->indices[i1] > v2->indices[i2]) {
 	  i2++;
-	  continue;
+	} else if (v1->indices[i1] > v2->indices[i2]) {
+	  i2++;
+	} else {
+	  i1++;
 	}
-	
-	/* Indices here are equal, so add to sum */
-	sum += v1->values[i1] * v2->values[i2];
-	i1++;
-	i2++;
       }
       
       RETVAL = (double) sum;

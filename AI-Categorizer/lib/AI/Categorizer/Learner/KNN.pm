@@ -28,16 +28,19 @@ sub threshold {
 #--- returns scores of this document with k closest neighbours
 sub subIn{
     my($value, $arr)=@_;
-    #print "subing $value into @$arr\n";
+    return -1 if $arr->[-1] >= $value;
+
     for (my $i=0; $i<@$arr; $i++){
-	if ($arr->[$i] <= $value){
+	if ($arr->[$i] < $value) {
 	  splice @$arr, $i, 0, $value;
 	  pop @$arr;
 	  return $i;
 	}
     }
-    return -1;
+    
+    die "Insertion error";
 }
+
 sub get_scores {
   my ($self, $newdoc) = @_;
   my @docs = $self->knowledge_set->documents;
@@ -52,10 +55,9 @@ sub get_scores {
   $dscores[$k-1] = 0;
   $kdocs[$k-1] = undef;
   
-  foreach my $doc(@docs){ # each doc in corpus 
-    warn "comparing to: ", $doc->name, "\n" if $self->verbose > 1;
+  foreach my $doc (@docs) { # each doc in corpus 
     my $score = $doc->features->dot( $features );
-    warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, ") is $score" if $self->verbose > 1;
+    warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, "): $score" if $self->verbose > 1;
     
     my $index = subIn($score, \@dscores);
     if($index>-1){

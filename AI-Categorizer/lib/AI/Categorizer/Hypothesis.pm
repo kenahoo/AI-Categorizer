@@ -132,7 +132,8 @@ with best matches first.  Categories are returned by their string names.
 =item best_category()
 
 Returns the name of the category with the highest score in this
-hypothesis.
+hypothesis.  Bear in mind that this category may not actually be
+assigned if no categories' scores exceed the threshold.
 
 =item in_category($name)
 

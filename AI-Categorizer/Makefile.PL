@@ -22,6 +22,7 @@ WriteMakefile
    'PREREQ_PM' => {
 		   Class::Container => 0.0102,
 		   Storable => 0,
+		   Params::Validate => 0.15,
 		  },
    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
     (ABSTRACT_FROM => $file, # retrieve abstract from module

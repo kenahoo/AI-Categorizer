@@ -8,6 +8,18 @@ sub new {
   return $self;
 }
 
+sub best_category {
+  my ($self) = @_;
+  my $sc = $self->{scores};
+  return unless %$sc;
+
+  my ($best_cat, $best_score) = each %$sc;
+  while (my ($key, $val) = each %$sc) {
+    $best_cat = $key if $val > $best_score;
+  }
+  return $best_cat;
+}
+
 sub in_category {
   my ($self, $cat) = @_;
   return unless exists $self->{scores}{$cat};

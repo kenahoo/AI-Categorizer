@@ -20,9 +20,9 @@ WriteMakefile
              },
    # 'clean' => {FILES => "t/httpd.conf t/error_log t/httpd"},
    'PREREQ_PM' => {
-		   Class::Container => 0.0102,
+		   Class::Container => 0.02,
 		   Storable => 0,
-		   Params::Validate => 0.15,
+		   Params::Validate => 0.18,
 		  },
    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
     (ABSTRACT_FROM => $file, # retrieve abstract from module

@@ -37,8 +37,6 @@ sub _doc_2_dataset {
 
 sub create_boolean_model {
   my ($self, $positives, $negatives, $cat) = @_;
-  warn "Creating model for category ", $cat->name, "\n" if $self->verbose;
-  
   my $svm = new Algorithm::SVM(Kernel => $self->{svm_kernel});
   
   my (@pos, @neg);

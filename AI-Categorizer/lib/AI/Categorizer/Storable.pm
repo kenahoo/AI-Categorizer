@@ -5,7 +5,7 @@ use Storable;
 
 sub save_state {
   my ($self, $file) = @_;
-  Storable::store($self, $file);
+  Storable::nstore($self, $file);
 }
 
 sub restore_state {

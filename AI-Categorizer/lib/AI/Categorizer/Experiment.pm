@@ -35,15 +35,15 @@ sub add_hypothesis {
   
   my %this;
   $this{a} = intersection(\%assigned, $correct);
-  $this{b} = @$correct - $this{a};
-  $this{c} = keys %assigned - $this{a};
+  $this{b} = keys(%assigned) - $this{a};
+  $this{c} = @$correct - $this{a};
 
   # Add to the macro tables
   foreach (qw(a b c)) {
     $self->{$_} += $this{$_};
   }
 
-  # Now this is the hard part - add to the micro tables
+  # Now this is the tricky part - add to the micro tables
   foreach my $cat (@$correct) {
 #    if ($assigned{$cat}) {
 #      $self->{categories}{$cat}{a}++;

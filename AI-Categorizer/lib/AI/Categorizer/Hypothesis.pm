@@ -30,7 +30,7 @@ sub best_category {
 
   my ($best_cat, $best_score) = each %$sc;
   while (my ($key, $val) = each %$sc) {
-    $best_cat = $key if $val > $best_score;
+    ($best_cat, $best_score) = ($key, $val) if $val > $best_score;
   }
   return $best_cat;
 }

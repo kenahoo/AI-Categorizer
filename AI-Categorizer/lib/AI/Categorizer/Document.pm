@@ -140,13 +140,17 @@ sub stem_words {}
 sub vectorize {
   my ($self, %args) = @_;
   my %counts;
-  foreach my $feature (@{$args{tokens}}) {
-    if ($self->{use_features}) {
-      next unless $self->{use_features}->includes($feature);
-    } elsif (exists $self->{stopwords}{$feature}) {
-      next;
+
+  # Do this separately for a speedup
+  if ($self->{use_features}) {
+    #warn "Using features: $self->{use_features} (@{[ $self->{use_features}->length ]})\n";
+    foreach my $feature (@{$args{tokens}}) {
+      $counts{$feature} += $args{weight} if $self->{use_features}->includes($feature);
     }
-    $counts{$feature} += $args{weight};
+  } else {
+    foreach my $feature (@{$args{tokens}}) {
+      $counts{$feature} += $args{weight} unless exists $self->{stopwords}{$feature};
+    }
   }
 
   if ($self->{term_weighting} eq 'natural') {
@@ -159,6 +163,20 @@ sub vectorize {
     die "term_weighting can only be 'natural', 'log', or 'boolean' (so far)";
   }
   return \%counts;
+}
+
+sub read {
+  my ($class, %args) = @_;
+  my $path = delete $args{path} or die "Must specify 'path' argument to read()";
+  $args{name} ||= $path;
+
+  local *FH;
+  open FH, "< $path" or die "$path: $!";
+  my $body = do {local $/; <FH>};
+  close FH;
+
+  my $doc = $class->parse(content => $body);
+  return $class->new(%args, content => $doc);
 }
 
 1;

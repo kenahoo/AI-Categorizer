@@ -1,5 +1,11 @@
 Revision history for Perl extension AI::Categorizer.
 
+0.07
+
+ - Oops - eg/demo.pl and t/15-knowledge_set.t didn't make it into the
+   MANIFEST, so they weren't included in the 0.06 distribution.
+   [Spotted by Zoltan Barta]
+
 0.06 Tue Apr 22 10:27:26 CDT 2003
 
  - Added a relatively simple example script at the request of several

@@ -76,7 +76,8 @@ sub create_boolean_model {
 	      '-p', '0',
 	     );
   $self->do_cmd(@args);
-  
+  unlink $train_file or warn "Couldn't remove $train_file: $!";
+
   return \%info;
 }
 
@@ -110,45 +111,53 @@ sub get_boolean_score {
   return $scores{1} || 0;  # Not sure what weka's scores represent...
 }
 
-# XXX not updated yet for boolean task
-#  sub categorize_collection {
-#    my ($self, %args) = @_;
-#    my $c = $args{collection} or die "No collection provided";
+sub categorize_collection {
+  my ($self, %args) = @_;
+  my $c = $args{collection} or die "No collection provided";
   
-#    my $doc_file = File::Spec->catfile( $self->{tmpdir}, "doc_$$" );
-#    my @docs;
-#    while (my $d = $c->next) {
-#      push @docs, [$d->features, 0];
-#    }
-#    $self->create_arff_file($doc_file, \@docs);
-  
-#    my $experiment = $self->create_delayed_object('experiment', categories => [map $_->name, $self->categories]);
-  
-#    my @args = ($self->{java_path},
-#                @{$self->{java_args}},
-#                $self->{weka_classifier},
-#                '-l', $self->{model}{machine_file},
-#                '-T', $doc_file,
-#                '-p', 0,
-#               );
-  
-#    my @output = $self->do_cmd(@args);
-#    foreach my $line (@output) {
-#      # 0 large.elem 0.4515551620220952 numberth.high
-#      unless ( $line =~ /^([\d.]+)\s+(\S+)\s+([\d.]+)\s+(\S+)/ ) {
-#        warn "Can't parse line $line";
-#        next;
-#      }
-#      my ($index, $predicted, $score, $real) = ($1, $2, $3, $4);
-#      $experiment->add_result($predicted, $real, $index);
+  my @alldocs;
+  while (my $d = $c->next) {
+    push @alldocs, $d;
+  }
+  my $doc_file = $self->create_arff_file("docs", [map [$_->features, 0], @alldocs]);
 
-#      if ($self->verbose) {
-#        print STDERR "$index: assigned=($predicted) correct=($real)\n";
-#      }
-#    }
+  my @assigned;
+  
+  my $l = $self->{model}{learners};
+  foreach my $cat (keys %$l) {
+    my $machine_file = File::Spec->catfile($self->{model}{_in_dir}, "${cat}_model");
+    my @args = ($self->{java_path},
+		@{$self->{java_args}},
+		$self->{weka_classifier},
+		'-l', $machine_file,
+		'-T', $doc_file,
+		'-p', 0,
+               );
 
-#    return $experiment;
-#  }
+    my @output = $self->do_cmd(@args);
+
+    foreach my $line (@output) {
+      next unless $line =~ /\S/;
+      
+      # 0 large.elem 0.4515551620220952 numberth.high
+      unless ( $line =~ /^([\d.]+)\s+(\S+)\s+([\d.]+)\s+(\S+)/ ) {
+	warn "Can't parse line $line";
+	next;
+      }
+      my ($index, $predicted, $score) = ($1, $2, $3);
+      $assigned[$index]{$cat} = $score if $predicted;  # Not sure what weka's scores represent
+      print STDERR "$index: assigned=($predicted) correct=(", $alldocs[$index]->is_in_category($cat) ? 1 : 0, ")\n"
+	if $self->verbose;
+    }
+  }
+
+  my $experiment = $self->create_delayed_object('experiment', categories => [map $_->name, $self->categories]);
+  foreach my $i (0..$#alldocs) {
+    $experiment->add_result([keys %{$assigned[$i]}], [map $_->name, $alldocs[$i]->categories], $alldocs[$i]->name);
+  }
+
+  return $experiment;
+}
 
 
 sub do_cmd {

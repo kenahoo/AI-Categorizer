@@ -51,59 +51,54 @@ sub get_scores {
   $kdocs[$k-1] = undef;
   
   foreach my $doc(@docs){ # each doc in corpus 
-     warn "comparing to: ", $doc->name, "\n" if $self->verbose;
-	my $score=0;
-	my $doc_features = $doc->features->normalize->as_hash;
-	foreach my $feature (keys %$features){ #for each feature in new doc
-	  next unless exists $doc_features->{$feature};
-	  $score += $features->{$feature} * $doc_features->{$feature}; #add to dot product
-	}
-	warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, ") is $score" if $self->verbose > 1;
-        
-	#print "adding score: $score\n";
-	my $index = subIn($score, \@dscores);
-	if($index>-1){
-	  splice @kdocs, $index, 0, $doc;
-	  pop @kdocs;
-	}
-  }
-  #warn "scores: @dscores";
-  #print "nearest docs @kdocs" ; 
-  #print "nearest neighbours: \n";;
-  my $no_of_cats =0;
-  for(my $e =0;$e<scalar @kdocs; $e++){ #for 0 - k
-      if(!defined $kdocs[$e]){
-	  next;
-      }
-      my $docname =$kdocs[$e]->name;
-     # print "$docname score: $dscores[$e]\n";
-     
-      if($dscores[$e]>=0){
-   	  foreach my $cat($kdocs[$e]->categories){
-	      $no_of_cats++;
-   	      my $category = $cat->name;
-	      
-   	      if(!exists $scores{$category}){
-		  #print "initiating cat: $category\n";
-		  $scores{$category}=0;
-	      }
-	      #print "incrementing category  $category\n";
-	      $scores{$category}++; #increment cat score
-	  }
-      }
-     
-      
-  } 
-#print "-----------------------------------------------------------------\n";
-  foreach my $key(keys %scores){
-      #print "category: $key score: $scores{$key}";
-      $scores{$key} = $scores{$key}/$no_of_cats;
-      my $tmp = $scores{$key};
-     # print "$tmp\n";
+    warn "comparing to: ", $doc->name, "\n" if $self->verbose;
+    my $score=0;
+    my $doc_features = $doc->features->normalize->as_hash;
+    foreach my $feature (keys %$features){ #for each feature in new doc
+      next unless exists $doc_features->{$feature};
+      $score += $features->{$feature} * $doc_features->{$feature}; #add to dot product
+    }
+    warn "Score for ", $doc->name, " (", ($doc->categories)[0]->name, ") is $score" if $self->verbose > 1;
+    
+    #print "adding score: $score\n";
+    my $index = subIn($score, \@dscores);
+    if($index>-1){
+      splice @kdocs, $index, 0, $doc;
+      pop @kdocs;
+    }
   }
   
- #print "scores: @{[ %scores ]}\n";
-      my $t = $self->{threshold};
+  my $no_of_cats =0;
+  for(my $e =0;$e<scalar @kdocs; $e++){ #for 0 - k
+    next unless defined $kdocs[$e];
+
+    my $docname =$kdocs[$e]->name;
+    # print "$docname score: $dscores[$e]\n";
+    
+    if($dscores[$e]>=0){
+      foreach my $cat($kdocs[$e]->categories){
+	$no_of_cats++;
+	my $category = $cat->name;
+	
+	if(!exists $scores{$category}){
+	  #print "initiating cat: $category\n";
+	  $scores{$category}=0;
+	}
+	#print "incrementing category  $category\n";
+	$scores{$category}++; #increment cat score
+      }
+    }
+  } 
+  #print "-----------------------------------------------------------------\n";
+  foreach my $key(keys %scores){
+    #print "category: $key score: $scores{$key}";
+    $scores{$key} = $scores{$key}/$no_of_cats;
+    my $tmp = $scores{$key};
+    # print "$tmp\n";
+  }
+  
+  #print "scores: @{[ %scores ]}\n";
+  my $t = $self->{threshold};
   #print "threshold = $t\n" ;
   return (\%scores, $self->{threshold});
 }

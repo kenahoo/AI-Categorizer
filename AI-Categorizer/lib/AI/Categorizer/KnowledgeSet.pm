@@ -80,6 +80,11 @@ sub new {
     delete $args{tfidf_weighting};
   }
 
+  # Optimize so every document doesn't have to convert the stopword list to a hash
+  if ($args{stopwords} and UNIVERSAL::isa($args{stopwords}, 'ARRAY')) {
+    $args{stopwords} = { map {+$_ => 1} @{ $args{stopwords} } };
+  }
+
   my $self = $pkg->SUPER::new(%args);
 
   # Convert to AI::Categorizer::ObjectSet sets
@@ -151,7 +156,7 @@ sub prog_bar {
   return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
 
   my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
-
+  
   my $pb = 'Time::Progress'->new;
   $pb->attr(max => $count);
   my $i = 0;
@@ -253,7 +258,7 @@ sub read {
   my ($self, %args) = @_;
   my $collection = $self->_make_collection(\%args);
   my $pb = $self->prog_bar($collection);
-
+  
   while (my $doc = $collection->next) {
     $pb->();
     $self->add_document($doc);

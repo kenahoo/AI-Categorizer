@@ -1,0 +1,22 @@
+--- #YAML:1.0
+name: AI-Categorizer
+version: 0.05
+license: perl
+distribution_type: module
+requires:
+  Class::Container: 0.09
+  File::Spec: 0
+  Lingua::Stem: 0.5
+  Params::Validate: 0.18
+  Statistics::Contingency: 0.06
+  Storable: 0
+  perl: 5.6.0
+recommends:
+  AI::DecisionTree: 0.06
+  Algorithm::SVM: 0.06
+  Scalar::Util: 0
+  Time::Progress: 1.1
+build_requires:
+  Module::Build: 0.15
+conflicts: {}
+generated_by: Module::Build version 0.15

@@ -14,7 +14,11 @@ my $HAVE_YAML = eval "use YAML; 1";
 my ($opt, $do_stage, $outfile) = parse_command_line(@ARGV);
 @ARGV = grep !/^-\d$/, @ARGV;
 
-my $c = new AI::Categorizer(%$opt);
+my $c = eval {new AI::Categorizer(%$opt)};
+if ($@ and $@ =~ /^The following parameter/) {
+  die "$@\nPlease see the AI::Categorizer documentation for a description of parameters accepted.\n";
+}
+die $@ if $@;
 
 %$do_stage = map {$_, 1} 1..5 unless keys %$do_stage;
 
@@ -27,7 +31,7 @@ if ($do_stage->{5}) {
   print $result;
   if ( $outfile ) {
     local *FH;
-    open  FH, "> $outfile" or die "$outfile: $!";
+    open  FH, "> $outfile" or die "Can't create $outfile: $!";
     print FH "# ", scalar(localtime), "\n";
     if ($HAVE_YAML) {
       print FH YAML::Dump($c->dump_parameters);
@@ -44,6 +48,8 @@ sub run_section {
   return unless $do_stage->{$stage};
   if (keys %$do_stage > 1) {
     print " % $0 @ARGV -$stage\n";
+    die "$0 is not executable, please change its execution permissions"
+      unless -x $0;
     system($0, @ARGV, "-$stage") == 0
       or die "$0 returned nonzero status, \$?=$?";
     return;
@@ -72,7 +78,7 @@ sub parse_command_line {
       $opt{$k} = $v;
       
     } else {
-      die "Unknown option format '$_[0]'.  Do you mean '--$_[0]'?\n";
+      die usage();
     }
   }
 
@@ -91,4 +97,20 @@ sub parse_command_line {
   }
 
   return (\%opt, \%do_stage, $outfile);
+}
+
+sub usage {
+  return <<EOF;
+ Usage:
+
+  $0 --parameter_1 <value_1> --parameter_2 <value_2>
+      # You may specify a YAML config file as follows:
+  $0 --config_file <path> --parameter_3 <value_3>
+      # Or, to run only step 3 (of 5)
+  $0 --config_file <path> -3
+
+ --parameter_1, --parameter_2, etc. are parameters accepted by
+ AI::Categorizer objects' new() methods.
+
+EOF
 }

@@ -2,7 +2,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 19, todo => [19] };
+BEGIN { plan tests => 27, todo => [] };
 
 use AI::Categorizer;
 use AI::Categorizer::Document;
@@ -48,17 +48,55 @@ my $docclass = 'AI::Categorizer::Document';
   
 
 # Test some stemming & stopword stuff.
-my $d = $docclass->new
-  (
-   name => 'test',
-   stopwords => ['stemming'],
-   stemming => 'porter',
-   content => 'stopword processing should happen before stemming',
-  );
-ok ref($d), $docclass, "Test creating a Document object";
+{
+  my $d = $docclass->new
+    (
+     name => 'test',
+     stopwords => ['stemmed'],
+     stemming => 'porter',
+     content  => 'stopword processing should happen after stemming',
+     # Becomes qw(stopword process    should happen after stem    )
+    );
+  ok $d->stopword_behavior, 'stem', "stopword_behavior() is 'stem'";
+  
+  ok $d->features->includes('stopword'), 1,  "Should include 'stopword'";
+  ok $d->features->includes('stemming'), '', "Shouldn't include 'stemming'";
+  ok $d->features->includes('stem'),     '', "Shouldn't include 'stem'";
+  print "Features: @{[ $d->features->names ]}\n";
+}
 
-ok $d->features->includes('stopword'), 1,  "Should include 'stopword'";
-ok $d->features->includes('stemming'), '', "Shouldn't include 'stemming'";
-ok $d->features->includes('stem'),     '', "Shouldn't include 'stem'";
-print "Features: @{[ $d->features->names ]}\n";
+{
+  my $d = $docclass->new
+    (
+     name => 'test',
+     stopwords => ['stemmed'],
+     stemming => 'porter',
+     stopword_behavior => 'no_stem',
+     content  => 'stopword processing should happen after stemming',
+     # Becomes qw(stopword process    should happen after stem    )
+    );
+  ok $d->stopword_behavior, 'no_stem', "stopword_behavior() is 'no_stem'";
+  
+  ok $d->features->includes('stopword'), 1,  "Should include 'stopword'";
+  ok $d->features->includes('stemming'), '', "Shouldn't include 'stemming'";
+  ok $d->features->includes('stem'),     1,  "Should include 'stem'";
+  print "Features: @{[ $d->features->names ]}\n";
+}
 
+{
+  my $d = $docclass->new
+    (
+     name => 'test',
+     stopwords => ['stem'],
+     stemming => 'porter',
+     stopword_behavior => 'pre_stemmed',
+     content  => 'stopword processing should happen after stemming',
+     # Becomes qw(stopword process    should happen after stem    )
+    );
+  ok $d->stopword_behavior, 'pre_stemmed', "stopword_behavior() is 'pre_stemmed'";
+  
+  ok $d->features->includes('stopword'), 1,  "Should include 'stopword'";
+  ok $d->features->includes('stemming'), '', "Shouldn't include 'stemming'";
+  ok $d->features->includes('stem'),     '', "Shouldn't include 'stem'";
+  print "Features: @{[ $d->features->names ]}\n";
+}

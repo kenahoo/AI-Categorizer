@@ -1,0 +1,8 @@
+CVS
+\.bak$
+\.old$
+~$
+
+MANIFEST\.SKIP
+^Makefile$
+^blib

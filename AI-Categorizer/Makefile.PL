@@ -1,69 +1,28 @@
 
-use ExtUtils::MakeMaker;
-use Config;
+    unless (eval "use Module::Build::Compat 0.02; 1" ) {
+      print "This module requires Module::Build to install itself.\n";
+      
+      require ExtUtils::MakeMaker;
+      my $yn = ExtUtils::MakeMaker::prompt
+	('  Install Module::Build now from CPAN?', 'y');
+      
+      unless ($yn =~ /^y/i) {
+	warn " *** Cannot install without Module::Build.  Exiting ...\n";
+	exit 1;
+      }
 
-my $module = 'AI::Categorizer';
-my ($file, $dir);
-($dir  = $module) =~ s/::/-/g;
-($file = $module) =~ s{::}{/}g;
-$file = "lib/$file.pm";
-
-{
-  my $path = prompt
-    (
-     "\nIf you have the Weka system installed, please specify the path\n".
-     "to the 'weka.jar' file, or '-' to search CLASSPATH, or '!' to skip:",
-     '!'
-    );
-  
-  if ($path eq '!') {
-    unlink "classpath" if -e "classpath";
-  } else {
-    local *FH;
-    open FH, "> classpath" or die "Can't create classpath: $!";
-    print FH $path;
-    close FH;
-  }
-}
-
-my %options;
-{
-  if (prompt("Do you want to install the command-line script 'categorizer' to $Config::Config{installscript}?", 'n') =~ /^y/i) {
-    $options{EXE_FILES} = [qw(eg/categorizer)];
-  }
-}
-
-
-WriteMakefile
-  (
-   'NAME'       => $module,
-   'VERSION_FROM' => $file, # finds $VERSION
-   'dist' => { COMPRESS=>"gzip",
-               SUFFIX=>"gz",
-               PREOP=>('rm -f README; '.
-                       "pod2text -80 < $file > README; ".
-                       "cp -f README $dir-\$(VERSION); "
-                      ),
-             },
-   'clean' => {FILES => "t/state"},
-   'PREREQ_PM' => {
-		   Class::Container => 0.09,
-		   Storable => 0,
-		   Params::Validate => 0.18,
-		   Statistics::Contingency => 0.06,
-		   Lingua::Stem => 0.50,
-		   File::Spec => 0,
-		   Algorithm::NaiveBayes => 0,
-		  },
-   'PL_FILES' => {},
-   %options,
-
-   # Recommended: Scalar::Util
-
-   ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-    (ABSTRACT_FROM => $file, # retrieve abstract from module
-     AUTHOR     => 'Ken Williams <ken@mathforum.org>') : 
-    ()
-   ),
-  );
-
+      require Cwd;
+      require File::Spec;
+      require CPAN;
+      
+      # Save this 'cause CPAN will chdir all over the place.
+      my $cwd = Cwd::cwd();
+      my $makefile = File::Spec->rel2abs($0);
+      
+      CPAN::Shell->install('Module::Build::Compat');
+      
+      chdir $cwd or die "Cannot chdir() back to $cwd: $!";
+      exec $^X, $makefile, @ARGV;  # Redo now that we have Module::Build
+    }
+    Module::Build::Compat->run_build_pl(args => \@ARGV);
+    Module::Build::Compat->write_makefile();

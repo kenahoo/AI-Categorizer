@@ -14,5 +14,5 @@ ok(1);
 
 #########################
 
-perform_standard_tests(learner_class => 'AI::Categorizer::Learner::KNN', k_value => 1);
+perform_standard_tests(learner_class => 'AI::Categorizer::Learner::KNN');
 

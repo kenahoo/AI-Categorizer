@@ -367,7 +367,8 @@ Creates a new Categorizer object and returns it.  Accepts lots of
 parameters controlling behavior.  In addition to the parameters listed
 here, you may pass any parameter accepted by any class that we create
 internally (the KnowledgeSet, Learner, Experiment, or Collection
-classes).  This is managed by the C<Class::Container> module, so see
+classes), or any class that I<they> create.  This is managed by the
+C<Class::Container> module, so see
 L<its documentation|Class::Container> for the details of how this
 works.
 
@@ -388,14 +389,6 @@ left off.
 
 If true, a few status messages will be printed during execution.
 
-=item data_root
-
-A shortcut for setting the C<training_set>, C<test_set>, and
-C<category_file> parameters separately.  Sets C<training_set> to
-C<$data_root/training>, C<test_set> to C<$data_root/test>, and
-C<category_file> (used by some of the Collection classes) to
-C<$data_root/cats.txt>.
-
 =item training_set
 
 Specifies the C<path> parameter that will be fed to the KnowledgeSet's
@@ -406,6 +399,14 @@ and C<read_training_set()> methods.
 
 Specifies the C<path> parameter that will be used when creating a
 Collection during the C<evaluate_test_set()> method.
+
+=item data_root
+
+A shortcut for setting the C<training_set>, C<test_set>, and
+C<category_file> parameters separately.  Sets C<training_set> to
+C<$data_root/training>, C<test_set> to C<$data_root/test>, and
+C<category_file> (used by some of the Collection classes) to
+C<$data_root/cats.txt>.
 
 =item stopword_file
 
@@ -419,9 +420,8 @@ KnowledgeSet C<new()> method.
 
 =item learner()
 
-Returns the Learner object associated with this Categorizer.  If
-C<learner()> is called before C<train()>, the Learner will of course
-not be trained yet.
+Returns the Learner object associated with this Categorizer.  Before
+C<train()>, the Learner will of course not be trained yet.
 
 =item knowledge_set()
 
@@ -442,7 +442,8 @@ C<stats_table()> method.
 Scans the Collection specified in the C<test_set> parameter to
 determine the set of features (words) that will be considered when
 training the Learner.  Internally, this calls the C<scan_features()>
-method of the KnowledgeSet, then saves the KnowledgeSet for later use.
+method of the KnowledgeSet, then saves a list of the KnowledgeSet's
+features for later use.
 
 This step is not strictly necessary, but it can dramatically reduce
 memory requirements if you scan for features before reading the entire
@@ -451,15 +452,15 @@ corpus into memory.
 =item read_training_set()
 
 Populates the KnowledgeSet with the data specified in the C<test_set>
-parameter.  Internally, this call the C<read()> method of the
+parameter.  Internally, this calls the C<read()> method of the
 KnowledgeSet.  Returns the KnowledgeSet.  Also saves the KnowledgeSet
 object for later use.
 
 =item train()
 
 Calls the Learner's C<train()> method, passing it the KnowledgeSet
-populated during C<read_training_set()>.  Returns the Learner object.
-Also save the Learner object for later use.
+created during C<read_training_set()>.  Returns the Learner object.
+Also saves the Learner object for later use.
 
 =item evaluate_test_set()
 
@@ -496,8 +497,10 @@ Ken Williams <kenw@ee.usyd.edu.au>
 
 =head1 REFERENCES
 
-http://www.d.umn.edu/~tpederse/nsp.html (could be used later for
-feature selection)
+An excellent introduction to the academic field of Text Categorization
+is Fabrizio Sebastiani's "Machine Learning in Automated Text
+Categorization": ACM Computing Surveys, Vol. 34, No. 1, March 2002,
+pp. 1-47.
 
 =head1 COPYRIGHT
 

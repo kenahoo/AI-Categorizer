@@ -4,7 +4,7 @@ use strict;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
 use Params::Validate qw(:types);
-use AI::Categorizer::Util qw(max average);
+use Algorithm::NaiveBayes;
 
 __PACKAGE__->valid_params
   (
@@ -13,78 +13,20 @@ __PACKAGE__->valid_params
 
 sub create_model {
   my $self = shift;
-  my $m = $self->{model} = {};
+  my $m = $self->{model} = Algorithm::NaiveBayes->new;
 
-  my $totaldocs = $self->knowledge_set->documents;
-  $m->{features} = $self->knowledge_set->features;
-  my $vocab_size = $self->knowledge_set->features->length;
-
-  # Calculate the log-probabilities for each category
-  foreach my $cat ($self->knowledge_set->categories) {
-    $m->{cat_prob}{$cat->name} = log($cat->documents / $totaldocs);
-
-    # Count the number of tokens in this cat
-    $m->{cat_tokens}{$cat->name} = $cat->features->sum;
-
-    # Compute a smoothing term so P(word|cat)==0 can be avoided
-    $m->{smoothing}{$cat->name} = -log($m->{cat_tokens}{$cat->name} + $vocab_size);
-
-    my $denominator = log($m->{cat_tokens}{$cat->name} + $vocab_size);
-
-    my $features = $cat->features->as_hash;
-    while (my ($feature, $count) = each %$features) {
-      $m->{probs}{$cat->name}{$feature} = log($count + 1) - $denominator;
-    }
+  foreach my $d ($self->knowledge_set->documents) {
+    $m->add_instance(attributes => $d->features->as_hash,
+		     label      => [ map $_->name, $d->categories ]);
   }
-  $self->{model} = $m;
+  $m->train;
 }
-
-# Counts:
-# Total number of words (types)  in all docs: (V)        $self->knowledge_set->features->length
-# Total number of words (tokens) in all docs:            $self->knowledge_set->features->sum
-# Total number of words (types)  in category $c:         $c->features->length
-# Total number of words (tokens) in category $c:(N)      $c->features->sum or $m->{cat_tokens}{$c->name}
-
-# Logprobs:
-# P($cat) = $m->{cat_prob}{$cat->name}
-# P($feature|$cat) = $m->{probs}{$cat->name}{$feature}
 
 sub get_scores {
   my ($self, $newdoc) = @_;
-  my $m = $self->{model};  # For convenience
-  my $all_features = $m->{features}->as_hash;
-  
-  # Note that we're using the log(prob) here.  That's why we add instead of multiply.
 
-  my %scores;
-  while (my ($cat, $cat_features) = each %{$m->{probs}}) {
-    $scores{$cat} = $m->{cat_prob}{$cat}; # P($cat)
-    
-    my $doc_hash = $newdoc->features->as_hash;
-    while (my ($feature, $value) = each %$doc_hash) {
-      next unless exists $all_features->{$feature};
-      $scores{$cat} += ($cat_features->{$feature} || $m->{smoothing}{$cat})*$value;   # P($feature|$cat)**$value
-    }
-  }
-
-  $self->_rescale(\%scores);
-  return (\%scores, $self->{threshold});
-}
-
-sub _rescale {
-  my ($self, $scores) = @_;
-
-  # Scale everything back to a reasonable area in logspace (near zero), un-loggify, and normalize
-  my $total = 0;
-  my $max = max(values %$scores);
-  foreach (values %$scores) {
-    $_ = exp($_ - $max);
-    $total += $_**2;
-  }
-  $total = sqrt($total);
-  foreach (values %$scores) {
-    $_ /= $total;
-  }
+  return ($self->{model}->predict( attributes => $newdoc->features->as_hash ),
+	  $self->{threshold});
 }
 
 sub threshold {
@@ -101,7 +43,7 @@ sub save_state {
 
 sub categories {
   my $self = shift;
-  return map AI::Categorizer::Category->by_name( name => $_ ), keys %{ $self->{model}{cat_prob} };
+  return map AI::Categorizer::Category->by_name( name => $_ ), $self->{model}->labels;
 }
 
 1;
@@ -138,6 +80,10 @@ This is an implementation of the Naive Bayes decision-making
 algorithm, applied to the task of document categorization (as defined
 by the AI::Categorizer module).  See L<AI::Categorizer> for a complete
 description of the interface.
+
+This module is now a wrapper around the stand-alone
+C<Algorithm::NaiveBayes> module.  I moved the discussion of Bayes'
+Theorem into that module's documentation.
 
 =head1 METHODS
 
@@ -187,65 +133,6 @@ details on how to use this object.
 Saves the categorizer for later use.  This method is inherited from
 C<AI::Categorizer::Storable>.
 
-=head1 THEORY
-
-Bayes' Theorem is a way of inverting a conditional probability. It
-states:
-
-                P(y|x) P(x)
-      P(x|y) = -------------
-                   P(y)
-
-The notation C<P(x|y)> means "the probability of C<x> given C<y>."  See also
-L<"http://forum.swarthmore.edu/dr.math/problems/battisfore.03.22.99.html">
-for a simple but complete example of Bayes' Theorem.
-
-In this case, we want to know the probability of a given category given a
-certain string of words in a document, so we have:
-
-                    P(words | cat) P(cat)
-  P(cat | words) = --------------------
-                           P(words)
-
-We have applied Bayes' Theorem because C<P(cat | words)> is a difficult
-quantity to compute directly, but C<P(words | cat)> and C<P(cat)> are accessible
-(see below).
-
-The greater the expression above, the greater the probability that the given
-document belongs to the given category.  So we want to find the maximum
-value.  We write this as
-
-                                 P(words | cat) P(cat)
-  Best category =   ArgMax      -----------------------
-                   cat in cats          P(words)
-
-
-Since C<P(words)> doesn't change over the range of categories, we can get rid
-of it.  That's good, because we didn't want to have to compute these values
-anyway.  So our new formula is:
-
-  Best category =   ArgMax      P(words | cat) P(cat)
-                   cat in cats
-
-Finally, we note that if C<w1, w2, ... wn> are the words in the document,
-then this expression is equivalent to:
-
-  Best category =   ArgMax      P(w1|cat)*P(w2|cat)*...*P(wn|cat)*P(cat)
-                   cat in cats
-
-That's the formula I use in my document categorization code.  The last
-step is the only non-rigorous one in the derivation, and this is the
-"naive" part of the Naive Bayes technique.  It assumes that the
-probability of each word appearing in a document is unaffected by the
-presence or absence of each other word in the document.  We assume
-this even though we know this isn't true: for example, the word
-"iodized" is far more likely to appear in a document that contains the
-word "salt" than it is to appear in a document that contains the word
-"subroutine".  Luckily, as it turns out, making this assumption even
-when it isn't true may have little effect on our results, as the
-following paper by Pedro Domingos argues:
-L<"http://www.cs.washington.edu/homes/pedrod/mlj97.ps.gz">
-
 =head1 CALCULATIONS
 
 The various probabilities used in the above calculations are found
@@ -282,7 +169,7 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-AI::Categorizer(3)
+AI::Categorizer(3), Algorithm::NaiveBayes(3)
 
 "A re-examination of text categorization methods" by Yiming Yang
 L<http://www.cs.cmu.edu/~yiming/publications.html>

@@ -1,14 +1,79 @@
 package AI::Categorizer;
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use strict;
-use AI::Categorizer::KnowledgeSet;
-use AI::Categorizer::Learner;
-use AI::Categorizer::Document;
-use AI::Categorizer::Collection;
+use Class::Container 0.02;
+use base qw(Class::Container);
+use Params::Validate qw(:types);
 
+__PACKAGE__->valid_params
+  (
+   save_progress => { type => SCALAR, default => 'progress' },
+   knowledge_set => { isa => 'AI::Categorizer::KnowledgeSet' },
+   learner       => { isa => 'AI::Categorizer::Learner' },
+  );
 
-# Preloaded methods go here.
+__PACKAGE__->contained_objects
+  (
+   knowledge_set => { class => 'AI::Categorizer::KnowledgeSet' },
+   learner       => { class => 'AI::Categorizer::Learner::NaiveBayes' },
+   experiment    => { class => 'AI::Categorizer::Experiment',
+		      delayed => 1 },
+   collection    => { class => 'AI::Categorizer::Collection::Files',
+		      delayed => 1 },
+  );
+
+# Combines several methods in one sub
+sub run_experiment {
+  my $self = shift;
+  $self->scan_features;
+  $self->read_training_set;
+  $self->train;
+  $self->evaluate_test_set;
+  print $self->stats_table;
+}
+
+sub scan_features {
+  my $self = shift;
+  $self->{knowledge_set}->scan_features;
+}
+
+sub read_training_set {
+  my $self = shift;
+  $self->{knowledge_set}->read;
+}
+
+sub train {
+  my $self = shift;
+  $self->{learner}->train( knowledge_set => $self->{knowledge_set} );
+}
+
+sub evaluate_test_set {
+  my $self = shift;
+  my $c = $self->create_delayed_object('collection');
+  $self->{experiment} = $self->create_delayed_object('experiment');
+  while (my $d = $c->next) {
+    my $h = $self->{learner}->categorize($d);
+    $self->{experiment}->add_hypothesis($h, [$d->categories]);
+  }
+}
+
+sub stats_table {
+  my $self = shift;
+  return $self->{experiment}->stats_table;
+}
+
+# XXX these aren't getting used yet...
+sub _save_progress {
+  my ($self, $stage, $object) = @_;
+  return unless $self->{save_progress};
+  $object->save_state("$self->{save_progress}-$stage");
+}
+
+sub _load_progress {
+  my ($self, $stage, $object) = @_;
+  return unless $self
+}
 
 1;
 __END__

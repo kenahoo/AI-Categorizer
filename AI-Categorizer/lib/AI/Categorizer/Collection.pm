@@ -7,7 +7,8 @@ use base qw(Class::Container);
 __PACKAGE__->valid_params
   ( verbose => {TYPE => SCALAR, default => 0} );
 
-# Abstract method
+# Abstract methods
 sub next;
+sub count_documents;
 
 1;

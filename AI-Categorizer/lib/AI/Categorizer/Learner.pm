@@ -27,7 +27,7 @@ __PACKAGE__->contained_objects
   );
 
 # Subclasses must override these virtual methods:
-sub categorize;
+sub get_scores;
 sub create_model;
 
 sub verbose {
@@ -99,6 +99,25 @@ sub categorize_collection {
   return $experiment;
 }
 
+sub categorize {
+  my ($self, $doc) = @_;
+  
+  my ($scores, $threshold) = $self->get_scores($doc);
+  
+  if ($self->verbose > 2) {
+    warn "scores: @{[ %$scores ]}" if $self->verbose > 3;
+    
+    foreach my $key (sort {$scores->{$b} <=> $scores->{$a}} keys %$scores) {
+      print "$key: $scores->{$key}\n";
+    }
+  }
+  
+  return $self->create_delayed_object('hypothesis',
+                                      scores => $scores,
+                                      threshold => $threshold,
+                                      document_name => $doc->name,
+                                     );
+}
 1;
 
 __END__

@@ -13,3 +13,6 @@ MANIFEST\.SKIP
 ^pm_to_blib$
 
 ^t/classpath$
+^t/state
+
+BayesBoolean

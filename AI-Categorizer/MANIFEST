@@ -4,13 +4,14 @@ Makefile.PL
 README
 doc/classes-overview.png
 doc/classes.png
+eg/categorizer
 eg/drmath-1.00.yaml
-eg/run_experiment.pl
 lib/AI/Categorizer.pm
 lib/AI/Categorizer/Category.pm
 lib/AI/Categorizer/Collection.pm
 lib/AI/Categorizer/Collection/DBI.pm
 lib/AI/Categorizer/Collection/Files.pm
+lib/AI/Categorizer/Collection/InMemory.pm
 lib/AI/Categorizer/Collection/SingleFile.pm
 lib/AI/Categorizer/Document.pm
 lib/AI/Categorizer/Document/SMART.pm
@@ -34,4 +35,5 @@ t/02-experiment.t
 t/03-weka.t
 t/04-decision_tree.t
 t/05-svm.t
+t/10-tools.t
 t/common.pl

@@ -5,58 +5,44 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 17 };
+BEGIN { plan tests => 14 };
 
 use AI::Categorizer;
 use AI::Categorizer::Experiment;
-use AI::Categorizer::Hypothesis;
 
 ok(1);
 
-my $h = new AI::Categorizer::Hypothesis
-  (
-   scores => {
-	      sports => 7,
-	      politics => 3,
-	      finance => 5,
-	     },
-   threshold => 4,
-   all_categories => [qw(sports politics finance world)],
-  );
-
-ok $h->best_category, 'sports';
-ok scalar $h->categories, 2;
-ok $h->scores('finance'), 5;
+my $all_categories = [qw(sports politics finance world)];
 
 {
-  my $e = new AI::Categorizer::Experiment;
+  my $e = new AI::Categorizer::Experiment(categories => $all_categories);
   ok $e;
   
-  $e->add_hypothesis($h, ['sports']);
-  ok $e->macro_recall, 1, "macro recall";
-  ok $e->macro_precision, 0.5, "macro precision";
-  ok $e->macro_F1, 2/3, "macro F1";
+  $e->add_result(['sports','finance'], ['sports']);
+  ok $e->micro_recall, 1, "micro recall";
+  ok $e->micro_precision, 0.5, "micro precision";
+  ok $e->micro_F1, 2/3, "micro F1";
 }
 
 {
-  my $e = new AI::Categorizer::Experiment;
-  $e->add_hypothesis($h, ['politics']);
-  ok $e->macro_recall, 0, "macro recall";
-  ok $e->macro_precision, 0, "macro precision";
-  ok $e->macro_F1, 0, "macro F1";
+  my $e = new AI::Categorizer::Experiment(categories => $all_categories);
+  $e->add_result(['sports','finance'], ['politics']);
+  ok $e->micro_recall, 0, "micro recall";
+  ok $e->micro_precision, 0, "micro precision";
+  ok $e->micro_F1, 0, "micro F1";
 }
 
 {
-  my $e = new AI::Categorizer::Experiment;
+  my $e = new AI::Categorizer::Experiment(categories => $all_categories);
   
-  $e->add_hypothesis($h, ['sports']);
-  $e->add_hypothesis($h, ['politics']);
+  $e->add_result(['sports','finance'], ['sports']);
+  $e->add_result(['sports','finance'], ['politics']);
 
-  ok $e->macro_recall, 0.5, "macro recall";
-  ok $e->macro_precision, 0.25, "macro precision";
-  ok $e->macro_F1, 1/3, "macro F1";
+  ok $e->micro_recall, 0.5, "micro recall";
+  ok $e->micro_precision, 0.25, "micro precision";
+  ok $e->micro_F1, 1/3, "micro F1";
 
-  ok $e->micro_recall, 0.75, "micro recall";
-  ok $e->micro_precision, 0.625, "micro precision";
-  ok $e->micro_F1, 5/12, "micro F1";
+  ok $e->macro_recall, 0.75, "macro recall";
+  ok $e->macro_precision, 0.625, "macro precision";
+  ok $e->macro_F1, 5/12, "macro F1";
 }

@@ -4,6 +4,8 @@ $VERSION = '0.01';
 use strict;
 use AI::Categorizer::KnowledgeSet;
 use AI::Categorizer::Learner;
+use AI::Categorizer::Document;
+use AI::Categorizer::Collection;
 
 
 # Preloaded methods go here.

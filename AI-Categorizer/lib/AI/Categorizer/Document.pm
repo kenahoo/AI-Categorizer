@@ -40,6 +40,10 @@ __PACKAGE__->valid_params
 		    type => HASHREF|UNDEF,
 		    default => undef,
 		   },
+   stemming => {
+		type => SCALAR|UNDEF,
+		optional => 1,
+	       },
   );
 
 __PACKAGE__->contained_objects
@@ -129,19 +133,30 @@ sub tokenize {
   my $self = shift;
   my @tokens;
   while ($_[0] =~ /([-\w]+)/g) {
-    push @tokens, lc $1;
+    my $word = lc $1;
+    next unless $word =~ /[a-z]/;
+    $word =~ s/^[^a-z]+//;  # Trim leading non-alpha characters (helps with ordinals)
+    push @tokens, $word;
   }
   return \@tokens;
 }
 
-# Need to implement stemming options
-sub stem_words {}
+sub stem_words {
+  my ($self, $tokens) = @_;
+  return unless $self->{stemming};
+  die "Unknown stemming option '$self->{stemming}' - options are 'porter'" unless $self->{stemming} eq 'porter';
+  
+  eval {require Lingua::Stem; 1}
+    or die "Porter stemming requires the Lingua::Stem module, available from CPAN.\n";
+
+  @$tokens = @{ Lingua::Stem::stem(@$tokens) };
+}
 
 sub vectorize {
   my ($self, %args) = @_;
   my %counts;
 
-  # Do this separately for a speedup
+  # Do the loops separately for a speedup
   if ($self->{use_features}) {
     #warn "Using features: $self->{use_features} (@{[ $self->{use_features}->length ]})\n";
     foreach my $feature (@{$args{tokens}}) {

@@ -20,7 +20,7 @@ WriteMakefile
              },
    # 'clean' => {FILES => "t/httpd.conf t/error_log t/httpd"},
    'PREREQ_PM' => {
-		   Class::Container => 0.02,
+		   Class::Container => 0.05,
 		   Storable => 0,
 		   Params::Validate => 0.18,
 		  },

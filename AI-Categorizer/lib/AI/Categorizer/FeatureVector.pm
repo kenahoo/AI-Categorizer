@@ -6,6 +6,11 @@ sub new {
   return bless {features => $args{features}}, $package;
 }
 
+sub names {
+  my $self = shift;
+  return keys %{$self->{features}};
+}
+
 sub set {
   my $self = shift;
   $self->{features} = (ref $_[0] ? $_[0] : {@_});

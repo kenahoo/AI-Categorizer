@@ -2,6 +2,15 @@ Revision history for Perl extension AI::Categorizer.
 
 0.06
 
+ - Added a relatively simple example script at the request of several
+   people, at eg/demo.pl
+
+ - Forgot to note a dependency on Algorithm::NaiveBayes in version
+   0.05.  Fixed.
+
+ - AI::Categorizer class wasn't loading AI::Categorizer::KnowledgeSet
+   class.  Fixed.
+
  - Fixed a bug in which the 'documents' and 'categories' parameters to
    the KnowledgeSet objects were never accepted, claiming that it
    failed the "All are Document objects" or "All are Category objects"

@@ -32,6 +32,10 @@ __PACKAGE__->valid_params
 		       type => HASHREF,
 		       default => {},
 		      },
+   term_weighting  => {
+		       type => SCALAR,
+		       default => 'natural',
+		      },
    use_features => {
 		    type => HASHREF|UNDEF,
 		    default => undef,
@@ -57,8 +61,11 @@ sub new {
   # Allow a simple string as the content
   $self->{content} = { body => $self->{content} } unless ref($self->{content});
 
-  $self->create_feature_vector; # Deletes 'content' and 'content_weights'
+  $self->create_feature_vector;
 
+  # Now we're done with all the content stuff
+  delete @{$self}{'content', 'content_weights', 'stopwords', 'term_weighting', 'use_features'};
+  
   return $self;
 }
 
@@ -99,7 +106,6 @@ sub create_feature_vector {
   my $self = shift;
   my $content = $self->{content};
   my $weights = $self->{content_weights};
-  delete @{$self}{'content', 'content_weights'};
 
   my %features;
   while (my ($name, $data) = each %$content) {
@@ -109,10 +115,6 @@ sub create_feature_vector {
     @features{keys %$h} = values %$h;
   }
   $self->{feature_vector} = $self->create_delayed_object('feature_vector', features => \%features);
-
-  undef $self->{content};
-  undef $self->{content_weights};
-  #undef %features;
 }
 
 sub is_in_category {
@@ -136,11 +138,19 @@ sub vectorize {
   my %counts;
   foreach my $feature (@{$args{tokens}}) {
     if ($self->{use_features}) {
-      next unless exists $self->{use_features}{$feature};
+      next unless $self->{use_features}->includes($feature);
     } elsif (exists $self->{stopwords}{$feature}) {
       next;
     }
     $counts{$feature} += $args{weight};
+  }
+
+  if ($self->{term_weighting} eq 'natural') {
+    return \%counts;
+  } elsif ($self->{term_weighting} eq 'boolean') {
+    return { map {( $_ => $args{weight})} keys %counts };
+  } else {
+    die "term_weighting can only be 'natural' or 'boolean' (so far)";
   }
   return \%counts;
 }

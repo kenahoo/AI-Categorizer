@@ -45,7 +45,7 @@ __PACKAGE__->contained_objects
    category => { delayed => 1,
 		 class => 'AI::Categorizer::Category' },
    collection => { delayed => 1,
-		   class => 'AI::Categorizer::Collection' },
+		   class => 'AI::Categorizer::Collection::Files' },
    features => { delayed => 1,
 		 class => 'AI::Categorizer::FeatureVector' },
   );

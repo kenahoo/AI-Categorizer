@@ -10,7 +10,7 @@ use AI::Categorizer::ObjectSet;
 
 __PACKAGE__->valid_params
   (
-   knowledge  => { isa => 'AI::Categorizer::KnowledgeSet', optional => 1 },
+   knowledge_set  => { isa => 'AI::Categorizer::KnowledgeSet', optional => 1 },
    verbose => {type => SCALAR, default => 0},
   );
 
@@ -34,18 +34,18 @@ sub verbose {
   return $self->{verbose};
 }
 
-sub knowledge {
+sub knowledge_set {
   my $self = shift;
   if (@_) {
-    $self->{knowledge} = shift;
+    $self->{knowledge_set} = shift;
   }
-  return $self->{knowledge};
+  return $self->{knowledge_set};
 }
 
 sub train {
   my ($self, %args) = @_;
-  $self->{knowledge} = $args{knowledge} if $args{knowledge};
-  die "No knowledge provided" unless $self->{knowledge};
+  $self->{knowledge_set} = $args{knowledge_set} if $args{knowledge_set};
+  die "No knowledge_set provided" unless $self->{knowledge_set};
 
   $self->create_model;    # Creates $self->{model}
 }

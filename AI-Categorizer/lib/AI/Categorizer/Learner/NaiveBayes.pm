@@ -15,13 +15,13 @@ sub create_model {
   my $self = shift;
   my $m = $self->{model} = {};
 
-  my $totaldocs = $self->knowledge->documents;
-  $m->{features} = $self->knowledge->features;
-  $m->{vocab_size} = $self->knowledge->features->length;
-  $m->{total_tokens} = $self->knowledge->features->sum;
+  my $totaldocs = $self->knowledge_set->documents;
+  $m->{features} = $self->knowledge_set->features;
+  $m->{vocab_size} = $self->knowledge_set->features->length;
+  $m->{total_tokens} = $self->knowledge_set->features->sum;
 
   # Calculate the probabilities for each category
-  foreach my $cat ($self->knowledge->categories) {
+  foreach my $cat ($self->knowledge_set->categories) {
     $m->{cat_prob}{$cat->name} = log($cat->documents / $totaldocs);
 
     # Count the number of tokens in this cat
@@ -38,8 +38,8 @@ sub create_model {
 }
 
 # Counts:
-# Total number of words (types)  in all docs: (V)        $self->knowledge->features->length or $m->{vocab_size}
-# Total number of words (tokens) in all docs:            $self->knowledge->features->sum or $m->{total_tokens}
+# Total number of words (types)  in all docs: (V)        $self->knowledge_set->features->length or $m->{vocab_size}
+# Total number of words (tokens) in all docs:            $self->knowledge_set->features->sum or $m->{total_tokens}
 # Total number of words (types)  in category $c:         $c->features->length
 # Total number of words (tokens) in category $c:(N)      $c->features->sum or $m->{cat_tokens}{$c->name}
 
@@ -109,7 +109,7 @@ sub categorize {
 
 sub save_state {
   my $self = shift;
-  local $self->{knowledge};  # Don't need the knowledge to categorize
+  local $self->{knowledge_set};  # Don't need the knowledge_set to categorize
   $self->SUPER::save_state(@_);
 }
 

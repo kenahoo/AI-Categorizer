@@ -437,6 +437,8 @@ feature selection)
 
 =head1 COPYRIGHT
 
+Copyright 2000-2002 Ken Williams.  All rights reserved.
+
 This distribution is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.  These terms apply to
 every file in the distribution - if you have questions, please contact

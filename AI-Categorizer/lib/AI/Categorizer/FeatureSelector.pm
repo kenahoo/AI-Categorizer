@@ -55,8 +55,9 @@ sub reduce_features {
   return $result;
 }
 
-# Abstract method
+# Abstract methods
 sub rank_features;
+sub scan_features;
 
 sub select_features {
   my ($self, %args) = @_;
@@ -65,54 +66,9 @@ sub select_features {
     unless $args{knowledge_set};
 
   my $f = $self->rank_features( knowledge_set => $args{knowledge_set} );
-  my $reduced = $self->reduce_features( $f, features_kept => $args{features_kept} );
-  return $reduced;
+  return $self->reduce_features( $f, features_kept => $args{features_kept} );
 }
 
-
-sub document_frequency;
- {
-  my ($self, $term) = @_;
-  
-  unless (exists $self->{doc_freq_vector}) {
-    die "No corpus has been scanned for features" unless $self->documents;
-
-    my $doc_freq = $self->create_delayed_object('features', features => {});
-    foreach my $doc ($self->documents) {
-      $doc_freq->add( $doc->features->as_boolean_hash );
-    }
-    $self->{doc_freq_vector} = $doc_freq->as_hash;
-  }
-  
-  return exists $self->{doc_freq_vector}{$term} ? $self->{doc_freq_vector}{$term} : 0;
-}
-
-sub scan_features {
-  my ($self, %args) = @_;
-  my $c = $args{collection} ? $args{collection} : $self->create_delayed_object('collection', %args);
-
-  my $ranked_features;
-
-  if ($self->{feature_selection} eq 'document_frequency') {
-    my $doc_freq   = $self->create_delayed_object('features', features => {});
-    my $pb = $self->prog_bar($c);
-    
-    while (my $doc = $c->next) {
-      $pb->();
-      $doc_freq->add( $doc->features->as_boolean_hash );
-    }
-    print "\n" if $self->verbose;
-    
-    $ranked_features = $self->_reduce_features($doc_freq);
-    $self->{doc_freq_vector} = $ranked_features->as_hash;
-  } else {
-    die "Unknown feature_selection type '$self->{feature_selection}'";
-  }
-  
-  $self->delayed_object_params('document', use_features => $ranked_features);
-  $self->delayed_object_params('collection', use_features => $ranked_features);
-  return $ranked_features;
-}
 
 1;
 
@@ -398,15 +354,3 @@ modify it under the same terms as Perl itself.
 AI::Categorizer(3)
 
 =cut
-
-
-
-=item term_weighting
-
-Specifies how word counts should be converted to feature vector
-values.  If C<term_weighting> is set to C<natural>, the word counts
-themselves will be used as the values.  C<boolean> indicates that each
-positive word count will be converted to 1 (or whatever the
-C<content_weight> for this section is).  C<log> indicates that the
-values will be set to C<1+log(count)>.
-

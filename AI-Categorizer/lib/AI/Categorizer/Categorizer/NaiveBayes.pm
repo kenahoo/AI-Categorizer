@@ -95,6 +95,7 @@ sub categorize {
   return $self->create_delayed_object('hypothesis',
 				      scores => $scores,
 				      threshold => $self->{bayes_threshold},
+				      all_categories => [keys %{$self->{model}{cat_prob}}],
 				     );
 }
 

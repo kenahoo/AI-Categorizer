@@ -11,4 +11,11 @@ Perl modules:
 Or you may use the CPAN.pm module, which will automatically execute
 these steps for you.
 
+Alternatively, you can use the new Module::Build-style installer:
+
+  perl Build.PL
+  ./Build
+  ./Build test
+  ./Build install
+
  -Ken

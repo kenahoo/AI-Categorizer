@@ -68,6 +68,7 @@ sub save_state {
   my ($self, $path) = @_;
   {
     local $self->{model}{learners};
+    local $self->{knowledge_set};
     $self->SUPER::save_state($path);
   }
   return unless $self->{model};

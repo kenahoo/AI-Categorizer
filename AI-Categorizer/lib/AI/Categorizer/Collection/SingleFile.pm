@@ -61,11 +61,7 @@ sub next {
 #warn "doc is $content";
 #warn "creating document=>@{[ %{$self->{container}{delayed}{document}} ]}";
 
-  my ($doc, $categories) = $self->call_method('document', 'parse', 
-					      content => $content,
-					     );
-  my $name = delete $doc->{name};
-  return $self->create_delayed_object('document', name => $name, content => $doc, categories => $categories);
+  return $self->create_delayed_object('document', content => $content);
 }
 
 sub count_documents {

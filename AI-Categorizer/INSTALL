@@ -9,7 +9,8 @@ Perl modules:
   make install
 
 Or you may use the CPAN.pm module, which will automatically execute
-these steps for you.
+these steps for you, and help you get the prerequisite dependencies
+installed as well.
 
 Alternatively, you can use the new Module::Build-style installer:
 

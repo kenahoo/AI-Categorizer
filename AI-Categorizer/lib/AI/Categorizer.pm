@@ -184,6 +184,11 @@ about each other or use conflicting namespaces.
 
 Ken Williams <kenw@ee.usyd.edu.au>
 
+=head1 REFERENCES
+
+http://www.d.umn.edu/~tpederse/nsp.html (could be used later for
+feature selection)
+
 =head1 COPYRIGHT
 
 This distribution is free software; you can redistribute it and/or

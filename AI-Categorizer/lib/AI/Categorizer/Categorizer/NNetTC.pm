@@ -15,7 +15,8 @@ __PACKAGE__->valid_params
    nn_epochs       => {type => SCALAR, default => 5},
    nn_savedelta    => {type => SCALAR, default => 0},
    nn_momentum     => {type => SCALAR, default => 0.5},
-   nn_cv           => {type => SCALAR, default => 3},
+   nn_cvexp        => {type => SCALAR, default => 3},
+   nn_cv           => {type => SCALAR, default => 200},
    tmpdir          => {type => SCALAR, default => "/tmp"},
   );
 
@@ -33,14 +34,16 @@ sub create_model {
   my @categories = $k->categories;
   my %cat2int = map { $categories[$_]->name => $_ } 0..$#categories;
 
+my $experiment = 'signalg';
+
   # First create a .net file that nntc will read
   local *FH;
-  my $vec_file = File::Spec->catfile($self->{tmpdir}, 'model.vec');
+  my $vec_file = File::Spec->catfile($self->{tmpdir}, "$experiment.net");
   open FH, "> $vec_file" or die "> $vec_file: $!";
   foreach my $doc ($k->documents) {
     print "." if $self->{verbose};
     printf FH ".%s  %s\n", $doc->name, join(" ", map $cat2int{$_->name}, $doc->categories);
-    my $f = $doc->features->as_hash;
+    my $f = $doc->features->normalize->as_hash;
     foreach my $feature (keys %$f) {
       print FH "$feature2int{$feature}\t$f->{$feature}\n";
     }
@@ -50,9 +53,9 @@ sub create_model {
   print "\n" if $self->{verbose};
 
   # Train the network
-  $m->{train_file} = File::Spec->catfile($self->{tmpdir}, "training.nnt");
-  $m->{cv_file}    = File::Spec->catfile($self->{tmpdir}, "cv.nnt");
-  $m->{net_tmpfile}= File::Spec->catfile($self->{tmpdir}, "temp.net");
+  $m->{train_file} = File::Spec->catfile($self->{tmpdir}, "$experiment.ttrn.nnt");
+  $m->{cv_file}    = File::Spec->catfile($self->{tmpdir}, "$experiment.cv.nnt");
+  $m->{net_tmpfile}= File::Spec->catfile($self->{tmpdir}, "$experiment.net");
   foreach my $a (0.9, 0.5, 0.1) {
     $self->syscall( qq{ $self->{nn_binary} -r $m->{train_file}  -t $m->{cv_file} -e $self->{nn_epochs} } .
 		    qq{ -s $self->{nn_savedelta} -n $m->{net_tmpfile} -h $self->{nn_hidden_nodes} } .
@@ -62,7 +65,7 @@ sub create_model {
   # XXX need to incorporate this script
   # Creates "t$THRESHOLD.net" file
   $self->syscall( qq{ /home/halvards/bin/train_nnt.pl -c $self->{nn_cv} -d $self->{tmpdir} -t $self->{nn_threshold} }.
-		  qq{ -e foo -n $self->{nn_epochs} -h $self->{nn_hidden_nodes} -x foo -a 0.9 } );
+		  qq{ -e $experiment -n $self->{nn_epochs} -h $self->{nn_hidden_nodes} -x $self->{nn_cvexp} -a 0.9 } );
   $m->{net_file} = File::Spec->catfile($self->{tmpdir}, "t$self->{nn_threshold}.net");
 }
 

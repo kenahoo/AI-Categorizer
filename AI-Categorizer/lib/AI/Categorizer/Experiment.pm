@@ -11,7 +11,7 @@ use Params::Validate qw(:types);
 __PACKAGE__->valid_params
   (
    categories => { type => ARRAYREF|HASHREF },
-   sig_figs   => { type => SCALAR, default => 3 },
+   sig_figs   => { type => SCALAR, default => 4 },
   );
 
 sub new {

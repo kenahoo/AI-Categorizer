@@ -14,6 +14,7 @@ __PACKAGE__->valid_params
    verbose       => { type => BOOLEAN, default => 0 },
    training_set  => { type => SCALAR, optional => 1 },
    test_set      => { type => SCALAR, optional => 1 },
+   data_root     => { type => SCALAR, optional => 1 },
   );
 
 __PACKAGE__->contained_objects
@@ -25,6 +26,19 @@ __PACKAGE__->contained_objects
    collection    => { class => 'AI::Categorizer::Collection::Files',
 		      delayed => 1 },
   );
+
+sub new {
+  my $package = shift;
+  my %args = @_;
+  my %defaults;
+  if (exists $args{data_root}) {
+    $defaults{training_set} = "$args{data_root}/training";
+    $defaults{test_set} = "$args{data_root}/test";
+    $defaults{category_file} = "$args{data_root}/cats.txt";
+  }
+
+  return $package->SUPER::new(%defaults, @_);
+}
 
 sub knowledge_set { shift->{knowledge_set} }
 sub learner       { shift->{learner} }
@@ -63,10 +77,11 @@ sub evaluate_test_set {
   my $self = shift;
   $self->_load_progress( '03', 'learner' );
   my $c = $self->create_delayed_object('collection', path => $self->{test_set} );
-  $self->{experiment} = $self->create_delayed_object('experiment');
+  my @all_cats = map $_->name, $self->knowledge_set->categories;
+  $self->{experiment} = $self->create_delayed_object('experiment', categories => \@all_cats);
   while (my $d = $c->next) {
     my $h = $self->learner->categorize($d);
-    $self->{experiment}->add_hypothesis($h, [$d->categories]);
+    $self->{experiment}->add_result([$h->categories], [map $_->name, $d->categories], $d->name);
   }
   $self->_save_progress( '04', 'experiment' );
 }
@@ -77,7 +92,6 @@ sub stats_table {
   return $self->{experiment}->stats_table;
 }
 
-# XXX these aren't getting used yet...
 sub _save_progress {
   my ($self, $stage, $node) = @_;
   return unless $self->{save_progress};
@@ -103,69 +117,65 @@ AI::Categorizer - Automatic Text Categorization
 
 =head1 SYNOPSIS
 
- # An example...
- 
  use AI::Categorizer;
- use AI::Categorizer::Learner::NaiveBayes;
-  
- # Read a collection of categorized documents
- my $k = new AI::Categorizer::KnowledgeSet
-   (
-    document_class   => 'AI::Categorizer::Document::Text',
-    collection_class => 'AI::Categorizer::Collection::Files',
-    stopwords => [ ... ],
-    features_kept => 500,
-    load => { path => '/path/to/data', scan_features => 1 },
-   );
+ my $c = new AI::Categorizer(...parameters...);
  
- # Train a categorizer
- my $c = new AI::Categorizer::Learner::NaiveBayes;
- $c->train($k);
- $c->save_state('filename');
+ # Run a complete experiment - training on a corpus, testing on a test
+ # set, printing a summary of results to STDOUT
+ $c->run_experiment;
  
- # ... Time passes ...
+ # Run the parts of $c->run_experiment separately
+ $c->scan_features;
+ $c->read_training_set;
+ $c->train;
+ $c->evaluate_test_set;
+ print $c->stats_table;
  
- # Read an uncategorized document
- use AI::Categorizer::Document::Text;
- my $doc = AI::Categorizer::Document::Text->read( path => '/path/to/doc' );
+ # After training, use the Learner for categorization
+ my $l = $c->learner;
+ while (...) {
+   my $d = ...create a document...
+   my $hypothesis = $l->categorize($d);  # An AI::Categorizer::Hypothesis object
+ }
  
- # Categorize it
- $c = AI::Categorizer::Learner::NaiveBayes->restore_state('filename');
- my $result = $c->categorize($doc);
- 
- # Check the result
- if ($result->is_in_category('sports')) { ... }
- my $best_cat = $result->best_category;
- my @categories = $result->categories;
- my @scores = $result->scores(@categories);
-
 =head1 DESCRIPTION
 
 C<AI::Categorizer> is a framework for automatic text categorization.
 It consists of a collection of Perl modules that implement common
-categorization tasks.  The various details are flexible - for example,
-you can choose what categorization algorithm to use, what features
-(words or otherwise) of the documents should be used (or how to
-automatically choose these features), what format the documents are
-in, and so on.
+categorization tasks, and a set of defined relationships among those
+modules.  The various details are flexible - for example, you can
+choose what categorization algorithm to use, what features (words or
+otherwise) of the documents should be used (or how to automatically
+choose these features), what format the documents are in, and so on.
 
 The basic process of using this module will typically involve
 obtaining a collection of B<pre-categorized> documents, creating a
 knowledge set representation of those documents, training a
 categorizer on that knowledge set, and saving the trained categorizer
-for later use.
+for later use.  There are several ways to achieve this process.  The
+top-level C<AI::Categorizer> module provides an umbrella class for
+high-level operations, or you may use the interfaces of the individual
+classes in the framework.
 
-Disclaimer: the results of any of these algorithms are far from
-infallible (close to fallible?).  Categorization of documents is often
-a difficult task even for humans well-trained in the particular domain
-of knowledge, and there are many things a human would consider that
-none of these algorithms consider.  These are only statistical tests -
-at best they are neat tricks or helpful assistants, and at worst they
-are totally unreliable.  If you plan to use this module for anything
-important, human supervision is essential.
+Disclaimer: the results of any of the machine learning algorithms are
+far from infallible (close to fallible?).  Categorization of documents
+is often a difficult task even for humans well-trained in the
+particular domain of knowledge, and there are many things a human
+would consider that none of these algorithms consider.  These are only
+statistical tests - at best they are neat tricks or helpful
+assistants, and at worst they are totally unreliable.  If you plan to
+use this module for anything important, human supervision is
+essential, both of the categorization process and the final results.
 
 For the usage details, please see the documentation of each individual
 module.
+
+=head1 Framework Components
+
+This section explains the major pieces of the C<AI::Categorizer>
+object framework.  This section gives a conceptual overview, but does
+not get into any of the details about interfaces or usage.  See the
+documentation for the individual classes for more details.
 
 =head2 Knowledge Sets
 
@@ -197,6 +207,11 @@ is implemented we will drop the NNetTC package from the distribution
 (since nobody else has the libraries it depends on, and for licensing
 reasons they couldn't use them even if they had them).
 
+Several other Learner classes are planned, including a
+k-Nearest-Neighbor class, a Decision Tree class, a Mixture of Experts
+meta-class, and the NNet class mentioned above.  No timetable for
+their creation has yet been set.
+
 Please see the documentation of these individual modules for more
 details on their guts and quirks.  See the C<AI::Categorizer::Learner>
 documentation for a description of the general categorizer interface.
@@ -205,8 +220,8 @@ documentation for a description of the general categorizer interface.
 
 Most categorization algorithms don't deal directly with a document's
 data, they instead deal with a I<vector representation> of a
-document's I<features>.  The features may be any property of the
-document that seems indicative of its category, but they are usually
+document's I<features>.  The features may be any properties of the
+document that seem indicative of its category, but they are usually
 some version of the "most important" words in the document.  A list of
 features and their weights in each document is encapsulated by the
 C<AI::Categorizer::FeatureVector> class.  You may think of this class

@@ -9,6 +9,7 @@ use AI::Categorizer::Util qw(random_elements);
 __PACKAGE__->valid_params
   (
    max_instances => {type => SCALAR, default => 0},
+   threshold => {type => SCALAR, default => 0.5},
   );
 
 sub create_model {
@@ -35,6 +36,7 @@ sub create_model {
       warn "Limiting to ". @p ." positives and ". @n ." negatives\n" if $self->verbose;
     }
 
+    warn "Creating model for ", $cat->name, "\n" if $self->verbose;
     $m->{learners}{ $cat->name } = $self->create_boolean_model(\@p, \@n, $cat);
   }
 }
@@ -46,7 +48,18 @@ sub get_scores {
   foreach my $cat (keys %{$m->{learners}}) {
     $scores{$cat} = $self->get_boolean_score($doc, $m->{learners}{$cat});
   }
-  return (\%scores, 0.5);
+  return (\%scores, $self->{threshold});
+}
+
+sub threshold {
+  my $self = shift;
+  $self->{threshold} = shift if @_;
+  return $self->{threshold};
+}
+
+sub categories {
+  my $self = shift;
+  return map AI::Categorizer::Category->by_name( name => $_ ), keys %{ $self->{model}{learners} };
 }
 
 1;

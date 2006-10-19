@@ -234,16 +234,16 @@ sub load {
   my ($self, %args) = @_;
   my $c = $self->_make_collection(\%args);
 
-  if ($self->{scan_first}) {
+  if ($self->{features_kept}) {
+    # Read the whole thing in, then reduce
+    $self->read( collection => $c );
+    $self->select_features;
+
+  } elsif ($self->{scan_first}) {
     # Figure out the feature set first, then read data in
     $self->scan_features( collection => $c );
     $c->rewind;
     $self->read( collection => $c );
-
-  } elsif ($self->{features_kept}) {
-    # Read the whole thing in, then reduce
-    $self->read( collection => $c );
-    $self->select_features;
 
   } else {
     # Don't do any feature reduction, just read the data

@@ -27,7 +27,8 @@ push @args, weka_path => $classpath
 
 perform_standard_tests(
 		       learner_class => 'AI::Categorizer::Learner::Weka',
-		       weka_classifier => 'weka.classifiers.SMO',
+		       weka_classifier => 'weka.classifiers.functions.SMO',
+                                     # or 'weka.classifiers.SMO' for older Weka versions
 		       @args,
 		      );
 

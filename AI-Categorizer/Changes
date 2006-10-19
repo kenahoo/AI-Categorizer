@@ -1,7 +1,5 @@
 Revision history for Perl extension AI::Categorizer.
 
-0.08
-
  - The building & installing process now uses Module::Build rather
    than ExtUtils::MakeMaker.
 
@@ -9,6 +7,10 @@ Revision history for Perl extension AI::Categorizer.
    features to use, and the scan_first parameter was left as its
    default value, the features_kept mechanism would silently fail to
    do anything.  This has now been fixed. [Spotted by Arnaud Gaudinat]
+
+ - Recent versions of Weka have changed the name of the SVM class, so
+   I've updated it in our test (t/03-weka.t) of the Weka wrapper
+   too. [Sebastien Aperghis-Tramoni]
 
 0.07  Tue May  6 16:15:04 CDT 2003
 

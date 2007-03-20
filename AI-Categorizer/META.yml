@@ -1,8 +1,16 @@
---- #YAML:1.0
+---
 name: AI-Categorizer
 version: 0.07
+author:
+  - 'Ken Williams <ken@mathforum.org>'
+  - |-
+    Discussion about this module can be directed to the perl-AI list at
+    <perl-ai@perl.org>.  For more info about the list, see
+    http://lists.perl.org/showlist.cgi?name=perl-ai
+abstract: Automatic Text Categorization
 license: perl
-distribution_type: module
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
   Class::Container: 0.09
   File::Spec: 0
@@ -11,15 +19,14 @@ requires:
   Statistics::Contingency: 0.06
   Storable: 0
   perl: 5.6.0
+build_requires:
+  Module::Build: 0.2
 recommends:
   AI::DecisionTree: 0.06
   Algorithm::NaiveBayes: 0
   Algorithm::SVM: 0.06
   Scalar::Util: 0
   Time::Progress: 1.1
-build_requires:
-  Module::Build: 0.15
-conflicts: {}
 provides:
   AI::Categorizer:
     file: lib/AI/Categorizer.pm
@@ -87,4 +94,7 @@ provides:
     file: lib/AI/Categorizer/Storable.pm
   AI::Categorizer::Util:
     file: lib/AI/Categorizer/Util.pm
-generated_by: Module::Build version 0.20_01
+generated_by: Module::Build version 0.2805
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

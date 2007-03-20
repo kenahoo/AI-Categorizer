@@ -57,6 +57,10 @@ provides:
     file: lib/AI/Categorizer/Experiment.pm
   AI::Categorizer::FeatureSelector:
     file: lib/AI/Categorizer/FeatureSelector.pm
+  AI::Categorizer::FeatureSelector::CategorySelector:
+    file: lib/AI/Categorizer/FeatureSelector/CategorySelector.pm
+  AI::Categorizer::FeatureSelector::ChiSquare:
+    file: lib/AI/Categorizer/FeatureSelector/ChiSquare.pm
   AI::Categorizer::FeatureSelector::DocFrequency:
     file: lib/AI/Categorizer/FeatureSelector/DocFrequency.pm
   AI::Categorizer::FeatureVector:

@@ -19,6 +19,8 @@ lib/AI/Categorizer/Document/Text.pm
 lib/AI/Categorizer/Document/XML.pm
 lib/AI/Categorizer/Experiment.pm
 lib/AI/Categorizer/FeatureSelector.pm
+lib/AI/Categorizer/FeatureSelector/CategorySelector.pm
+lib/AI/Categorizer/FeatureSelector/ChiSquare.pm
 lib/AI/Categorizer/FeatureSelector/DocFrequency.pm
 lib/AI/Categorizer/FeatureVector.pm
 lib/AI/Categorizer/Hypothesis.pm

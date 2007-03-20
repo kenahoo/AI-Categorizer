@@ -1,5 +1,7 @@
 Revision history for Perl extension AI::Categorizer.
 
+ - Added a ChiSquared feature selection class. [Francois Paradis]
+
  - Changed the web locations of the reuters-21578 corpus that
    eg/demo.pl uses, since the location it referenced previously has
    gone away.

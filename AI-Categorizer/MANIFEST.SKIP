@@ -31,5 +31,3 @@ bsvm
 FastDot
 preprocess
 ScoredFeatures
-CategorySelector
-ChiSquare

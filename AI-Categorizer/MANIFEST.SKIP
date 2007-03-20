@@ -20,6 +20,7 @@ MANIFEST\.SKIP
 ^t/state
 
 ^AI-Categorizer
+^reuters
 
 # Stuff that's not ready to ship
 BayesBoolean
@@ -30,3 +31,5 @@ bsvm
 FastDot
 preprocess
 ScoredFeatures
+CategorySelector
+ChiSquare

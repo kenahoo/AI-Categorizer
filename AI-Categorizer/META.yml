@@ -1,6 +1,6 @@
 ---
 name: AI-Categorizer
-version: 0.07
+version: 0.08
 author:
   - 'Ken Williams <ken@mathforum.org>'
   - |-
@@ -30,7 +30,7 @@ recommends:
 provides:
   AI::Categorizer:
     file: lib/AI/Categorizer.pm
-    version: 0.07
+    version: 0.08
   AI::Categorizer::Category:
     file: lib/AI/Categorizer/Category.pm
   AI::Categorizer::Collection:

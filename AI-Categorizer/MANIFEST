@@ -39,7 +39,6 @@ lib/AI/Categorizer/Storable.pm
 lib/AI/Categorizer/Util.pm
 Makefile.PL
 MANIFEST
-META.yml
 README
 t/01-naive_bayes.t
 t/02-experiment.t

@@ -1,5 +1,7 @@
 Revision history for Perl extension AI::Categorizer.
 
+0.09 - Fri Mar 23 21:36:00 2007
+
  - The t/01-naive_bayes.t test was failing (instead of skipping) when
    Algorithm::NaiveBayes wasn't installed.  Now it skips.
 

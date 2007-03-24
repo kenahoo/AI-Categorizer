@@ -1,5 +1,8 @@
 Revision history for Perl extension AI::Categorizer.
 
+ - The t/01-naive_bayes.t test was failing (instead of skipping) when
+   Algorithm::NaiveBayes wasn't installed.  Now it skips.
+
 0.08 - Tue Mar 20 19:39:41 2007
 
  - Added a ChiSquared feature selection class. [Francois Paradis]

@@ -9,6 +9,7 @@ use strict;
 use Test;
 BEGIN { 
   require 't/common.pl';
+  need_module('Algorithm::NaiveBayes');
   plan tests => 15 + num_standard_tests();
 }
 

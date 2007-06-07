@@ -88,7 +88,7 @@ AI::Categorizer::Category - A named category of documents
 
 =head1 SYNOPSIS
 
-  my $category = AI::Categorizer::Category->by_name("sports");
+  my $category = AI::Categorizer::Category->by_name(name => "sports");
   my $name = $category->name;
   
   my @docs = $category->documents;

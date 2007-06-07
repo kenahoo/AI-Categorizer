@@ -1,5 +1,8 @@
 Revision history for Perl extension AI::Categorizer.
 
+ - Fixed a documentation error in AI::Categorizer::Category. [Andreas
+   Mager]
+
 0.09 - Fri Mar 23 21:36:00 2007
 
  - The t/01-naive_bayes.t test was failing (instead of skipping) when

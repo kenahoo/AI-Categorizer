@@ -1,5 +1,4 @@
 package AI::Categorizer::Learner::SVM;
-$VERSION = '0.01';
 
 use strict;
 use AI::Categorizer::Learner::Boolean;

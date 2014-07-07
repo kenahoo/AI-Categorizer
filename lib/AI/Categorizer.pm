@@ -1,5 +1,4 @@
 package AI::Categorizer;
-$VERSION = '0.09';
 
 use strict;
 use Class::Container;

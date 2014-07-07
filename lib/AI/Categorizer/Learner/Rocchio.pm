@@ -1,5 +1,4 @@
 package AI::Categorizer::Learner::Rocchio;
-$VERSION = '0.01';
 
 use strict;
 use Params::Validate qw(:types);

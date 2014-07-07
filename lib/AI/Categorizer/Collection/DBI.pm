@@ -61,7 +61,7 @@ sub next {
   
   return $self->create_delayed_object('document',
 				      name => $result[0],
-				      categories => [$result[1]],
+				      categories => [AI::Categorizer::Category->by_name(name => $result[1])],
 				      content => $result[2],
 				     );
 }

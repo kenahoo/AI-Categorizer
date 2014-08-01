@@ -271,7 +271,7 @@ sub read {
   
   my $self = $class->new(%args);
   
-  open my($fh), "< $path" or die "$path: $!";
+  open my $fh, '<', $path or die "$path: $!";
   $self->parse_handle(handle => $fh);
   close $fh;
   
@@ -282,7 +282,7 @@ sub read {
 sub dump_features {
   my ($self, %args) = @_;
   my $path = $args{path} or die "No 'path' argument given to dump_features()";
-  open my($fh), "> $path" or die "Can't create $path: $!";
+  open my $fh , '>', $path or die "Can't create $path: $!";
   my $f = $self->features->as_hash;
   while (my ($k, $v) = each %$f) {
     print $fh "$k\t$v\n";

@@ -38,19 +38,18 @@ sub create_model {
 my $experiment = 'signalg';
 
   # First create a .net file that nntc will read
-  local *FH;
   my $vec_file = File::Spec->catfile($self->{tmpdir}, "$experiment.net");
-  open FH, "> $vec_file" or die "> $vec_file: $!";
+  open my $fh, '>', $vec_file or die "Can't write $vec_file: $!";
   local $| = 1;
   foreach my $doc ($k->documents) {
     print "." if $self->{verbose};
-    printf FH ".%s  %s\n", $doc->name, join(" ", map $cat2int{$_->name}, $doc->categories);
+    printf $fh ".%s  %s\n", $doc->name, join(" ", map $cat2int{$_->name}, $doc->categories);
     my $f = $doc->features->normalize->as_hash;
     foreach my $feature (keys %$f) {
-      print FH "$feature2int{$feature}\t$f->{$feature}\n";
+      print $fh "$feature2int{$feature}\t$f->{$feature}\n";
     }
   }
-  close FH;
+  close $fh;
   $m->{vec_file} = $vec_file;
   print "\n" if $self->{verbose};
 

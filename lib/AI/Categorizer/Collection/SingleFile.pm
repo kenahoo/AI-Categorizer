@@ -40,7 +40,7 @@ sub _next_path {
 
   push @{$self->{used}}, shift @{$self->{path}};
   $self->{cur_file} = $self->{used}[-1];
-  open $self->{fh}, "< $self->{cur_file}" or die "$self->{cur_file}: $!";
+  open $self->{fh}, '<', $self->{cur_file} or die "$self->{cur_file}: $!";
 }
 
 sub next {

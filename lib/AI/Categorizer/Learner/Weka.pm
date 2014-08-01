@@ -166,12 +166,11 @@ sub do_cmd {
   print STDERR " % @cmd\n" if $self->verbose;
   
   my @output;
-  local *KID_TO_READ;
-  my $pid = open(KID_TO_READ, "-|");
+  my $pid = open my $kid_to_read, "-|";
   
   if ($pid) {   # parent
-    @output = <KID_TO_READ>;
-    close(KID_TO_READ) or warn "@cmd exited $?";
+    @output = <$kid_to_read>;
+    close $kid_to_read or warn "@cmd exited $?";
     
   } else {      # child
     exec(@cmd) or die "Can't exec @cmd: $!";

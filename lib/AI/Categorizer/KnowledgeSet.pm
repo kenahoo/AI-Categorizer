@@ -397,7 +397,7 @@ sub save_features {
   my $f = ($self->{features} || { $self->delayed_object_params('document') }->{use_features})
     or croak "No features to save";
   
-  open my($fh), "> $file" or croak "Can't create $file: $!";
+  open my $fh , '>', $file or croak "Can't create $file: $!";
   my $h = $f->as_hash;
   print $fh "# Total: ", $f->length, "\n";
   
@@ -410,7 +410,7 @@ sub save_features {
 sub restore_features {
   my ($self, $file, $n) = @_;
   
-  open my($fh), "< $file" or croak "Can't open $file: $!";
+  open my $fh, '<', $file or croak "Can't open $file: $!";
 
   my %hash;
   while (<$fh>) {

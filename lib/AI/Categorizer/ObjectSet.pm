@@ -1,5 +1,6 @@
-package AI::Categorizer::ObjectSet;
 use strict;
+
+package AI::Categorizer::ObjectSet;
 
 sub new {
   my $pkg = shift;

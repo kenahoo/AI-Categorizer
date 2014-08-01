@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Learner::DecisionTree;
 
-use strict;
 use AI::DecisionTree;
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);

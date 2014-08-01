@@ -1,6 +1,6 @@
-package AI::Categorizer::Hypothesis;
-
 use strict;
+
+package AI::Categorizer::Hypothesis;
 
 use Class::Container;
 use base qw(Class::Container);

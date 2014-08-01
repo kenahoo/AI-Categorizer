@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Learner::SVM;
 
-use strict;
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);
 use Algorithm::SVM;

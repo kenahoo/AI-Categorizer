@@ -1,10 +1,11 @@
+use strict;
+
 package AI::Categorizer::Util;
 
 use Exporter;
 use base qw(Exporter);
-@EXPORT_OK = qw(intersection average max min random_elements binary_search);
+our @EXPORT_OK = qw(intersection average max min random_elements binary_search);
 
-use strict;
 
 # It's possible that this can be a class - something like 
 # 

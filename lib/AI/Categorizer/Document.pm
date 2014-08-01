@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Document;
 
-use strict;
 use Class::Container;
 use base qw(Class::Container);
 

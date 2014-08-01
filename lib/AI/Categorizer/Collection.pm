@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection;
 use strict;
+
+package AI::Categorizer::Collection;
 
 use Params::Validate qw(:types);
 use Class::Container;

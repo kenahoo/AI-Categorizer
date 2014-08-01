@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Learner::Rocchio;
 
-use strict;
 use Params::Validate qw(:types);
 use AI::Categorizer::FeatureVector;
 use AI::Categorizer::Learner::Boolean;

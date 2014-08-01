@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Document::ScoredFeatures;
 
-use strict;
 use AI::Categorizer::Document;
 use base qw(AI::Categorizer::Document);
 

@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection::Files;
 use strict;
+
+package AI::Categorizer::Collection::Files;
 
 use AI::Categorizer::Collection;
 use base qw(AI::Categorizer::Collection);

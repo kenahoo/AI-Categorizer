@@ -1,3 +1,5 @@
+use strict;
+
 package AI::Categorizer::FeatureVector;
 
 sub new {

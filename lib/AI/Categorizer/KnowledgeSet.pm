@@ -151,11 +151,11 @@ sub prog_bar {
   my ($self, $collection) = @_;
 
   return sub {} unless $self->verbose;
-  return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
+  return sub { print STDERR '.' } unless eval {require Time::Progress; 1};
 
   my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
   
-  my $pb = 'Time::Progress'->new;
+  my $pb = Time::Progress::->new;
   $pb->attr(max => $count);
   my $i = 0;
   return sub {

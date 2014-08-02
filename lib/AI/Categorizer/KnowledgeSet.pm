@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::KnowledgeSet;
 
-use strict;
 use Class::Container;
 use AI::Categorizer::Storable;
 use base qw(Class::Container AI::Categorizer::Storable);
@@ -150,11 +151,11 @@ sub prog_bar {
   my ($self, $collection) = @_;
 
   return sub {} unless $self->verbose;
-  return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
+  return sub { print STDERR '.' } unless eval {require Time::Progress; 1};
 
   my $count = $collection->can('count_documents') ? $collection->count_documents : 0;
   
-  my $pb = 'Time::Progress'->new;
+  my $pb = Time::Progress::->new;
   $pb->attr(max => $count);
   my $i = 0;
   return sub {
@@ -396,7 +397,7 @@ sub save_features {
   my $f = ($self->{features} || { $self->delayed_object_params('document') }->{use_features})
     or croak "No features to save";
   
-  open my($fh), "> $file" or croak "Can't create $file: $!";
+  open my $fh , '>', $file or croak "Can't create $file: $!";
   my $h = $f->as_hash;
   print $fh "# Total: ", $f->length, "\n";
   
@@ -409,7 +410,7 @@ sub save_features {
 sub restore_features {
   my ($self, $file, $n) = @_;
   
-  open my($fh), "< $file" or croak "Can't open $file: $!";
+  open my $fh, '<', $file or croak "Can't open $file: $!";
 
   my %hash;
   while (<$fh>) {

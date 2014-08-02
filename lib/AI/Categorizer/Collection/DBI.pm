@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection::DBI;
 use strict;
+
+package AI::Categorizer::Collection::DBI;
 
 use DBI;
 use AI::Categorizer::Collection;

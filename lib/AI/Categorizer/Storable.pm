@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Storable;
 
-use strict;
 use Storable;
 use File::Spec ();
 use File::Path ();

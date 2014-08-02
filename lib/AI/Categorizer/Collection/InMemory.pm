@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection::InMemory;
 use strict;
+
+package AI::Categorizer::Collection::InMemory;
 
 use AI::Categorizer::Collection;
 use base qw(AI::Categorizer::Collection);

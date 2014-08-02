@@ -1,7 +1,7 @@
-package AI::Categorizer::Learner::SVM;
-$VERSION = '0.01';
-
 use strict;
+
+package AI::Categorizer::Learner::SVM;
+
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);
 use Algorithm::SVM;

@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection;
 use strict;
+
+package AI::Categorizer::Collection;
 
 use Params::Validate qw(:types);
 use Class::Container;
@@ -29,23 +30,19 @@ sub new {
   my $self = $class->SUPER::new(%args);
 
   if ($self->{category_file}) {
-    local *FH;
-    open FH, $self->{category_file} or die "Can't open $self->{category_file}: $!";
-    while (<FH>) {
+    open my $fh, '<', $self->{category_file} or die "Can't open $self->{category_file}: $!";
+    while (<$fh>) {
       my ($doc, @cats) = split;
       $self->{category_hash}{$doc} = \@cats;
     }
-    close FH;
   }
   if (exists $self->{stopword_file}) {
     my %stopwords;
-    local *FH;
-    open FH, "< $self->{stopword_file}" or die "$self->{stopword_file}: $!";
-    while (<FH>) {
+    open my $fh, '<', $self->{stopword_file} or die "$self->{stopword_file}: $!";
+    while (<$fh>) {
       chomp;
       $stopwords{$_} = 1;
     }
-    close FH;
 
     $self->delayed_object_params('document', stopwords => \%stopwords);
   }

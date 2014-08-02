@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::FeatureSelector::CategorySelector;
 
-use strict;
 use AI::Categorizer::FeatureSelector;
 use base qw(AI::Categorizer::FeatureSelector);
 
@@ -89,9 +90,9 @@ sub prog_bar {
   my ($self, $count) = @_;
 
   return sub {} unless $self->verbose;
-  return sub { print STDERR '.' } unless eval "use Time::Progress; 1";
+  return sub { print STDERR '.' } unless eval {require Time::Progress; 1};
 
-  my $pb = 'Time::Progress'->new;
+  my $pb = Time::Progress::->new;
   $pb->attr(max => $count);
   my $i = 0;
   return sub {

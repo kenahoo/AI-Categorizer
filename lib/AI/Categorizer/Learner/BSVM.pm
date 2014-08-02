@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Learner::BSVM;
 
-use strict;
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);
 use Params::Validate qw(:types);
@@ -79,7 +80,7 @@ sub get_boolean_score {
 	      $outfile);
   $self->do_cmd(@args);
 
-  open my($fh), $outfile or die "Can't read result file '$outfile': $!";
+  open my($fh), '<', $outfile or die "Can't read result file '$outfile': $!";
   my $result;
   while (<$fh>) {
     $result = $1, last if /(\d+)/;
@@ -112,7 +113,7 @@ sub categorize_collection {
 		$outfile);
     $self->do_cmd(@args);
     
-    open my($fh), $outfile or die "Can't read result file '$outfile': $!";
+    open my($fh), '<', $outfile or die "Can't read result file '$outfile': $!";
     my $index = 0;
     while (<$fh>) {
       next unless /^\d+$/;

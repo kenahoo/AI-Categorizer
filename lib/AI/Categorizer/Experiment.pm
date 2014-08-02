@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Experiment;
 
-use strict;
 use Class::Container;
 use AI::Categorizer::Storable;
 use Statistics::Contingency;

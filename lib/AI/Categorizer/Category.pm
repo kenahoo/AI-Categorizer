@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Category;
 
-use strict;
 use AI::Categorizer::ObjectSet;
 use Class::Container;
 use base qw(Class::Container);

@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Learner::Guesser;
 
-use strict;
 use AI::Categorizer::Learner;
 use base qw(AI::Categorizer::Learner);
 

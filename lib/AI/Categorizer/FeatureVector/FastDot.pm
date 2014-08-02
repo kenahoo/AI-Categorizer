@@ -1,11 +1,11 @@
+use strict;
+
 package AI::Categorizer::FeatureVector::FastDot;
 
-use strict;
 use AI::Categorizer::FeatureVector;
 use vars qw($VERSION @ISA);
 use DynaLoader ();
 
-$VERSION = '0.01';
 @ISA = qw(DynaLoader AI::Categorizer::FeatureVector);
 bootstrap AI::Categorizer::FeatureVector::FastDot $VERSION;
 

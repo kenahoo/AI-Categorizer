@@ -1,5 +1,6 @@
-package AI::Categorizer::Collection::SingleFile;
 use strict;
+
+package AI::Categorizer::Collection::SingleFile;
 
 use AI::Categorizer::Collection;
 use base qw(AI::Categorizer::Collection);
@@ -39,7 +40,7 @@ sub _next_path {
 
   push @{$self->{used}}, shift @{$self->{path}};
   $self->{cur_file} = $self->{used}[-1];
-  open $self->{fh}, "< $self->{cur_file}" or die "$self->{cur_file}: $!";
+  open $self->{fh}, '<', $self->{cur_file} or die "$self->{cur_file}: $!";
 }
 
 sub next {

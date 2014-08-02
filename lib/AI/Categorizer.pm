@@ -1,7 +1,7 @@
-package AI::Categorizer;
-$VERSION = '0.09';
-
 use strict;
+
+package AI::Categorizer;
+
 use Class::Container;
 use base qw(Class::Container);
 use Params::Validate qw(:types);

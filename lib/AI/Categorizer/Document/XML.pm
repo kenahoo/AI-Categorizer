@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::Document::XML;
 
-use strict;
 use AI::Categorizer::Document;
 use base qw(AI::Categorizer::Document);
 use XML::SAX;

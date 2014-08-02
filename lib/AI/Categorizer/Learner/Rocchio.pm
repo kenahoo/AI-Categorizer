@@ -1,7 +1,7 @@
-package AI::Categorizer::Learner::Rocchio;
-$VERSION = '0.01';
-
 use strict;
+
+package AI::Categorizer::Learner::Rocchio;
+
 use Params::Validate qw(:types);
 use AI::Categorizer::FeatureVector;
 use AI::Categorizer::Learner::Boolean;

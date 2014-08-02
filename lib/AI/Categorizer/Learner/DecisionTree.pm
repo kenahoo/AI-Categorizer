@@ -1,7 +1,7 @@
-package AI::Categorizer::Learner::DecisionTree;
-$VERSION = '0.01';
-
 use strict;
+
+package AI::Categorizer::Learner::DecisionTree;
+
 use AI::DecisionTree;
 use AI::Categorizer::Learner::Boolean;
 use base qw(AI::Categorizer::Learner::Boolean);

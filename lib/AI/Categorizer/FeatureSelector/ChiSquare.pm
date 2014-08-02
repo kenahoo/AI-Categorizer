@@ -1,6 +1,7 @@
+use strict;
+
 package AI::Categorizer::FeatureSelector::ChiSquare;
 
-use strict;
 use AI::Categorizer::FeatureSelector;
 use base qw(AI::Categorizer::FeatureSelector::CategorySelector);
 

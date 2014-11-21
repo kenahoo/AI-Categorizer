@@ -206,14 +206,7 @@ Originally written by David Bell (C<< <dave@student.usyd.edu.au> >>),
 October 2002.
 
 Added to AI::Categorizer November 2002, modified, and maintained by
-Ken Williams (C<< <ken@mathforum.org> >>).
-
-=head1 COPYRIGHT
-
-Copyright 2000-2003 Ken Williams.  All rights reserved.
-
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+Ken Williams.
 
 =head1 SEE ALSO
 

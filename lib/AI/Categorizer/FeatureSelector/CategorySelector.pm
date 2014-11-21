@@ -1,4 +1,5 @@
 use strict;
+# ABSTRACT: Abstract Category Selection class
 
 package AI::Categorizer::FeatureSelector::CategorySelector;
 
@@ -105,13 +106,9 @@ sub prog_bar {
 
 __END__
 
-=head1 NAME
-
-AI::Categorizer::CategorySelector - Abstract Category Selection class
-
 =head1 SYNOPSIS
 
-This class is abstract. For example of instanciation, see
+This class is abstract. For example of instantiation, see
 ChiSquare.
 
 =head1 DESCRIPTION
@@ -124,6 +121,6 @@ from a set of features by categories.
 =head1 AUTHOR
 
 Francois Paradis, paradifr@iro.umontreal.ca
-with inspiration from Ken Williams AI::Categorizer code
+with inspiration from Ken Williams' AI::Categorizer code
 
 =cut

@@ -131,10 +131,6 @@ The first argument is the document to be categorized.  The second
 argument is the value returned by C<create_boolean_model()> for this
 category.
 
-=head1 AUTHOR
-
-Ken Williams, <ken@mathforum.org>
-
 =head1 SEE ALSO
 
 AI::Categorizer

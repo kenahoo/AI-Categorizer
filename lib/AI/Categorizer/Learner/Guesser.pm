@@ -71,17 +71,6 @@ See L<AI::Categorizer> for a complete description of the interface.
 This class inherits from the C<AI::Categorizer::Learner> class, so all
 of its methods are available.
 
-=head1 AUTHOR
-
-Ken Williams (C<< <ken@mathforum.org> >>)
-
-=head1 COPYRIGHT
-
-Copyright 2000-2003 Ken Williams.  All rights reserved.
-
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
 =head1 SEE ALSO
 
 AI::Categorizer(3)

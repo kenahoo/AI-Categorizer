@@ -157,17 +157,6 @@ More work on the confidence scores - right now the winning category
 tends to dominate the scores overwhelmingly, when the scores should
 probably be more evenly distributed.
 
-=head1 AUTHOR
-
-Ken Williams, ken@forum.swarthmore.edu
-
-=head1 COPYRIGHT
-
-Copyright 2000-2003 Ken Williams.  All rights reserved.
-
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
 =head1 SEE ALSO
 
 AI::Categorizer(3), Algorithm::NaiveBayes(3)

@@ -1,4 +1,5 @@
 use strict;
+# ABSTRACT: ChiSquare Feature Selection class
 
 package AI::Categorizer::FeatureSelector::ChiSquare;
 
@@ -36,10 +37,6 @@ sub reduction_function {
 1;
 
 __END__
-
-=head1 NAME
-
-AI::Categorizer::FeatureSelector::ChiSquare - ChiSquare Feature Selection class
 
 =head1 SYNOPSIS
 
@@ -87,7 +84,7 @@ Conference on Machine Learning, 1997.
 =head1 AUTHOR
 
 Francois Paradis, paradifr@iro.umontreal.ca
-with inspiration from Ken Williams AI::Categorizer code
+with inspiration from Ken Williams' AI::Categorizer code
 
 =cut
 

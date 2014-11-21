@@ -696,17 +696,6 @@ partitions will be returned as a list.
 
 =back
 
-=head1 AUTHOR
-
-Ken Williams, ken@mathforum.org
-
-=head1 COPYRIGHT
-
-Copyright 2000-2003 Ken Williams.  All rights reserved.
-
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
 =head1 SEE ALSO
 
 AI::Categorizer(3)

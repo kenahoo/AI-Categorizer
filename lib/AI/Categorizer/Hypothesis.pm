@@ -165,15 +165,4 @@ constructor parameter, or C<undef> if none was specified.
 
 =back
 
-=head1 AUTHOR
-
-Ken Williams <ken@mathforum.org>
-
-=head1 COPYRIGHT
-
-This distribution is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.  These terms apply to
-every file in the distribution - if you have questions, please contact
-the author.
-
 =cut

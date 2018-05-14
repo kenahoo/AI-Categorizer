@@ -85,7 +85,7 @@ AI::Categorizer::Collection - Access stored documents
     ...
   }
   $c->rewind; # For further operations
-  
+
 =head1 DESCRIPTION
 
 This abstract class implements an iterator for accessing documents in

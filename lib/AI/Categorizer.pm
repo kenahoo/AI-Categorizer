@@ -162,7 +162,7 @@ AI::Categorizer - Automatic Text Categorization
    print "Assigned categories: ", join ', ', $hypothesis->categories, "\n";
    print "Best category: ", $hypothesis->best_category, "\n";
  }
- 
+
 =head1 DESCRIPTION
 
 C<AI::Categorizer> is a framework for automatic text categorization.

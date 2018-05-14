@@ -109,7 +109,7 @@ AI::Categorizer::Collection::Files - One document per file
     ...
   }
   $c->rewind; # For further operations
-  
+
 =head1 DESCRIPTION
 
 This implements a Collection class in which each document exists as a

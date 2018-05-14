@@ -32,7 +32,7 @@ AI::Categorizer::Storable - Saving and Restoring State
   $object->save_state($path);
   ... time passes ...
   $object = Class->restore_state($path);
-  
+
 =head1 DESCRIPTION
 
 This class implements methods for storing the state of an object to a
@@ -54,6 +54,8 @@ be saved.
 
 This class method reads the file specified by C<$path> and returns the
 object that was previously stored there using C<save_state()>.
+
+=back
 
 =head1 SEE ALSO
 

@@ -69,3 +69,5 @@ the KnowledgeSet class.
 
 Creates a new KnowledgeSet and returns it.  Accepts the following
 parameters:
+
+=back

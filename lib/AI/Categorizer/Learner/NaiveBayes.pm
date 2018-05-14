@@ -166,9 +166,9 @@ L<http://www.cs.cmu.edu/~yiming/publications.html>
 
 "On the Optimality of the Simple Bayesian Classifier under Zero-One
 Loss" by Pedro Domingos
-L<"http://www.cs.washington.edu/homes/pedrod/mlj97.ps.gz">
+L<http://www.cs.washington.edu/homes/pedrod/mlj97.ps.gz>
 
 A simple but complete example of Bayes' Theorem from Dr. Math
-L<"http://www.mathforum.com/dr.math/problems/battisfore.03.22.99.html">
+L<http://www.mathforum.com/dr.math/problems/battisfore.03.22.99.html>
 
 =cut

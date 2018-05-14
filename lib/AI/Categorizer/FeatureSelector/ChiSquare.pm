@@ -41,7 +41,7 @@ __END__
 =head1 SYNOPSIS
 
  # the recommended way to use this class is to let the KnowledgeSet
- # instanciate it
+ # instantiate it
 
  use AI::Categorizer::KnowledgeSetSMART;
  my $ksetCHI = new AI::Categorizer::KnowledgeSetSMART(

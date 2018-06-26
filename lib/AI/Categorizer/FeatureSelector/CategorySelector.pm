@@ -106,6 +106,10 @@ sub prog_bar {
 
 __END__
 
+=head1 NAME
+
+AI::Categorizer::CategorySelector - Abstract Category Selection class
+
 =head1 SYNOPSIS
 
 This class is abstract. For example of instantiation, see

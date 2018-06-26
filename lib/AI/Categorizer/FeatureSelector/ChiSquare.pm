@@ -38,6 +38,10 @@ sub reduction_function {
 
 __END__
 
+=head1 NAME
+
+AI::Categorizer::FeatureSelector::ChiSquare - ChiSquare Feature Selection class
+
 =head1 SYNOPSIS
 
  # the recommended way to use this class is to let the KnowledgeSet
